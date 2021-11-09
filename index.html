@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luis Matias</title>
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="container">
+        <div>
+          <a class="logo" href="index.html">Luis Matias</a>
+        </div>
+        <div class="navitems">
+          <nav class="closed-nav" id="nav">
+            <ul class="collapse nav-left">
+              <li><a href="index.html">About</a></li>
+              <li><a href="#">Experiences</a></li>
+              <li><a href="#">Publications</a></li>
+              <li><a href="#">Projects</a></li>
+              <li><a href="#">Photography</a></li>
+            </ul>
+          </nav>
+          <div class="nav-right">
+            <button type="button" class="burger"><span>PT</span></button>
+            <button type="button" class="burger" onclick="changeTheme()">
+              <i class="fas fa-moon" id="themeButton"></i>
+            </button>
+            <button type="button" class="menu-btn burger" onclick="burger()">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <section class="section-about">
+      <div class="container">
+        <div class="about-avatar">
+          <img class="avatar" src="./images/avatar_circle.png" alt="" />
+          <div>
+            <p class="span1">Luis Matias</p>
+            <p class="span2">MSc Student</p>
+            <p class="span3">Mechanical Engineering</p>
+          </div>
+        </div>
+        <div class="info">
+          <div class="about-about">
+            <h1>About</h1>
+            <p class="card-text">
+              Currently I’m studying Mechanical Engineering in
+              <a href="https://fe.up.pt">Porto University (FEUP)</a> to obtain
+              MSc degree. Concluded Bachelor degree in 2015 in
+              <a href="https://fct.unl.pt">Universidade NOVA de Lisboa</a>. In
+              free times I like to travel, photograph and learn programming.
+            </p>
+          </div>
+          <div class="intstu">
+            <div class="about-interests">
+              <h1>Interests</h1>
+              <ul>
+                <li><i class="fas fa-cube"></i>Product Development</li>
+                <li><i class="fas fa-cube"></i>SolidWorks</li>
+                <li><i class="fas fa-cube"></i>Python3</li>
+                <li><i class="fas fa-cube"></i>HTML5 + CSS</li>
+                <li><i class="fas fa-cube"></i>Photography</li>
+              </ul>
+            </div>
+            <div class="about-studies">
+              <h1>Studies</h1>
+              <ul>
+                <li>
+                  <i class="fas fa-graduation-cap"></i>BSc in Mechanical
+                  Engineering, 2015
+                </li>
+                <li style="padding-left: 2.5rem">
+                  <span style="opacity: 0.7"
+                    >NOVA Lisbon University (FCT-UNL)</span
+                  >
+                </li>
+                <li style="padding-left: 2.5rem">
+                  <span style="opacity: 0.7">Lisbon</span>
+                </li>
+                <li><i class="fas fa-graduation-cap"></i>Highschool, 2012</li>
+                <li style="padding-left: 2.5rem">
+                  <span style="opacity: 0.7"
+                    >Quinta das Palmeiras School, 2012</span
+                  >
+                </li>
+                <li style="padding-left: 2.5rem">
+                  <span style="opacity: 0.7">Covilhã</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section-experiences other-section">
+      <div class="container">
+        <h1>Experiences</h1>
+        <div class="card-container">
+          <div class="card">
+            <div class="card-header">
+              <p class="card-type">Volunteering</p>
+              <p class="card-year">2017 (1 Week)</p>
+            </div>
+            <img
+              src="./images/card-volunteering.png"
+              alt="Elephant Nature Park volunteering"
+              class="card-image"
+            />
+            <p class="card-title">Elephant Nature Park</p>
+            <p class="card-location">
+              <i class="fas fa-map-marker-alt" style="padding-right: 0.5rem"></i
+              >Chiang Mai, Thailand
+            </p>
+            <p class="card-info">
+              Enrolled in a big adventure in north of Thailand.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <p class="card-type">Internship</p>
+              <p class="card-year">2017 (3 Months)</p>
+            </div>
+            <img
+              src="./images/card-internship-thailand.png"
+              alt="Elephant Nature Park volunteering"
+              class="card-image"
+            />
+            <p class="card-title">
+              Rajamangala University of Technology - Rattanakosin
+            </p>
+            <p class="card-location">
+              <i class="fas fa-map-marker-alt" style="padding-right: 0.5rem">
+              </i
+              >Phutthamonthon, Thailand
+            </p>
+            <p class="card-info">
+              Job training as a teaching assistant in the subject of Solid
+              Mechanics. Assiting in lectures in practical Design of Machine
+              Elements and Computer Aid Engineering (CAE).
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section-projects">
+      <div class="container">
+        <h1>Projects</h1>
+      </div>
+    </section>
+    <section class="section-publications other-section">
+      <div class="container">
+        <h1>Publications</h1>
+      </div>
+    </section>
+    <section class="section-photo">
+      <div class="container">
+        <h1>Photography</h1>
+      </div>
+    </section>
+    <script src="./js/themes.js"></script>
+    <script src="./js/burger.js"></script>
+  </body>
+  <script
+    src="https://kit.fontawesome.com/7826cc1857.js"
+    crossorigin="anonymous"
+  ></script>
+</html>
