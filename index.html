@@ -18,9 +18,35 @@
             <ul class="collapse nav-left">
               <li><a href="index.html">About</a></li>
               <li><a href="#">Experiences</a></li>
-              <li><a href="#">Publications</a></li>
+              <li>
+                <div>
+                  <a
+                    href="#"
+                    onmouseover="popupOverPubl()"
+                    onmouseout="popupOutPubl()"
+                    class="disabled"
+                    >Publications</a
+                  >
+                  <span class="popuptext" id="popupPubl"
+                    >Waiting publication...</span
+                  >
+                </div>
+              </li>
               <li><a href="#">Projects</a></li>
-              <li><a href="#">Photography</a></li>
+              <li>
+                <div>
+                  <a
+                    href="#"
+                    onmouseover="popupOverPhoto()"
+                    onmouseout="popupOutPhoto()"
+                    class="disabled"
+                    >Photography</a
+                  >
+                  <span class="popuptext" id="popupPhoto"
+                    >Under Construction...</span
+                  >
+                </div>
+              </li>
             </ul>
           </nav>
           <div class="nav-right">
@@ -50,10 +76,14 @@
             <h1>About</h1>
             <p class="card-text">
               Currently I’m studying Mechanical Engineering in
-              <a href="https://fe.up.pt">Porto University (FEUP)</a> to obtain
-              MSc degree. Concluded Bachelor degree in 2015 in
-              <a href="https://fct.unl.pt">Universidade NOVA de Lisboa</a>. In
-              free times I like to travel, photograph and learn programming.
+              <a class="link" href="https://fe.up.pt"
+                >Porto University (FEUP)</a
+              >
+              to obtain MSc degree. Concluded Bachelor degree in 2015 in
+              <a class="link" href="https://fct.unl.pt"
+                >Universidade NOVA de Lisboa</a
+              >. In free times I like to travel, photograph and learn
+              programming.
             </p>
           </div>
           <div class="intstu">
@@ -101,7 +131,7 @@
       <div class="container">
         <h1>Experiences</h1>
         <div class="card-container">
-          <div class="card">
+          <div class="card light-card">
             <div class="card-header">
               <p class="card-type">Volunteering</p>
               <p class="card-year">2017 (1 Week)</p>
@@ -120,7 +150,7 @@
               Enrolled in a big adventure in north of Thailand.
             </p>
           </div>
-          <div class="card">
+          <div class="card light-card">
             <div class="card-header">
               <p class="card-type">Internship</p>
               <p class="card-year">2017 (3 Months)</p>
@@ -150,9 +180,42 @@
     <section class="section-projects">
       <div class="container">
         <h1>Projects</h1>
+        <div class="hcard-container">
+          <div class="hcard dark-card">
+            <div class="row1">
+              <div class="hcard-header">
+                <p>Master Thesis</p>
+              </div>
+            </div>
+            <div class="row2">
+              <div class="col1">
+                <img
+                  src="./images/hcard-thesis.png  "
+                  alt="Elephant Nature Park volunteering"
+                  class="hcard-image"
+                />
+              </div>
+              <div class="col2">
+                <a
+                  class="hcard-link link"
+                  href="https://sigarra.up.pt/feup/en/pub_geral.pub_view?pi_pub_base_id=454540"
+                  class="hcard-title"
+                >
+                  Método Semi-Automático de Desenvolvimento de Stents em
+                  Artérias Coronárias com Estenose - Simulações Hemodinâmicas
+                </a>
+                <p>
+                  This dissertation consists of the development of a
+                  semi-automatic method for obtaining stent-lumen models, stents
+                  in the left coronary artery, to later study hemodynamics.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
-    <section class="section-publications other-section">
+    <!-- <section class="section-publications other-section">
       <div class="container">
         <h1>Publications</h1>
       </div>
@@ -161,9 +224,28 @@
       <div class="container">
         <h1>Photography</h1>
       </div>
-    </section>
+    </section> -->
     <script src="./js/themes.js"></script>
     <script src="./js/burger.js"></script>
+    <script>
+      var popupPubl = document.getElementById("popupPubl");
+      var popupPhoto = document.getElementById("popupPhoto");
+
+      function popupOverPubl() {
+        popupPubl.style.display = "flex";
+      }
+
+      function popupOutPubl() {
+        popupPubl.style.display = "none";
+      }
+      function popupOverPhoto() {
+        popupPhoto.style.display = "flex";
+      }
+
+      function popupOutPhoto() {
+        popupPhoto.style.display = "none";
+      }
+    </script>
   </body>
   <script
     src="https://kit.fontawesome.com/7826cc1857.js"

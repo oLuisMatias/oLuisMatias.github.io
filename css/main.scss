@@ -8,6 +8,7 @@
   --span1: #ecf0f3;
   --icon: #30343a;
   --p-main: #ecf0f3;
+  --link: ;
 }
 
 :root {
@@ -255,6 +256,14 @@ body {
 
 ////////////////////////////// CARDS STYLE //////////////////////////////
 
+.light-card {
+  background-color: var(--main);
+}
+
+.dark-card {
+  background-color: var(--other-section);
+}
+
 .card-container {
   display: flex;
   flex-wrap: wrap;
@@ -263,7 +272,6 @@ body {
   padding-top: 1rem;
   .card {
     max-width: 100%;
-    background-color: var(--main);
     border-radius: 2%;
     display: block;
     .card-header {
@@ -299,6 +307,53 @@ body {
   }
 }
 
+.hcard-container {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 1.5rem;
+  column-gap: 1.5rem;
+  padding-top: 1.5rem;
+  .hcard {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    display: block;
+    padding: 1rem;
+    .row1 {
+      .hcard-header {
+        p {
+          margin: 0 0 1rem 0;
+          font-weight: 700;
+          color: var(--span1);
+          font-size: 1.5rem;
+        }
+      }
+    }
+    .row2 {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: left;
+      column-gap: 3rem;
+      row-gap: 1.5rem;
+      .col1 {
+        display: flex;
+        max-width: 100%;
+        height: auto;
+        margin-right: auto;
+        margin-left: auto;
+        img {
+          justify-self: center;
+          max-width: 100%;
+          max-height: 200px;
+          height: auto;
+        }
+      }
+      .col2 {
+        max-width: 100%;
+      }
+    }
+  }
+}
+
 /////////////////////////////// SECTION COLOR ///////////////////////////////
 
 .other-section {
@@ -313,6 +368,29 @@ h1 {
   font-weight: 400;
   text-transform: uppercase;
   margin: 0;
+}
+
+.popuptext {
+  display: none;
+  position: fixed;
+  margin-left: 0.5rem;
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.5rem;
+  right: 0;
+  width: fit-content;
+  background-color: var(--span1);
+  color: var(--main);
+  font-size: 0.8rem;
+  justify-content: center;
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.link {
+  color: var(--span1);
 }
 
 ///////////////////////////////// QUERY 576XP /////////////////////////////////
@@ -338,6 +416,31 @@ h1 {
     column-gap: 2%;
     .card {
       max-width: 48%;
+    }
+  }
+  .hcard-container {
+    .hcard {
+      .row2 {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: left;
+        column-gap: 2rem;
+        row-gap: 1.5rem;
+        .col1 {
+          display: block;
+          max-width: 100%;
+          margin-top: auto;
+          margin-bottom: auto;
+          img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1/1;
+          }
+        }
+        .col2 {
+          max-width: 100%;
+        }
+      }
     }
   }
 }
@@ -407,5 +510,10 @@ h1 {
         }
       }
     }
+  }
+  .popuptext {
+    position: absolute;
+    margin-top: 0.5rem;
+    right: auto;
   }
 }

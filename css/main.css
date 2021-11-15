@@ -7,6 +7,7 @@
   --span1: #ecf0f3;
   --icon: #30343a;
   --p-main: #ecf0f3;
+  --link: ;
 }
 
 :root {
@@ -322,6 +323,14 @@ body p {
           column-gap: 2rem;
 }
 
+.light-card {
+  background-color: var(--main);
+}
+
+.dark-card {
+  background-color: var(--other-section);
+}
+
 .card-container {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -336,7 +345,6 @@ body p {
 
 .card-container .card {
   max-width: 100%;
-  background-color: var(--main);
   border-radius: 2%;
   display: block;
 }
@@ -379,6 +387,68 @@ body p {
   padding-bottom: 1rem;
 }
 
+.hcard-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  row-gap: 1.5rem;
+  -webkit-column-gap: 1.5rem;
+          column-gap: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.hcard-container .hcard {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  display: block;
+  padding: 1rem;
+}
+
+.hcard-container .hcard .row1 .hcard-header p {
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  color: var(--span1);
+  font-size: 1.5rem;
+}
+
+.hcard-container .hcard .row2 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-pack: left;
+      -ms-flex-pack: left;
+          justify-content: left;
+  -webkit-column-gap: 3rem;
+          column-gap: 3rem;
+  row-gap: 1.5rem;
+}
+
+.hcard-container .hcard .row2 .col1 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  max-width: 100%;
+  height: auto;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.hcard-container .hcard .row2 .col1 img {
+  -ms-grid-column-align: center;
+      justify-self: center;
+  max-width: 100%;
+  max-height: 200px;
+  height: auto;
+}
+
+.hcard-container .hcard .row2 .col2 {
+  max-width: 100%;
+}
+
 .other-section {
   background-color: var(--other-section);
 }
@@ -389,6 +459,33 @@ h1 {
   font-weight: 400;
   text-transform: uppercase;
   margin: 0;
+}
+
+.popuptext {
+  display: none;
+  position: fixed;
+  margin-left: 0.5rem;
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.5rem;
+  right: 0;
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  background-color: var(--span1);
+  color: var(--main);
+  font-size: 0.8rem;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.link {
+  color: var(--span1);
 }
 
 @media only screen and (min-width: 576px) {
@@ -413,6 +510,33 @@ h1 {
   }
   .card-container .card {
     max-width: 48%;
+  }
+  .hcard-container .hcard .row2 {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+        flex-wrap: nowrap;
+    -webkit-box-pack: left;
+        -ms-flex-pack: left;
+            justify-content: left;
+    -webkit-column-gap: 2rem;
+            column-gap: 2rem;
+    row-gap: 1.5rem;
+  }
+  .hcard-container .hcard .row2 .col1 {
+    display: block;
+    max-width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .hcard-container .hcard .row2 .col1 img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1/1;
+  }
+  .hcard-container .hcard .row2 .col2 {
+    max-width: 100%;
   }
 }
 
@@ -480,6 +604,11 @@ h1 {
   }
   .navbar .container .navitems .nav-right .menu-btn {
     display: none;
+  }
+  .popuptext {
+    position: absolute;
+    margin-top: 0.5rem;
+    right: auto;
   }
 }
 /*# sourceMappingURL=main.css.map */
