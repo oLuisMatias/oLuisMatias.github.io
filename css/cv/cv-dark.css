@@ -98,7 +98,6 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  min-height: 100vh;
   height: -webkit-fit-content;
   height: -moz-fit-content;
   height: fit-content;
@@ -247,8 +246,8 @@ body {
   background-color: var(--surface);
   border-radius: 1em;
   -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+      -ms-flex: 1;
+          flex: 1;
   -webkit-box-shadow: 0 0 0.3em var(--navbar);
           box-shadow: 0 0 0.3em var(--navbar);
   color: var(--foreground);
@@ -265,8 +264,8 @@ body {
       flex-wrap: wrap;
   text-align: center;
   border-right: 2px solid var(--background);
-  padding: 1em;
-  padding: 1em 3em;
+  margin: 0;
+  padding: 0.5em;
 }
 
 .section-work .container-work .work-entry .date span {
@@ -362,15 +361,16 @@ body {
   -webkit-box-shadow: 0 0 0.3em var(--navbar);
           box-shadow: 0 0 0.3em var(--navbar);
   color: var(--foreground);
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -webkit-box-align: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch;
 }
 
 .section-studies .container-studies .study-entry .date {
   text-align: center;
   border-right: 2px solid var(--background);
-  padding: 1em 3em;
+  margin: 0;
+  padding: 0.5em;
 }
 
 .section-studies .container-studies .study-entry .box {
@@ -753,6 +753,84 @@ body {
     width: 100vw;
     max-width: 70vw;
     max-height: none;
+  }
+}
+
+@media only screen and (max-width: 550px) {
+  body {
+    font-size: 12px;
+  }
+  .section-about .container-about {
+    padding: 5em 1.5em;
+  }
+  .section-about .container-about .about1 .about1-info-block .name {
+    font-size: 34px;
+  }
+  .section-about .container-about .about1 .about1-info-block .degree {
+    font-size: 16px;
+  }
+  .section-about .container-about .container-about-me .title {
+    font-size: 20px;
+  }
+  .section-work .container-work {
+    padding: 5em 1.5em;
+  }
+  .section-work .container-work .title {
+    font-size: 20px;
+  }
+  .section-work .container-work .work-entry .box .position .title {
+    font-size: 15px;
+  }
+  .section-work .container-work .work-entry .box .position .company {
+    font-size: 12px;
+  }
+  .section-work .container-work .work-entry .box .logo img {
+    max-width: 150px;
+  }
+  .section-studies .container-studies {
+    padding: 5em 1.5em;
+  }
+  .section-studies .container-studies .title {
+    font-size: 20px;
+  }
+  .section-studies .container-studies .study-entry .box .position .title {
+    font-size: 15px;
+  }
+  .section-studies .container-studies .study-entry .box .position .company {
+    font-size: 12px;
+  }
+  .section-studies .container-studies .study-entry .box .logo img {
+    max-width: 150px;
+  }
+  .section-skills .container-skills {
+    padding: 5em 1.5em;
+  }
+  .section-skills .container-skills .title {
+    font-size: 20px;
+  }
+  .section-experiences .container-experiences {
+    padding: 5em 1.5em;
+  }
+  .section-experiences .container-experiences .title {
+    font-size: 20px;
+  }
+  .section-experiences .container-experiences .experiences-entry p.job {
+    font-size: 18px;
+  }
+  .section-experiences .container-experiences .experiences-entry p.company {
+    font-size: 12px;
+  }
+  .section-publications .container-publications {
+    padding: 5em 1.5em;
+  }
+  .section-publications .container-publications .title {
+    font-size: 20px;
+  }
+  .section-publications .container-publications .publications-entry .name {
+    font-size: 15px;
+  }
+  .section-publications .container-publications .publications-entry .other {
+    font-size: 12px;
   }
 }
 /*# sourceMappingURL=cv-dark.css.map */
