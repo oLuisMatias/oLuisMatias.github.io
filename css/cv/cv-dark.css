@@ -730,6 +730,9 @@ body {
 }
 
 @media only screen and (max-width: 800px) {
+  .navbar {
+    padding: 0 2.5em;
+  }
   .section-work .container-work .work-entry .box {
     -ms-flex-wrap: wrap;
         flex-wrap: wrap;
