@@ -20,7 +20,6 @@ body {
   top: 0;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  width: 100vw;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -29,6 +28,7 @@ body {
       -ms-flex-pack: justify;
           justify-content: space-between;
   height: 55px;
+  width: 100vw;
   padding: 0 15em;
   z-index: 1;
 }
@@ -36,7 +36,7 @@ body {
 .navbar .left-nav a {
   padding: 0.5rem 1rem;
   display: inline-block;
-  color: var(--background);
+  color: var(--foreground);
   text-decoration: none;
   font-size: 17px;
   line-height: 40px;
@@ -190,7 +190,7 @@ body {
 }
 
 .section-about .container-about .container-about-me a {
-  color: #f0f0f0;
+  color: var(--foreground);
 }
 
 .section-about .container-about .container-about-me ul {
@@ -251,33 +251,56 @@ body {
   -webkit-box-shadow: 0 0 0.3em var(--navbar);
           box-shadow: 0 0 0.3em var(--navbar);
   color: var(--foreground);
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 .section-work .container-work .work-entry .date {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
   text-align: center;
   border-right: 2px solid var(--background);
   padding: 1em;
   padding: 1em 3em;
 }
 
-.section-work .container-work .work-entry .position {
+.section-work .container-work .work-entry .date span {
+  padding: 0.5em 0;
+  -webkit-box-flex: 1;
+      -ms-flex: 1 100%;
+          flex: 1 100%;
+}
+
+.section-work .container-work .work-entry .box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+}
+
+.section-work .container-work .work-entry .box .position {
   -ms-flex-item-align: center;
       -ms-grid-row-align: center;
       align-self: center;
   padding: 2em;
 }
 
-.section-work .container-work .work-entry .position .title {
+.section-work .container-work .work-entry .box .position .title {
   font-size: 20px;
   font-weight: 700;
   border: none;
 }
 
-.section-work .container-work .work-entry .position .company {
+.section-work .container-work .work-entry .box .position .company {
   font-size: 15px;
 }
 
-.section-work .container-work .work-entry .logo {
+.section-work .container-work .work-entry .box .logo {
   -webkit-box-flex: 1;
       -ms-flex-positive: 1;
           flex-grow: 1;
@@ -338,6 +361,9 @@ body {
   -webkit-box-shadow: 0 0 0.3em var(--navbar);
           box-shadow: 0 0 0.3em var(--navbar);
   color: var(--foreground);
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 .section-studies .container-studies .study-entry .date {
@@ -346,35 +372,42 @@ body {
   padding: 1em 3em;
 }
 
-.section-studies .container-studies .study-entry .position {
+.section-studies .container-studies .study-entry .box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+}
+
+.section-studies .container-studies .study-entry .box .position {
   -ms-flex-item-align: center;
       -ms-grid-row-align: center;
       align-self: center;
   padding: 2em;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
 }
 
-.section-studies .container-studies .study-entry .position .title {
+.section-studies .container-studies .study-entry .box .position .title {
   font-size: 20px;
   font-weight: 700;
   border: none;
 }
 
-.section-studies .container-studies .study-entry .position .company {
+.section-studies .container-studies .study-entry .box .position .company {
   font-size: 15px;
 }
 
-.section-studies .container-studies .study-entry .logo {
-  text-align: center;
+.section-studies .container-studies .study-entry .box .logo {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  text-align: right;
   -ms-flex-item-align: center;
       -ms-grid-row-align: center;
       align-self: center;
   padding: 1em;
   border-radius: 1em;
   justify-self: flex-end;
-  width: 250px;
 }
 
 .section-skills {
@@ -599,6 +632,30 @@ body {
 
 @media only screen and (max-width: 1400px) {
   .navbar {
+    padding: 0 7em;
+  }
+  .section-about .container-about {
+    padding: 5em 7em;
+  }
+  .section-work .container-work {
+    padding: 5em 7em;
+  }
+  .section-studies .container-studies {
+    padding: 5em 7em;
+  }
+  .section-skills .container-skills {
+    padding: 5em 7em;
+  }
+  .section-experiences .container-experiences {
+    padding: 5em 7em;
+  }
+  .section-publications .container-publications {
+    padding: 5em 7em;
+  }
+}
+
+@media only screen and (max-width: 1100px) {
+  .navbar {
     padding: 0 3em;
   }
   .navbar .right-nav {
@@ -614,22 +671,24 @@ body {
     display: -ms-flexbox;
     display: flex;
   }
-  .navbar .left-nav {
+  .left-nav {
     display: none;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
     position: absolute;
     right: 0;
-    margin-right: 3em;
     margin-top: 55px;
-    width: 50vw;
+    width: 100vw;
     opacity: 100%;
     background-color: var(--surface);
   }
-  .navbar .left-nav a {
-    text-align: right;
+  .left-nav a {
+    -webkit-box-flex: 1;
+        -ms-flex: 1 100%;
+            flex: 1 100%;
     display: block;
-  }
-  .section-about .container-about {
-    padding: 5em 3em;
+    text-align: center;
+    padding: 0 2em;
   }
   .section-work .container-work {
     padding: 5em 3em;
@@ -640,15 +699,9 @@ body {
   .section-skills .container-skills {
     padding: 5em 3em;
   }
-  .section-experiences .container-experiences {
-    padding: 5em 3em;
-  }
   .section-publications .container-publications {
     padding: 5em 3em;
   }
-}
-
-@media only screen and (max-width: 1100px) {
   .section-about .container-about {
     -ms-flex-wrap: wrap;
         flex-wrap: wrap;
@@ -656,6 +709,7 @@ body {
         -ms-flex-positive: 1;
             flex-grow: 1;
     gap: 1em;
+    padding: 5em 3em;
   }
   .section-about .container-about .about1 {
     -webkit-box-flex: 1;
@@ -667,6 +721,7 @@ body {
         -ms-flex-pack: start;
             justify-content: flex-start;
     gap: 1em;
+    padding: 5em 3em;
   }
   .section-experiences .container-experiences .experiences-entry {
     max-width: 33vw;
@@ -674,6 +729,20 @@ body {
 }
 
 @media only screen and (max-width: 800px) {
+  .section-work .container-work .work-entry .box {
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+  .section-work .container-work .work-entry .box .position {
+    padding-bottom: 1em;
+  }
+  .section-studies .container-studies .study-entry .box {
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+  .section-studies .container-studies .study-entry .box .position {
+    padding-bottom: 1em;
+  }
   .section-experiences .container-experiences {
     -webkit-box-pack: center;
         -ms-flex-pack: center;

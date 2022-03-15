@@ -10,6 +10,13 @@
   --surface: #343746;
 }
 
+// :root {
+//   --navbar: #14151c;
+//   --background: #f0f0f0;
+//   --foreground: #21232d;
+//   --surface: #e6e6e6;
+// }
+
 body {
   margin: 0;
   padding: 0;
@@ -20,11 +27,11 @@ body {
   position: fixed;
   top: 0;
   box-sizing: border-box;
-  width: 100vw;
   display: flex;
   background-color: var(--navbar);
   justify-content: space-between;
   height: 55px;
+  width: 100vw;
   padding: 0 15em;
   z-index: 1;
   .left-nav {
@@ -134,7 +141,7 @@ body {
         line-height: 1.8em;
       }
       a {
-        color: #f0f0f0;
+        color: var(--foreground);
       }
       ul {
         columns: 2;
@@ -173,32 +180,43 @@ body {
       flex-grow: 1;
       box-shadow: 0 0 0.3em var(--navbar);
       color: var(--foreground);
+      align-items: center;
 
       .date {
+        display: flex;
+        flex-wrap: wrap;
         text-align: center;
         border-right: 2px solid var(--background);
         padding: 1em;
         padding: 1em 3em;
-      }
-      .position {
-        align-self: center;
-        padding: 2em;
-        .title {
-          font-size: 20px;
-          font-weight: 700;
-          border: none;
-        }
-        .company {
-          font-size: 15px;
+        span {
+          padding: 0.5em 0;
+          flex: 1 100%;
         }
       }
-      .logo {
-        flex-grow: 1;
-        text-align: right;
-        align-self: center;
-        padding: 1em;
-        border-radius: 1em;
-        justify-self: flex-end;
+      .box {
+        display: flex;
+        flex-wrap: nowrap;
+        .position {
+          align-self: center;
+          padding: 2em;
+          .title {
+            font-size: 20px;
+            font-weight: 700;
+            border: none;
+          }
+          .company {
+            font-size: 15px;
+          }
+        }
+        .logo {
+          flex-grow: 1;
+          text-align: right;
+          align-self: center;
+          padding: 1em;
+          border-radius: 1em;
+          justify-self: flex-end;
+        }
       }
     }
   }
@@ -230,33 +248,36 @@ body {
       flex-grow: 1;
       box-shadow: 0 0 0.3em var(--navbar);
       color: var(--foreground);
+      align-items: center;
 
       .date {
         text-align: center;
         border-right: 2px solid var(--background);
         padding: 1em 3em;
       }
-      .position {
-        align-self: center;
-        padding: 2em;
-        flex-grow: 1;
-
-        .title {
-          font-size: 20px;
-          font-weight: 700;
-          border: none;
+      .box {
+        display: flex;
+        flex-wrap: nowrap;
+        .position {
+          align-self: center;
+          padding: 2em;
+          .title {
+            font-size: 20px;
+            font-weight: 700;
+            border: none;
+          }
+          .company {
+            font-size: 15px;
+          }
         }
-        .company {
-          font-size: 15px;
+        .logo {
+          flex-grow: 1;
+          text-align: right;
+          align-self: center;
+          padding: 1em;
+          border-radius: 1em;
+          justify-self: flex-end;
         }
-      }
-      .logo {
-        text-align: center;
-        align-self: center;
-        padding: 1em;
-        border-radius: 1em;
-        justify-self: flex-end;
-        width: 250px;
       }
     }
   }
@@ -413,8 +434,43 @@ body {
 
 @media only screen and (max-width: 1400px) {
   .navbar {
-    padding: 0 3em;
+    padding: 0 7em;
+  }
+  .section-about {
+    .container-about {
+      padding: 5em 7em;
+    }
+  }
+  .section-work {
+    .container-work {
+      padding: 5em 7em;
+    }
+  }
+  .section-studies {
+    .container-studies {
+      padding: 5em 7em;
+    }
+  }
+  .section-skills {
+    .container-skills {
+      padding: 5em 7em;
+    }
+  }
+  .section-experiences {
+    .container-experiences {
+      padding: 5em 7em;
+    }
+  }
+  .section-publications {
+    .container-publications {
+      padding: 5em 7em;
+    }
+  }
+}
 
+@media only screen and (max-width: 1100px) {
+  .navbar {
+    padding: 0 3em;
     .right-nav {
       flex-grow: 1;
       justify-content: flex-end;
@@ -422,26 +478,24 @@ body {
         display: flex;
       }
     }
-    .left-nav {
-      display: none;
-      position: absolute;
-      right: 0;
-      margin-right: 3em;
-      margin-top: 55px;
-      width: 50vw;
-      opacity: 100%;
-      background-color: var(--surface);
-      a {
-        text-align: right;
-        display: block;
-      }
+  }
+  .left-nav {
+    display: none;
+    flex-wrap: wrap;
+    position: absolute;
+    right: 0;
+    margin-top: 55px;
+    width: 100vw;
+    opacity: 100%;
+    background-color: var(--surface);
+    a {
+      flex: 1 100%;
+      display: block;
+      text-align: center;
+      padding: 0 2em;
     }
   }
-  .section-about {
-    .container-about {
-      padding: 5em 3em;
-    }
-  }
+
   .section-work {
     .container-work {
       padding: 5em 3em;
@@ -457,24 +511,19 @@ body {
       padding: 5em 3em;
     }
   }
-  .section-experiences {
-    .container-experiences {
-      padding: 5em 3em;
-    }
-  }
+
   .section-publications {
     .container-publications {
       padding: 5em 3em;
     }
   }
-}
-
-@media only screen and (max-width: 1100px) {
   .section-about {
     .container-about {
       flex-wrap: wrap;
       flex-grow: 1;
       gap: 1em;
+      padding: 5em 3em;
+
       .about1 {
         flex-grow: 1;
       }
@@ -484,6 +533,8 @@ body {
     .container-experiences {
       justify-content: flex-start;
       gap: 1em;
+      padding: 5em 3em;
+
       .experiences-entry {
         max-width: 33vw;
       }
@@ -492,6 +543,32 @@ body {
 }
 
 @media only screen and (max-width: 800px) {
+  .section-work {
+    .container-work {
+      .work-entry {
+        .box {
+          flex-wrap: wrap;
+          .position {
+            padding-bottom: 1em;
+          }
+        }
+      }
+    }
+  }
+
+  .section-studies {
+    .container-studies {
+      .study-entry {
+        .box {
+          flex-wrap: wrap;
+          .position {
+            padding-bottom: 1em;
+          }
+        }
+      }
+    }
+  }
+
   .section-experiences {
     .container-experiences {
       justify-content: center;

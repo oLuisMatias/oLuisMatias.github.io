@@ -89,11 +89,9 @@ function burguer_click() {
     left_av_class.style.display === "" ||
     left_av_class.style.display === "none"
   ) {
-    left_av_class.style.display = "block";
-    // console.log(left_av_class.style.display);
+    left_av_class.style.display = "flex";
   } else {
     left_av_class.style.display = "none";
-    // console.log("display");
   }
 }
 
