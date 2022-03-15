@@ -21,25 +21,31 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
   height: 100vh;
   max-height: 100vh;
-  -webkit-box-align: stretch;
-      -ms-flex-align: stretch;
-          align-items: stretch;
-  -webkit-box-pack: right;
-      -ms-flex-pack: right;
-          justify-content: right;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
 }
 
 .main-section .icon-buttons {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  position: absolute;
   -ms-flex-wrap: nowrap;
       flex-wrap: nowrap;
-  margin: 1em;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  -webkit-box-flex: 1;
+      -ms-flex: 1 100%;
+          flex: 1 100%;
+  margin: 1em 3em;
   gap: 1em;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
 }
 
 .main-section .icon-buttons .icon {
@@ -67,12 +73,13 @@ body {
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
   -webkit-box-flex: 1;
-      -ms-flex: 1 1 auto;
-          flex: 1 1 auto;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  margin: auto 2rem;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  margin: 2em 2rem;
+  -ms-flex-item-align: stretch;
+      align-self: stretch;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 .main-section .main-container .title-block {
@@ -116,12 +123,6 @@ body {
   color: var(--foreground);
 }
 
-.main-section .main-container .button-block .button-image-block .button-img {
-  display: block;
-  width: 50px;
-  margin: 0 auto;
-}
-
 @media only screen and (max-width: 950px) {
   .main-section .main-container .button-block {
     max-width: 40%;
@@ -143,6 +144,19 @@ body {
   }
   .main-section .main-container .title-block .title {
     font-size: 40px;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .main-section .main-container {
+    margin: 0 2rem;
+    padding-top: 0;
+  }
+  .main-section .main-container .title-block .title {
+    font-size: 35px;
+  }
+  .main-section .main-container .button-block .button-image-block .fa-5x {
+    font-size: 4.5em;
   }
 }
 /*# sourceMappingURL=main-dark.css.map */
