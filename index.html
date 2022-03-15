@@ -5,250 +5,60 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Luis Matias</title>
-    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/main/main-dark.css" id="theme-link" />
   </head>
   <body>
-    <div class="navbar">
-      <div class="container">
-        <div>
-          <a class="logo" href="index.html">Luis Matias</a>
-        </div>
-        <div class="navitems">
-          <nav class="closed-nav" id="nav">
-            <ul class="collapse nav-left">
-              <li><a href="index.html">TEST</a></li>
-              <li><a href="#">Experiences</a></li>
-              <li>
-                <div>
-                  <a
-                    href="#"
-                    onmouseover="popupOverPubl()"
-                    onmouseout="popupOutPubl()"
-                    class="disabled"
-                    >Publications</a
-                  >
-                  <span class="popuptext" id="popupPubl"
-                    >Waiting publication...</span
-                  >
-                </div>
-              </li>
-              <li><a href="#">Projects</a></li>
-              <li>
-                <div>
-                  <a
-                    href="#"
-                    onmouseover="popupOverPhoto()"
-                    onmouseout="popupOutPhoto()"
-                    class="disabled"
-                    >Photography</a
-                  >
-                  <span class="popuptext" id="popupPhoto"
-                    >Under Construction...</span
-                  >
-                </div>
-              </li>
-            </ul>
-          </nav>
-          <div class="nav-right">
-            <button type="button" class="burger"><span>PT</span></button>
-            <button type="button" class="burger" onclick="changeTheme()">
-              <i class="fas fa-moon" id="themeButton"></i>
-            </button>
-            <button type="button" class="menu-btn burger" onclick="burger()">
-              <i class="fas fa-bars"></i>
-            </button>
-          </div>
-        </div>
+    <section class="main-section">
+      <div class="icon-buttons">
+        <a class="icon" id="language-btn" onclick="change_language()">PT</a>
+        <a
+          class="icon"
+          id="theme-btn"
+          onclick="change_theme()"
+          onmouseenter="theme_icon_animate('enter')"
+          onmouseleave="theme_icon_animate('leave')"
+        >
+          <i id="theme-item" class="fa-solid fa-sun fa-xl"></i>
+        </a>
       </div>
-    </div>
-    <section class="section-about">
-      <div class="container">
-        <div class="about-avatar">
-          <img class="avatar" src="./images/avatar_circle.png" alt="" />
-          <div>
-            <p class="span1">Luis Matrias</p>
-            <p class="span2">MSc Student</p>
-            <p class="span3">Mechanical Engineering</p>
+
+      <div class="main-container">
+        <div class="title-block">
+          <span class="title" id="json-name">LUIS MATIAS</span>
+        </div>
+        <div
+          class="button-block"
+          onmouseenter="curriculum_icon('enter')"
+          onmouseleave="curriculum_icon('leave')"
+          onclick="change_page('cv.html')"
+        >
+          <div class="button-title" id="json-curriculum-title">
+            CURRICULUM VITAE
+          </div>
+          <div class="button-image-block">
+            <i id="curriculum-item" class="fa-solid fa-file-lines fa-5x"></i>
           </div>
         </div>
-        <div class="info">
-          <div class="about-about">
-            <h1>About</h1>
-            <p class="card-text">
-              Currently I’m studying Mechanical Engineering in
-              <a class="link" href="https://fe.up.pt"
-                >Porto University (FEUP)</a
-              >
-              to obtain MSc degree. Concluded Bachelor degree in 2015 in
-              <a class="link" href="https://fct.unl.pt"
-                >Universidade NOVA de Lisboa</a
-              >. In free times I like to travel, photograph and learn
-              programming.
-            </p>
-          </div>
-          <div class="intstu">
-            <div class="about-interests">
-              <h1>Interests</h1>
-              <ul>
-                <li><i class="fas fa-cube"></i>Product Development</li>
-                <li><i class="fas fa-cube"></i>SolidWorks</li>
-                <li><i class="fas fa-cube"></i>Python3</li>
-                <li><i class="fas fa-cube"></i>HTML5 + CSS</li>
-                <li><i class="fas fa-cube"></i>Photography</li>
-              </ul>
-            </div>
-            <div class="about-studies">
-              <h1>Studies</h1>
-              <ul>
-                <li>
-                  <i class="fas fa-graduation-cap"></i>BSc in Mechanical
-                  Engineering, 2015
-                </li>
-                <li style="padding-left: 2.5rem">
-                  <span style="opacity: 0.7"
-                    >NOVA Lisbon University (FCT-UNL)</span
-                  >
-                </li>
-                <li style="padding-left: 2.5rem">
-                  <span style="opacity: 0.7">Lisbon</span>
-                </li>
-                <li><i class="fas fa-graduation-cap"></i>Highschool, 2012</li>
-                <li style="padding-left: 2.5rem">
-                  <span style="opacity: 0.7"
-                    >Quinta das Palmeiras School, 2012</span
-                  >
-                </li>
-                <li style="padding-left: 2.5rem">
-                  <span style="opacity: 0.7">Covilhã</span>
-                </li>
-              </ul>
-            </div>
+        <div
+          class="button-block"
+          onmouseenter="photo_icon('enter')"
+          onmouseleave="photo_icon('leave')"
+        >
+          <div class="button-title" id="json-photo-title">PHOTOGRAPHY</div>
+          <div class="button-image-block">
+            <i id="photo-item" class="fa-solid fa-camera fa-5x"></i>
           </div>
         </div>
       </div>
     </section>
-    <section class="section-experiences other-section">
-      <div class="container">
-        <h1>Experiences</h1>
-        <div class="card-container">
-          <div class="card light-card">
-            <div class="card-header">
-              <p class="card-type">Volunteering</p>
-              <p class="card-year">2017 (1 Week)</p>
-            </div>
-            <img
-              src="./images/card-volunteering.png"
-              alt="Elephant Nature Park volunteering"
-              class="card-image"
-            />
-            <p class="card-title">Elephant Nature Park</p>
-            <p class="card-location">
-              <i class="fas fa-map-marker-alt" style="padding-right: 0.5rem"></i
-              >Chiang Mai, Thailand
-            </p>
-            <p class="card-info">
-              Enrolled in a big adventure in north of Thailand.
-            </p>
-          </div>
-          <div class="card light-card">
-            <div class="card-header">
-              <p class="card-type">Internship</p>
-              <p class="card-year">2017 (3 Months)</p>
-            </div>
-            <img
-              src="./images/card-internship-thailand.png"
-              alt="Elephant Nature Park volunteering"
-              class="card-image"
-            />
-            <p class="card-title">
-              Rajamangala University of Technology - Rattanakosin
-            </p>
-            <p class="card-location">
-              <i class="fas fa-map-marker-alt" style="padding-right: 0.5rem">
-              </i
-              >Phutthamonthon, Thailand
-            </p>
-            <p class="card-info">
-              Job training as a teaching assistant in the subject of Solid
-              Mechanics. Assiting in lectures in practical Design of Machine
-              Elements and Computer Aid Engineering (CAE).
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section class="section-projects">
-      <div class="container">
-        <h1>Projects</h1>
-        <div class="hcard-container">
-          <div class="hcard dark-card">
-            <div class="row1">
-              <div class="hcard-header">
-                <p>Master Thesis</p>
-              </div>
-            </div>
-            <div class="row2">
-              <div class="col1">
-                <img
-                  src="./images/hcard-thesis.png  "
-                  alt="Elephant Nature Park volunteering"
-                  class="hcard-image"
-                />
-              </div>
-              <div class="col2">
-                <a
-                  class="hcard-link link"
-                  href="https://sigarra.up.pt/feup/en/pub_geral.pub_view?pi_pub_base_id=454540"
-                  class="hcard-title"
-                >
-                  Método Semi-Automático de Desenvolvimento de Stents em
-                  Artérias Coronárias com Estenose - Simulações Hemodinâmicas
-                </a>
-                <p>
-                  This dissertation consists of the development of a
-                  semi-automatic method for obtaining stent-lumen models, stents
-                  in the left coronary artery, to later study hemodynamics.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- <section class="section-publications other-section">
-      <div class="container">
-        <h1>Publications</h1>
-      </div>
-    </section>
-    <section class="section-photo">
-      <div class="container">
-        <h1>Photography</h1>
-      </div>
-    </section> -->
-    <script src="./js/themes.js"></script>
-    <script src="./js/burger.js"></script>
+    <script
+      src="https://kit.fontawesome.com/7826cc1857.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="./javascript/myScripts.js"></script>
+    <script src="./javascript/load-index-json.js"></script>
     <script>
-      var popupPubl = document.getElementById("popupPubl");
-      var popupPhoto = document.getElementById("popupPhoto");
-
-      function popupOverPubl() {
-        popupPubl.style.display = "flex";
-      }
-
-      function popupOutPubl() {
-        popupPubl.style.display = "none";
-      }
-      function popupOverPhoto() {
-        popupPhoto.style.display = "flex";
-      }
-
-      function popupOutPhoto() {
-        popupPhoto.style.display = "none";
-      }
+      run_index_json("en");
     </script>
   </body>
-  <script
-    src="https://kit.fontawesome.com/7826cc1857.js"
-    crossorigin="anonymous"
-  ></script>
 </html>

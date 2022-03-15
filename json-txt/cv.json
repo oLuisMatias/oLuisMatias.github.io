@@ -1,0 +1,119 @@
+{
+    "navbar": {
+        "home":
+        ["Home", "Home"],
+        "about_me":
+        ["About Me", "Sobre Mim"],
+        "work":
+        ["Work", "Trabalho"],
+        "studies":
+        ["Studies", "Estudos"],
+        "skills":
+        ["Skills", "Skills"],
+        "experiences":
+        ["Experiences", "Experiências"],
+        "publications":
+        ["Publications", "Publicações"]
+    },
+
+    "about_me": {
+        "degree":
+        ["MSc in Mechanical Engineer", "Mestre em Engenharia Mecânica"],
+        "title":
+        ["About Me", "Sobre Mim"],
+        "txt":
+        ["Completed my MSc in Mechanical Engineering at <a href=\"https://sigarra.up.pt/feup/en/WEB_PAGE.INICIAL\" target=\"_blank\">Porto University</a> and obtained a BSc degree in <a href=\"https://www.fct.unl.pt/en\" target=\"_blank\"> NOVA University of Lisbon</a>. Currently, I'm working at <a href=\"http://www.inegi.pt/en/\" target=\"_blank\">INEGI</a> as a Research Fellow in a project where I can apply my self-learning knowledge in Python. In 2017 I went to Thailand for a 3 month internship as Professor Assistant in <a href=\"https://www.rmutr.ac.th/en/\" target=\"_blank\">RMUTR</a> in Thailand. Took advantage of being in Thailand and volunteered during one week at <a href=\"https://www.elephantnaturepark.org/\" target=\"_blank\" >Elephant Nature Park</a >.",
+            "Obtive o grau de Mestre em Engenharia Mecânica na <a href=\"https://sigarra.up.pt/feup/pt/WEB_PAGE.INICIAL\" target=\"_blank\">Faculdade de Engenharia da Universidade do Porto</a> e a licenciatura na <a href=\"https://www.fct.unl.pt/pt\" target=\"_blank\">Faculdade de Ciências e Tecnologia da Universidade NOVA de Lisboa</a>. Actualmente estou a trabalhar com Bolsa de Investigação no <a href=\"http://www.inegi.pt/pt/\" target=\"_blank\">INEGI</a> num projeto onde posso aplicar os conhecimentos que obtive em Python. Em 2017 fiz um estágio de 3 meses na Tailândia como Professor Assistente na <a href=\"https://www.rmutr.ac.th/en/\" target=\"_blank\">RMUTR</a>. Aproveitei que estava na Tailândia e fiz voluntariado de uma semana a cuidar de elefantes no <a href=\"https://www.elephantnaturepark.org/\" target=\"_blank\" >Elephant Nature Park</a >."],
+        "interests_title":
+        ["Interests", "Interesses"],
+        "interests_1":
+        ["SolidWorks", "SolidWorks"],
+        "interests_2":
+        ["Python 3", "Python 3"],
+        "interests_3":
+        ["FDM 3D Printing", "Impressão 3D (FDM)"],
+        "interests_4":
+        ["Photography", "Fotografia"],
+        "interests_5":
+        ["Traveling", "Viajar"],
+        "interests_6":
+        ["HTML5 + CSS", "HTML5 + CSS"]
+    },
+    "work": {
+        "title":
+        ["Work", "Trabalho"],
+        "date1_end":
+        ["Current", "Actual"],
+        "date1_start":
+        ["2021", "2021"],
+        "position1":
+        ["Research Fellow", "Bolseiro de Investigação"],
+        "company1":
+        ["INEGI - Institute of Science and Inmovation in Mechanical and Industrial Engineering",
+             "INEGI - Instituto de Ciência e Inovação em Engenharia Mecânica e Engenharia Industrial"]
+    },
+    "studies": {
+        "title":
+        ["Studies", "Estudos"],
+        "date1_end":
+        ["2022", "2022"],
+        "date1_start":
+        ["2015", "2015"],
+        "degree1":
+        ["MSc in Mechanical Engineering", "Grau de Mestre em Engenharia Mecânica"],
+        "university1":
+        ["FEUP - Faculty of Engineering of Porto University", "FEUP - Faculdade de Engenharia da Universidade do Porto"],
+        "date2_end":
+        ["2015", "2015"],
+        "date2_start":
+        ["2012", "2012"],
+        "degree2":
+        ["BSc in Mechanical Engineering", "Grau de Licenciado em Engenharia Mecânica"],
+        "university2":
+        ["UNL-FCT - NOVA School of Science and Technology", "UNL-FCT - Faculdade de Ciências e Tecnologia da Universidade NOVA de Lisboa"]
+    },
+    "skills": {
+        "title":
+        ["Skills", "Skills"],
+        "sw":
+        ["SolidWors (Certified)", "SolidWorks (Certificado)"],
+        "python":
+        ["Python 3", "Python 3"],
+        "matlab":
+        ["Matlab", "Matlab"],
+        "ansys":
+        ["Ansys Fluent", "Ansys Fluent"],
+        "html":
+        ["HTML 5", "HTML 5"],
+        "css":
+        ["CSS 3", "CSS 3"]
+    },
+    "experiences": {
+        "title":
+        ["Experiences", "Experiências"],
+        "type1":
+        ["Internship", "Estágio"],
+        "date1":
+        ["2017 (1 Week)", "2017 (1 Semana)"],
+        "job1":
+        ["Professor Assistant", "Professor Assistente"],
+        "company1":
+        ["Rajamangala University of Thecnology - Rattanakosin", "Rajamangala University of Thecnology - Rattanakosin"],
+        "location1":
+        ["Phutthamonthon, Thailand", "Phutthamonthon, Tailândia"],
+        "type2":
+        ["Volunteering", "Voluntariado"],
+        "date2":
+        ["2017 (3 Months)", "2017 (3 Meses)"],
+        "job2":
+        ["Volunteer", "Voluntário"],
+        "company2":
+        ["Elephant Nature Park", "Elephant Nature Park"],
+        "location2":
+        ["Chiang Mai, Thailand", "Chiang Mai, Tailândia"]
+    },
+    "publications": {
+        "title":
+        ["Publication", "Publicações"]
+    }
+}

@@ -1,0 +1,129 @@
+@import url("https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Poppins&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Hubballi&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@100;300&display=swap");
+
+:root {
+  --navbar: #14151c;
+  --background: #21232d;
+  --foreground: #f0f0f0;
+  --surface: #343746;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  background-color: var(--background);
+  font-family: "Alegreya Sans SC";
+  color: var(--foreground);
+}
+
+.main-section {
+  display: flex;
+  height: 100vh;
+  max-height: 100vh;
+  align-items: stretch;
+  justify-content: right;
+  .icon-buttons {
+    display: flex;
+    position: absolute;
+    flex-wrap: nowrap;
+    margin: 1em;
+    gap: 1em;
+    .icon {
+      display: flex;
+      color: var(--foreground);
+      background-color: var(--surface);
+      border-radius: 1em;
+      width: 50px;
+      height: 50px;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+  }
+  .main-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    align-items: center;
+    margin: auto 2rem;
+    .title-block {
+      margin: 1rem;
+      padding: 1rem;
+      flex: 1 100%;
+      text-align: center;
+      border-top: 2px solid var(--foreground);
+      border-bottom: 2px solid var(--foreground);
+      .title {
+        font-size: 100px;
+        letter-spacing: 0.1em;
+      }
+    }
+    .button-block {
+      margin: 1rem auto;
+      padding: 1rem auto;
+      flex: 1 100%;
+      text-align: center;
+      max-width: 30%;
+      cursor: pointer;
+      text-decoration: none;
+      .button-title {
+        letter-spacing: 0.5em;
+        margin: 1rem 0 0.5rem 0;
+      }
+      .button-image-block {
+        background-color: var(--surface);
+        padding: 2rem 0;
+        margin: 0;
+        border-radius: 0.2em;
+        color: var(--foreground);
+        .button-img {
+          display: block;
+          width: 50px;
+          margin: 0 auto;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 950px) {
+  .main-section {
+    .main-container {
+      .button-block {
+        max-width: 40%;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 740px) {
+  .main-section {
+    .main-container {
+      .button-block {
+        max-width: 80%;
+      }
+      .title-block {
+        .title {
+          font-size: 60px;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .main-section {
+    .main-container {
+      .button-block {
+        max-width: 60%;
+      }
+      .title-block {
+        .title {
+          font-size: 40px;
+        }
+      }
+    }
+  }
+}

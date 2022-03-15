@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Curriculum Vitae</title>
+    <link rel="stylesheet" href="./css/cv/cv-dark.css" id="theme-link" />
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="navbar">
+        <div class="left-nav" id="burguer-menu">
+          <a href="./index.html" id="json-navbar-home"></a>
+          <a
+            href="#section-about1"
+            class="section-about1 active"
+            id="json-navbar-about_me"
+          ></a>
+          <a
+            href="#section-work1"
+            class="section-work1"
+            id="json-navbar-work"
+          ></a>
+          <a
+            href="#section-studies1"
+            class="section-studies1"
+            id="json-navbar-studies"
+          ></a>
+          <a
+            href="#section-skills1"
+            class="section-skills1"
+            id="json-navbar-skills"
+          ></a>
+          <a
+            href="#section-experiences1"
+            class="section-experiences1"
+            id="json-navbar-experiences"
+          ></a>
+          <a
+            href="#section-publications1"
+            class="section-publications1"
+            id="json-navbar-publications"
+          ></a>
+        </div>
+        <div class="right-nav">
+          <a
+            class="language icon"
+            id="language-btn"
+            onclick="change_cv_language()"
+            ><span>PT</span></a
+          >
+          <a
+            class="theme icon"
+            id="theme-btn"
+            onclick="change_theme_cv()"
+            onmouseenter="theme_icon_animate('enter')"
+            onmouseleave="theme_icon_animate('leave')"
+            ><i id="theme-item" class="fa-solid fa-sun fa-lg"></i
+          ></a>
+          <a class="burguer icon" id="burguer-item" onclick="burguer_click()"
+            ><i class="fa fa-bars"></i
+          ></a>
+        </div>
+      </div>
+      <section class="section-about" id="section-about1">
+        <div class="container-about">
+          <div class="about1">
+            <img
+              src="./images/LuisMatias_Foto_squared.png"
+              alt="Avatar"
+              class="about1-image"
+            />
+            <div class="about1-info-block">
+              <p class="name">Luis Matias</p>
+              <p class="degree" id="about_me-degree"><!-- --></p>
+              <div class="about1-buttons">
+                <i class="fa-solid fa-envelope fa-xl"></i>
+                <i class="fa-brands fa-linkedin fa-xl"></i>
+                <i class="fa-solid fa-location-dot fa-xl"></i>
+              </div>
+            </div>
+          </div>
+          <div class="container-about-me">
+            <div class="about-me">
+              <p class="title" id="about_me-title"><!-- --></p>
+              <p class="txt-block" id="about_me-txt"></p>
+            </div>
+
+            <div class="interests">
+              <p class="title" id="about_me-interests-title">Interests</p>
+              <ul class="fa-ul">
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests1"></span>
+                </li>
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests2"></span>
+                </li>
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests3"></span>
+                </li>
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests4"></span>
+                </li>
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests5"></span>
+                </li>
+                <li>
+                  <span class="fa-li"><i class="fa-solid fa-gear"></i></span
+                  ><span id="about_me_interests6"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-work" id="section-work1">
+        <div class="container-work">
+          <p class="title" id="work-title"></p>
+          <div class="work-entry">
+            <div class="date">
+              <p id="work-date1_end"></p>
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+              <p id="work-date1_start"></p>
+            </div>
+            <div class="position">
+              <p class="title" id="work-position1"></p>
+              <p class="company" id="work-company1"></p>
+            </div>
+            <div class="logo">
+              <img src="./images/inegi-logo.svg" alt="" style="width: 250px" />
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-studies" id="section-studies1">
+        <div class="container-studies">
+          <p class="title" id="studies-title">Studies</p>
+          <div class="study-entry">
+            <div class="date">
+              <p id="studies-date1_end">2022</p>
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+              <p id="studies-date1_start">2015</p>
+            </div>
+            <div class="position">
+              <p class="title" id="studies-degree1">
+                MSc in Mechanical Engineering
+              </p>
+              <p class="company" id="studies-university1">
+                FEUP - Faculty of Engineering of Porto University
+              </p>
+            </div>
+            <div class="logo">
+              <img src="./images/feup-logo.png" alt="" style="width: 250px" />
+            </div>
+          </div>
+          <div class="study-entry">
+            <div class="date">
+              <p id="studies-date2_end">2015</p>
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+              <p id="studies-date2_start">2012</p>
+            </div>
+            <div class="position">
+              <p class="title" id="studies-degree2">
+                BSc in Mechanical Engineering
+              </p>
+              <p class="company" id="studies-university2">
+                UNL-FCT - NOVA School of Science and Technology
+              </p>
+            </div>
+            <div class="logo">
+              <img src="./images/nova-logo.png" alt="" style="width: 200px" />
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-skills" id="section-skills1">
+        <div class="container-skills">
+          <p class="title" id="skills-title">Skills</p>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-solidworks.svg" />
+            <p class="skill-txt" id="skills-sw">SolidWorks (Certified)</p>
+          </div>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-python.svg" />
+            <p class="skill-txt" id="skills-python">Python 3</p>
+          </div>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-matlab.svg" />
+            <p class="skill-txt" id="skills-matlab">Matlab</p>
+          </div>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-ansys.png" />
+            <p class="skill-txt" id="skills-ansys">Ansys Fluent</p>
+          </div>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-html.svg" />
+            <p class="skill-txt" id="skills-html">HTML 5</p>
+          </div>
+          <div class="skills-entry">
+            <img class="skill-img" src="./images/icon-css.svg" />
+            <p class="skill-txt" id="skills-css">CSS 3</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-experiences" id="section-experiences1">
+        <div class="container-experiences">
+          <p class="title" id="exp-title">Experiences</p>
+          <div class="experiences-entry">
+            <div class="date">
+              <span class="type" id="exp-type1">Internship</span
+              ><span id="exp-date1">2017 (1 Week)</span>
+            </div>
+            <img class="photo" src="./images/foto-voluntario.png" alt="" />
+            <p class="job" id="exp-job1">Professor Assistant</p>
+            <p class="company" id="exp-company1">
+              Rajamangala University of Thecnology - Rattanakosin
+            </p>
+            <p class="location" id="exp-location1">
+              <i class="fa-solid fa-location-dot"></i> Phutthamonthon, Thailand
+            </p>
+          </div>
+          <div class="experiences-entry">
+            <div class="date">
+              <span class="type" id="exp-type2">Volunteering</span
+              ><span id="exp-date2">2017 (3 Months)</span>
+            </div>
+            <img class="photo" src="./images/foto-estagio.png" alt="" />
+            <p class="job" id="exp-job2">Volunteer</p>
+            <p class="company" id="exp-company2">Elephant Nature Park</p>
+            <p class="location" id="exp-location2">
+              <i class="fa-solid fa-location-dot"></i> Chiang Mai, Thailand
+            </p>
+          </div>
+        </div>
+      </section>
+      <section class="section-publications" id="section-publications1">
+        <div class="container-publications">
+          <p class="title" id="pub-title">Publications</p>
+          <div class="publications-entry">
+            <p class="name">
+              “Dealing with CT Cardiac Imaging Using Python: An Approach for
+              Future Hemodynamic Simulations”
+            </p>
+            <p class="authors">
+              L. Matias, C. F. Castro, C. C. António, L. C. Sousa, S. I. S.
+              Pinto, S. Silva
+            </p>
+            <p class="journal">
+              In Proceedings of the 9th International Conference Mechanics and
+              Materials Design, M2D2021. 26-30th June 2022, Funchal Portugal
+            </p>
+            <p class="other">
+              ISBN and DOI are still undefined. In Press. Paper to be presented
+              orally.
+            </p>
+          </div>
+          <div class="publications-entry">
+            <p class="name">
+              “Semi-Automatic Method of Stent Development for Hemodynamic
+              Simulations in Patient Coronary Arteries with Disease”
+            </p>
+            <p class="authors">
+              L. Matias, C. F. Castro, C. C. António, L. C. Sousa, S. I. S.
+              Pinto
+            </p>
+            <p class="journal">Advanced Structured Materials, SpringerNature</p>
+            <p class="other">ISBN and DOI are still undefined. In Press</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script
+      src="https://kit.fontawesome.com/7826cc1857.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="./javascript/myScripts.js"></script>
+    <script src="./javascript/load-cv-json.js"></script>
+    <script>
+      run_cv_json("en");
+      change_active();
+    </script>
+  </body>
+</html>
