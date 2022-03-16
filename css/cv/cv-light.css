@@ -3,10 +3,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@100;300&display=swap");
 :root {
   --navbar: #14151c;
-  --background: #21232d;
-  --background2: #2c2f3c;
-  --foreground: #f0f0f0;
-  --surface: #343746;
+  --background: #f0f0f0;
+  --foreground: #21232d;
+  --surface: #e6e6e6;
 }
 
 body {
