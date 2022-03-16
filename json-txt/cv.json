@@ -92,25 +92,25 @@
         "title":
         ["Experiences", "Experiências"],
         "type1":
-        ["Internship", "Estágio"],
-        "date1":
-        ["2017 (1 Week)", "2017 (1 Semana)"],
-        "job1":
-        ["Professor Assistant", "Professor Assistente"],
-        "company1":
-        ["Rajamangala University of Thecnology - Rattanakosin", "Rajamangala University of Thecnology - Rattanakosin"],
-        "location1":
-        ["Phutthamonthon, Thailand", "Phutthamonthon, Tailândia"],
-        "type2":
         ["Volunteering", "Voluntariado"],
-        "date2":
+        "date1":
         ["2017 (3 Months)", "2017 (3 Meses)"],
-        "job2":
+        "job1":
         ["Volunteer", "Voluntário"],
-        "company2":
+        "company1":
         ["Elephant Nature Park", "Elephant Nature Park"],
+        "location1":
+        ["Chiang Mai, Thailand", "Chiang Mai, Tailândia"],
+        "type2":
+        ["Internship", "Estágio"],
+        "date2":
+        ["2017 (1 Week)", "2017 (1 Semana)"],
+        "job2":
+        ["Professor Assistant", "Professor Assistente"],
+        "company2":
+        ["Rajamangala University of Thecnology - Rattanakosin", "Rajamangala University of Thecnology - Rattanakosin"],
         "location2":
-        ["Chiang Mai, Thailand", "Chiang Mai, Tailândia"]
+        ["Phutthamonthon, Thailand", "Phutthamonthon, Tailândia"]
     },
     "publications": {
         "title":
