@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="./css/curriculum/cv_styles.css" />
+    <!-- FontAwesome -->
+    <script
+      src="https://kit.fontawesome.com/7826cc1857.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container" id="nav-container">
+        <div class="left-nav">
+          <a href="./index.html" class="nav-btn">
+            <i class="nav-icon fa-solid fa-home"></i>
+          </a>
+        </div>
+        <div class="center-nav" id="center-nav">
+          <ul class="nav-ul">
+            <li class="nav-li">
+              <a href="#about-container" class="test about-container">
+                <p>About me</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a href="#work-container" class="test work-container">
+                <p>Work</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a
+                href="#internships-container"
+                class="test internships-container"
+              >
+                <p>Internships</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a href="#studies-container" class="test studies-container">
+                <p>Studies</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a href="#skills-container" class="test skills-container">
+                <p>Skills</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a
+                href="#volunteering-container"
+                class="test volunteering-container"
+              >
+                <p>Volunteering</p>
+              </a>
+            </li>
+            <li class="nav-li">
+              <a
+                href="#publications-container"
+                class="test publications-container"
+              >
+                <p>Publications</p>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="right-nav">
+          <ul class="nav-ul">
+            <!-- <li class="nav-li">
+              <a href="#" class="nav-btn"><span>PT</span></a>
+            </li> -->
+            <!-- <li class="nav-li">
+              <a href="#" class="nav-btn rotate" onclick="change_theme_icon()">
+                <i class="nav-icon fa-solid fa-sun" id="theme-btn"></i>
+              </a>
+            </li> -->
+            <li class="nav-li burguer-li">
+              <a class="nav-btn" onclick="burguer_click()">
+                <i class="nav-icon fa-solid fa-bars"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="section-container">
+      <div class="container profile-container first-container">
+        <img
+          class="profile-img"
+          src="./images/LuisMatias_Foto_squared-removebg-preview.png"
+          alt=""
+        />
+        <div class="main-info">
+          <h1>Luis Matias</h1>
+          <h3>Mechanical Engineer</h3>
+          <div class="info-btns-box">
+            <a
+              href="https://www.linkedin.com/in/luisdafmatias/"
+              class="info-btn"
+              target="_blank"
+            >
+              <i class="info-icon fa-brands fa-linkedin-in"></i>
+            </a>
+            <a href="mailto:luisdafmatias@gmail.com" class="info-btn">
+              <i class="info-icon fa-solid fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      class="section-container light-container about-container"
+      id="about-container"
+    >
+      <div class="row">
+        <div class="col-lg-6 sub-container">
+          <div class="container-title">
+            <h2>About Me.</h2>
+          </div>
+          <p class="text">
+            Hello, I'm Luis. Currently, I'm working at
+            <a href="http://www.inegi.pt/en/">INEGI</a> as a Research Fellow in
+            a project where I can apply my self-learning knowledge in Python.
+            Completed my MSc in Mechanical Engineering at
+            <a href="https://sigarra.up.pt/feup/en/WEB_PAGE.INICIAL"
+              >Porto University</a
+            >and obtained a BSc degree in
+            <a href="https://www.fct.unl.pt/en">NOVA University of Lisbon</a>.
+            In 2017 I went to Thailand for a 3 month internship as Professor
+            Assistant in <a href="https://www.rmutr.ac.th/en/">RMUTR</a> in
+            Thailand. Took advantage of being in Thailand and volunteered during
+            one week at
+            <a href="https://www.elephantnaturepark.org/"
+              >Elephant Nature Park</a
+            >.
+          </p>
+        </div>
+        <div class="col-lg-6 sub-container">
+          <div class="container-title">
+            <h2>Interests.</h2>
+          </div>
+          <div class="row interests-box">
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Product Development</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Manufacturing</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">SolidWorks</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Scripting with Python</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">3D Printing</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Web Development</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Travel</p>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-6 interest-li">
+              <p class="p-border">Photography</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section-container general-container" id="work-container">
+      <div class="row g-5">
+        <h2>Work.</h2>
+        <div class="general-box">
+          <div class="date-flex">
+            <h5>2021 (December)</h5>
+            <div class="hline"></div>
+            <h5>Current</h5>
+          </div>
+          <div class="general-text">
+            <h3>Research Fellow</h3>
+            <h4>INEGI</h4>
+            <p>
+              Institute of Science and Innovation in Mechanical and Industrial
+              Engineering
+            </p>
+            <p class="p-right">
+              <i class="fa-solid fa-location-dot"></i> Porto, Portugal
+            </p>
+            <!-- <div class="logo-box">
+              <img src="./images/inegi-logo.svg" alt="" />
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      class="section-container general-container light-container"
+      id="internships-container"
+    >
+      <div class="row g-5">
+        <h2>Internships.</h2>
+
+        <div class="general-box">
+          <div class="date-flex">
+            <h5>2017 (3 Months)</h5>
+            <div class="hline"></div>
+          </div>
+          <div class="general-text">
+            <h3>Associate Professor</h3>
+            <h4>RMUTR</h4>
+            <p>Rajamangala University of Technology - Rattanakosin</p>
+            <p class="p-right">
+              <i class="fa-solid fa-location-dot"></i> Phutthamonthon, Thailand
+            </p>
+            <div class="image-box">
+              <img src="./images/foto-estagio.png" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section-container general-container" id="studies-container">
+      <div class="row g-5">
+        <h2>Studies.</h2>
+
+        <div class="col-md-6 general-box">
+          <div class="date-flex">
+            <h5>2015</h5>
+            <div class="hline"></div>
+            <h5>2022</h5>
+          </div>
+          <div class="general-text">
+            <h3>MSc in Mechanical Engineering</h3>
+            <h4>FEUP</h4>
+            <p>University of Porto - Engineering Faculty</p>
+            <p class="p-right">
+              <i class="fa-solid fa-location-dot"></i> Porto, Portugal
+            </p>
+            <!-- <div class="logo-box">
+              <img src="./images/feup-logo.png" alt="" />
+            </div> -->
+          </div>
+        </div>
+        <div class="col-md-6 general-box">
+          <div class="date-flex">
+            <h5>2012</h5>
+            <div class="hline"></div>
+            <h5>2015</h5>
+          </div>
+          <div class="general-text">
+            <h3>BSc in Mechanical Engineering</h3>
+            <h4>UNL-FCT</h4>
+            <p>NOVA School of Science and Technology</p>
+            <p class="p-right">
+              <i class="fa-solid fa-location-dot"></i> Lisbon, Portugal
+            </p>
+            <!-- <div class="logo-box">
+              <img src="./images/nova-logo.png" alt="" />
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      class="section-container skills-container light-container"
+      id="skills-container"
+    >
+      <h2>Skills.</h2>
+      <div class="skills-box">
+        <div class="skills-entry">
+          <img src="./images/icon-solidworks.svg" alt="" />
+          <p>SolidWorks</p>
+        </div>
+        <div class="skills-entry">
+          <img src="./images/icon-matlab.svg" alt="" />
+          <p>Matlab</p>
+        </div>
+        <div class="skills-entry">
+          <img src="./images/icon-python.svg" alt="" />
+          <p>Python 3</p>
+        </div>
+        <div class="skills-entry">
+          <img src="./images/icon-ansys.png" alt="" />
+          <p>Ansys</p>
+        </div>
+        <div class="skills-entry">
+          <img src="./images/icon-html.svg" alt="" />
+          <p>HTML 5</p>
+        </div>
+        <div class="skills-entry">
+          <img src="./images/icon-css.svg" alt="" />
+          <p>CSS 3</p>
+        </div>
+      </div>
+    </section>
+    <section
+      class="section-container general-container"
+      id="volunteering-container"
+    >
+      <div class="row g-5">
+        <h2>Volunteering.</h2>
+
+        <div class="general-box">
+          <div class="date-flex">
+            <h5>2017 (1 Week)</h5>
+            <div class="hline"></div>
+          </div>
+          <div class="general-text">
+            <h3>Assiting Elephants and Dogs</h3>
+            <h4>Elephant Nature Park</h4>
+            <p class="p-right">
+              <i class="fa-solid fa-location-dot"></i> Chiang Mai, Thailand
+            </p>
+            <div class="image-box">
+              <img src="./images/foto-voluntario.png" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      class="section-container general-container light-container"
+      id="publications-container"
+    >
+      <div class="row g-5">
+        <h2>Publications.</h2>
+
+        <div class="col-lg-6 general-box">
+          <div class="date-flex">
+            <h5>2022</h5>
+            <div class="hline"></div>
+          </div>
+          <div class="general-text">
+            <h4>
+              “Dealing with CT Cardiac Imaging Using Python: An Approach for
+              Future Hemodynamic Simulations”
+            </h4>
+            <p>
+              L. Matias, C. F. Castro, C. C. António, L. C. Sousa, S. I. S.
+              Pinto, S. Silva
+            </p>
+            <p>
+              In Proceedings of the 9th International Conference Mechanics and
+              Materials Design, M2D2021. 26-30th June 2022, Funchal Portugal
+            </p>
+            <p class="p-bold p-right" style="font-size: 12px">
+              ISBN and DOI are still undefined. In Press. Paper to be presented
+              orally.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-6 general-box">
+          <div class="date-flex">
+            <h5>2022</h5>
+            <div class="hline"></div>
+          </div>
+          <div class="general-text">
+            <h4>
+              “Semi-Automatic Method of Stent Development for Hemodynamic
+              Simulations in Patient Coronary Arteries with Disease”
+            </h4>
+            <p>
+              L. Matias, C. F. Castro, C. C. António, L. C. Sousa, S. I. S.
+              Pinto
+            </p>
+            <p>
+              Theoretical Analyses, Computations, and Experiments of Multiscale
+              Materials. Advanced Structured Materials, Springer
+            </p>
+            <p class="p-bold p-right" style="font-size: 12px">
+              ISBN and DOI are still undefined. In Press. Paper to be presented
+              orally.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script src="./js/myScripts.js"></script>
+  </body>
+</html>
