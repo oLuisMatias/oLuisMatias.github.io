@@ -20,6 +20,7 @@ body .section-container {
   display: flex;
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
+  height: 100vh;
 }
 
 body .section-container .nav-container {
