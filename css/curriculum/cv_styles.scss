@@ -201,6 +201,23 @@ nav {
       border-radius: 0.3rem;
     }
   }
+  .download-btn {
+    padding: 1rem 1rem;
+    background-color: var(--text);
+    width: fit-content;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border-radius: 20rem;
+    i {
+      color: var(--main-color);
+    }
+    h5 {
+      color: var(--main-color);
+      margin: 0;
+    }
+  }
   h3 {
     color: var(--other);
   }

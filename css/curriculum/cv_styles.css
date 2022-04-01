@@ -253,6 +253,32 @@ nav .nav-container .right-nav .nav-ul .nav-li .rotate:hover .nav-icon {
   border-radius: 0.3rem;
 }
 
+.profile-container .download-btn {
+  padding: 1rem 1rem;
+  background-color: var(--text);
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: 0 auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1rem;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-radius: 20rem;
+}
+
+.profile-container .download-btn i {
+  color: var(--main-color);
+}
+
+.profile-container .download-btn h5 {
+  color: var(--main-color);
+  margin: 0;
+}
+
 .profile-container h3 {
   color: var(--other);
 }
