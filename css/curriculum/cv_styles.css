@@ -219,6 +219,11 @@ nav .nav-container .right-nav .nav-ul .nav-li .rotate:hover .nav-icon {
   background-color: var(--second-color);
 }
 
+.container-max {
+  max-width: 992px;
+  margin: 0 auto;
+}
+
 .profile-container img {
   width: 191px;
   border-radius: 50%;

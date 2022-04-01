@@ -174,9 +174,15 @@ nav {
 .section-container {
   padding: 5rem 1rem 2rem;
   text-align: center;
+
 }
 .light-container {
   background-color: var(--second-color);
+}
+
+.container-max {
+  max-width: 992px;
+  margin: 0 auto;
 }
 
 .profile-container {
