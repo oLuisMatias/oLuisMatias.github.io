@@ -1,0 +1,4 @@
+This is a Brave Rewards publisher verification file.
+
+Domain: lmatias.com
+Token: a20d409e4586fee71c58c5d1203e46f3236a4b962f373580dc407d9e2e99ef9c
