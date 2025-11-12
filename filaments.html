@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Filaments - Luis Matias</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/filaments.css">
+</head>
+
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>LUIS<span class="highlight">MATIAS</span></h1>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="curriculum.html">Curriculum</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="photography.html">Photography</a></li>
+                <li><a href="filaments.html">Filaments</a></li>
+            </ul>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>My Filaments</h1>
+                <p>3D Printing Filament Collection</p>
+            </div>
+        </section>
+
+        <section class="page-content">
+            <div class="container">
+                <div class="filter-bar">
+                    <input type="text" id="searchInput" placeholder="Search filaments... (color, brand, type)" class="search-input">
+                    <select id="brandFilter" class="filter-select">
+                        <option value="">All Brands</option>
+                    </select>
+                    <select id="colorFilter" class="filter-select">
+                        <option value="">All Types</option>
+                    </select>
+                    <label class="checkbox-filter">
+                        <input type="checkbox" id="ownedFilter" checked>
+                        <span>Owned</span>
+                    </label>
+                    <label class="checkbox-filter">
+                        <input type="checkbox" id="allFilter">
+                        <span>All</span>
+                    </label>
+                    <label class="checkbox-filter">
+                        <input type="checkbox" id="hideTextFilter">
+                        <span>Hide text</span>
+                    </label>
+                </div>
+
+                <div class="filaments-grid" id="filamentsGrid">
+                    <!-- Filaments will be loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="social-links">
+                <a href="https://linkedin.com/in/luisdafmatias" target="_blank" class="social-link" title="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="https://instagram.com/oluismatias" target="_blank" class="social-link" title="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+            <p>&copy; 2024 Luis Matias. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="js/filaments.js"></script>
+    <script src="js/config-loader.js"></script>
+</body>
+
+</html>
