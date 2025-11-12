@@ -1,0 +1,22 @@
+Company logos needed:
+- manufacturing-company.png (60x60px)
+- engineering-firm.png (60x60px) 
+- design-studio.png (60x60px)
+
+Project photos needed:
+- assembly-line.jpg (80x60px)
+- 3d-printing-workshop.jpg (80x60px)
+
+University logos needed:
+- university-name.png (60x60px)
+- technical-institute.png (60x60px)
+
+Experience logos needed:
+- automotive-company.png (60x60px)
+- local-schools.png (60x60px)
+
+You can:
+1. Download from placeholder.com: https://via.placeholder.com/60x60
+2. Use Unsplash for free images: https://unsplash.com
+3. Use company logos from their websites
+4. Create simple colored squares as placeholders

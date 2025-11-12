@@ -1,0 +1,92 @@
+{
+  "categories": {
+    "Python Automation": [
+      {
+        "title": "CAD File Batch Processor",
+        "icon": "🐍",
+        "description": "Python script that automates the processing of multiple CAD files, extracting dimensions, generating reports, and organizing files by project specifications.",
+        "tags": ["Python", "CAD API", "File Processing", "Automation"],
+        "links": [
+          { "text": "GitHub", "url": "#" },
+          { "text": "Documentation", "url": "#" }
+        ]
+      },
+      {
+        "title": "Manufacturing Data Analyzer",
+        "icon": "📊",
+        "description": "Data analysis tool that processes production metrics, identifies bottlenecks, and generates optimization reports for manufacturing processes.",
+        "tags": ["Python", "Pandas", "Matplotlib", "Data Analysis"],
+        "links": [
+          { "text": "GitHub", "url": "#" },
+          { "text": "Demo", "url": "#" }
+        ]
+      }
+    ],
+    "Excel VBA Tools": [
+      {
+        "title": "Engineering Calculator Suite",
+        "icon": "📈",
+        "description": "Comprehensive Excel VBA application with material property calculators, stress analysis tools, and automated design verification for mechanical components.",
+        "tags": ["Excel VBA", "Engineering", "Calculations", "Automation"],
+        "links": [
+          { "text": "Download", "url": "#" },
+          { "text": "Manual", "url": "#" }
+        ]
+      },
+      {
+        "title": "Project Management Dashboard",
+        "icon": "📋",
+        "description": "Excel-based project tracking system with automated progress reports, resource allocation, and timeline management for engineering projects.",
+        "tags": ["Excel VBA", "Project Management", "Dashboard", "Reporting"],
+        "links": [
+          { "text": "Download", "url": "#" },
+          { "text": "Tutorial", "url": "#" }
+        ]
+      }
+    ],
+    "3D Printing Projects": [
+      {
+        "title": "Custom Mechanical Parts",
+        "icon": "🖨️",
+        "description": "Collection of 3D printed mechanical components including gears, brackets, and housings designed for specific industrial applications and prototyping.",
+        "tags": ["3D Printing", "CAD Design", "Prototyping", "PLA/ABS"],
+        "links": [
+          { "text": "STL Files", "url": "#" },
+          { "text": "Gallery", "url": "#" }
+        ]
+      },
+      {
+        "title": "Workshop Tool Organizers",
+        "icon": "🔧",
+        "description": "Custom-designed 3D printed organizers and holders for workshop tools, optimized for space efficiency and easy access in manufacturing environments.",
+        "tags": ["3D Printing", "Organization", "Workshop", "Custom Design"],
+        "links": [
+          { "text": "Designs", "url": "#" },
+          { "text": "Print Guide", "url": "#" }
+        ]
+      }
+    ],
+    "Laser Engraving & CNC": [
+      {
+        "title": "Precision Marking System",
+        "icon": "⚡",
+        "description": "Laser engraving setup for marking serial numbers, QR codes, and specifications on manufactured parts with high precision and repeatability.",
+        "tags": ["Laser Engraving", "Automation", "Quality Control", "Manufacturing"],
+        "links": [
+          { "text": "Process", "url": "#" },
+          { "text": "Examples", "url": "#" }
+        ]
+      },
+      {
+        "title": "Custom Signage & Prototypes",
+        "icon": "🎨",
+        "description": "Laser-cut acrylic and wood signage, along with rapid prototyping of mechanical components using CNC and laser cutting technologies.",
+        "tags": ["Laser Cutting", "Signage", "Prototyping", "Acrylic/Wood"],
+        "links": [
+          { "text": "Portfolio", "url": "#" },
+          { "text": "Materials", "url": "#" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,170 @@
+/* Filaments Page Styles */
+
+/* Reduce space between header and content on filaments page */
+body:has(#filamentsGrid) .page-content {
+    padding-top: 40px;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-input, .filter-select {
+    padding: 0.75rem 1rem;
+    background: var(--light-charcoal);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-white);
+    font-size: 1rem;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 250px;
+}
+
+.filter-select {
+    min-width: 150px;
+}
+
+.checkbox-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--light-charcoal);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-white);
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-filter input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkbox-filter:hover {
+    border-color: var(--primary-blue);
+}
+
+.search-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.filaments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.filament-card {
+    background: var(--light-charcoal);
+    border-radius: 12px;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+}
+
+.filament-card.owned {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filament-card.not-owned {
+    opacity: 0.5;
+}
+
+.filament-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.filament-swatch {
+    width: 100%;
+    height: 120px;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    border: 2px solid var(--border-color);
+}
+
+.filament-info {
+    text-align: center;
+}
+
+/* Hide text mode */
+.filaments-grid.hide-text .filament-info {
+    display: none;
+}
+
+.filaments-grid.hide-text .filament-swatch {
+    margin-bottom: 0;
+    height: 0;
+    padding-bottom: 100%;
+    position: relative;
+}
+
+.filaments-grid.hide-text .filament-card {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.filaments-grid.hide-text .filament-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.filament-brand {
+    font-weight: 600;
+    color: var(--primary-blue);
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
+}
+
+.filament-material-type {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
+}
+
+.filament-color-name {
+    color: var(--text-white);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.filament-reference {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-top: 0.1rem;
+    font-family: monospace;
+    opacity: 0.8;
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .filaments-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .filter-bar {
+        flex-direction: column;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+}

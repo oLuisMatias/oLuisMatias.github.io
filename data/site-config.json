@@ -1,0 +1,46 @@
+{
+  "personalInfo": {
+    "name": "Luis Matias",
+    "firstName": "LUIS",
+    "lastName": "MATIAS",
+    "title": "Mechanical Designer",
+    "subtitle": "Mechanical Designer • CAD Specialist • 3D Printing Enthusiast",
+    "profileImage": "assets/images/fotowhite_3x3.5.jpg"
+  },
+  "socialMedia": {
+    "linkedin": {
+      "url": "https://linkedin.com/in/luisdafmatias",
+      "username": "yourprofile"
+    },
+    "instagram": {
+      "url": "https://instagram.com/oluismatias",
+      "username": "yourprofile"
+    }
+  },
+  "theme": {
+    "default": "dark",
+    "enableToggle": true
+  },
+  "pages": {
+    "curriculum": true,
+    "projects": false,
+    "photography": false
+  },
+  "googleSheets": {
+    "filaments": {
+      "sheetId": "1efb2bbUmlK1dC46ZWsYcVy1NgSGmpbAzgLxxNyIb92Q",
+      "url": "https://docs.google.com/spreadsheets/d/1efb2bbUmlK1dC46ZWsYcVy1NgSGmpbAzgLxxNyIb92Q/edit"
+    },
+    "cv": {
+      "sheetId": "1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ",
+      "url": "https://docs.google.com/spreadsheets/d/1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ/edit",
+      "gids": {
+        "WorkExperience": 0,
+        "KeyProjects": 1451783063,
+        "Education": 1174712494,
+        "Experiences": 167754228,
+        "Skills": 547470293
+      }
+    }
+  }
+}
