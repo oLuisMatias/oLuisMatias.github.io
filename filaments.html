@@ -50,30 +50,76 @@
 
         <section class="page-content">
             <div class="container">
-                <div class="filter-bar">
+                <!-- Search bar on top -->
+                <div class="search-bar-top">
                     <input type="text" id="searchInput" placeholder="Search filaments... (color, brand, type)" class="search-input">
-                    <select id="brandFilter" class="filter-select">
-                        <option value="">All Brands</option>
-                    </select>
-                    <select id="colorFilter" class="filter-select">
-                        <option value="">All Types</option>
-                    </select>
-                    <label class="checkbox-filter">
-                        <input type="checkbox" id="ownedFilter" checked>
-                        <span>Owned</span>
-                    </label>
-                    <label class="checkbox-filter">
-                        <input type="checkbox" id="allFilter">
-                        <span>All</span>
-                    </label>
-                    <label class="checkbox-filter">
-                        <input type="checkbox" id="hideTextFilter">
-                        <span>Hide text</span>
-                    </label>
+                    <div class="sort-controls">
+                        <select id="sortBy" class="sort-select">
+                            <option value="">Sort by...</option>
+                            <option value="td">TD</option>
+                        </select>
+                        <button id="sortOrder" class="sort-order-btn" title="Toggle sort order">
+                            <i class="fas fa-arrow-down-short-wide"></i>
+                        </button>
+                        <button id="viewToggle" class="view-toggle-btn" title="Toggle view">
+                            <i class="fas fa-table-cells"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="filaments-grid" id="filamentsGrid">
-                    <!-- Filaments will be loaded here by JavaScript -->
+                <!-- Main content area with sidebar and grid -->
+                <div class="filaments-layout">
+                    <!-- Left sidebar with filters -->
+                    <aside class="filters-sidebar">
+                        <div class="filter-section expandable">
+                            <h3 class="filter-header" data-target="brandList">
+                                <span>Brand</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h3>
+                            <div class="filter-options" id="brandList">
+                                <!-- Brand checkboxes will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="filter-section expandable">
+                            <h3 class="filter-header" data-target="typeList">
+                                <span>Type</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h3>
+                            <div class="filter-options" id="typeList">
+                                <!-- Type checkboxes will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <h3>Ownership</h3>
+                            <label class="radio-filter">
+                                <input type="radio" name="ownershipFilter" id="ownedFilter" value="owned" checked>
+                                <span>Owned</span>
+                            </label>
+                            <label class="radio-filter">
+                                <input type="radio" name="ownershipFilter" id="notOwnedFilter" value="notOwned">
+                                <span>Not Owned</span>
+                            </label>
+                            <label class="radio-filter">
+                                <input type="radio" name="ownershipFilter" id="allFilter" value="all">
+                                <span>All</span>
+                            </label>
+                        </div>
+
+                        <div class="filter-section">
+                            <h3>Display</h3>
+                            <label class="checkbox-filter">
+                                <input type="checkbox" id="hideTextFilter">
+                                <span>Hide text</span>
+                            </label>
+                        </div>
+                    </aside>
+
+                    <!-- Grid area -->
+                    <div class="filaments-grid" id="filamentsGrid">
+                        <!-- Filaments will be loaded here by JavaScript -->
+                    </div>
                 </div>
             </div>
         </section>

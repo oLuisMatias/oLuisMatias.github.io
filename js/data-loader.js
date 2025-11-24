@@ -109,14 +109,59 @@ class DataLoader {
         return result.map(v => v.trim().replace(/^"|"$/g, ''));
     }
 
+    static getCountryFlag(countryCode) {
+        if (!countryCode || countryCode.trim() === '') return '';
+        // Convert country code to flag emoji using regional indicator symbols
+        const code = countryCode.trim().toUpperCase();
+        if (code.length !== 2) return '';
+        
+        try {
+            // Convert to regional indicator symbols (U+1F1E6 - U+1F1FF)
+            const codePoints = [...code].map(char => 0x1F1E6 - 65 + char.charCodeAt(0));
+            const flag = String.fromCodePoint(...codePoints);
+            console.log(`Country code ${code} converted to flag:`, flag, 'codePoints:', codePoints);
+            return flag;
+        } catch (e) {
+            console.error('Error converting country code to flag:', countryCode, e);
+            return '';
+        }
+    }
+
     static transformWorkExperience(data) {
-        return data.map(row => ({
-            title: row.title,
-            company: row.company,
-            period: row.period,
-            companyLogo: row.companyLogo,
-            responsibilities: [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r)
-        }));
+        return data.map(row => {
+            // Debug: log the row to see what fields are available
+            if (data.indexOf(row) === 0) {
+                console.log('First work experience row:', row);
+            }
+            
+            // Parse tools from comma-separated string
+            // If tool doesn't have extension, add .png by default
+            const toolsArray = row.tools ? row.tools.split(',').map(t => {
+                const trimmed = t.trim();
+                // Check if it already has an extension
+                if (trimmed.includes('.')) {
+                    return trimmed;
+                }
+                // Default to .png if no extension
+                return trimmed + '.png';
+            }).filter(t => t !== '') : [];
+            
+            if (toolsArray.length > 0) {
+                console.log('Tools for', row.company, ':', toolsArray);
+            }
+            
+            return {
+                title: row.title,
+                company: row.company,
+                period: row.period,
+                location: row.location || '',
+                countryCode: row.countryCode || row.countrycode || '',
+                link: row.link || '',
+                companyLogo: row.companyLogo,
+                responsibilities: [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r),
+                tools: toolsArray
+            };
+        });
     }
 
     static transformKeyProjects(data) {
@@ -186,10 +231,18 @@ class DataLoader {
                         <div class="experience-content">
                             <h4>${job.title}</h4>
                             <div class="date">${job.period}</div>
-                            <p><strong>${job.company}</strong></p>
+                            <div class="company-location-row">
+                                <p><strong>${job.link ? `<a href="${job.link}" class="company-link" target="_blank" rel="noopener">${job.company}</a>` : job.company}</strong></p>
+                                ${job.location ? `<span class="location">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</span>` : ''}
+                            </div>
                             <ul>
                                 ${job.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
                             </ul>
+                            ${job.tools && job.tools.length > 0 ? `
+                            <div class="software-tools">
+                                ${job.tools.map(tool => `<img src="assets/images/tools/${tool}" alt="${tool}" class="tool-icon">`).join('')}
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="company-logo">
                             <img src="${job.companyLogo}" alt="${job.company}" class="company-image" style="width: 320px !important; height: auto !important; display: block !important;">

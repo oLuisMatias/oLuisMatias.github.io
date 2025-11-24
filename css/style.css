@@ -682,7 +682,7 @@ footer {
 }
 
 .page-content {
-    padding: 80px 0;
+    padding: 50px 0;
 }
 
 /* CV/Curriculum styles */
@@ -701,7 +701,7 @@ footer {
 .experience-item,
 .education-item {
     margin-bottom: 2rem;
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     background: var(--light-charcoal);
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -726,15 +726,88 @@ footer {
 .experience-item h4,
 .education-item h4 {
     color: var(--text-white);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.05rem;
     font-size: 1.3rem;
 }
 
 .date {
     color: var(--primary-blue);
     font-style: italic;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.05rem;
     font-weight: 500;
+}
+
+.company-location-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.company-location-row p {
+    margin: 0;
+}
+
+.company-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.company-link:hover {
+    text-decoration: none;
+    opacity: 0.8;
+}
+
+.location {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    font-style: italic;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.location i {
+    font-size: 0.85rem;
+    color: var(--primary-blue);
+}
+
+/* Flag image styling */
+.country-flag {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    vertical-align: middle;
+}
+
+/* Software/Tools icons */
+.software-tools {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    background: var(--medium-charcoal);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    width: fit-content;
+}
+
+.tool-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    transition: all 0.2s ease;
+    cursor: help;
+    filter: grayscale(20%);
+}
+
+.tool-icon:hover {
+    transform: scale(1.15);
+    filter: grayscale(0%);
 }
 
 .experience-item ul,
@@ -746,21 +819,22 @@ footer {
 
 .experience-item li,
 .education-item li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     color: var(--text-light);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .company-logo, .project-image, .university-logo {
-    width: 350px !important;
-    height: 200px !important;
+    width: fit-content !important;
+    height: fit-content !important;
     flex-shrink: 0;
     display: flex !important;
     align-items: center;
     justify-content: center;
-    background: var(--light-charcoal);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     border: 1px solid var(--border-color);
+    padding: 0.75rem;
 }
 
 /* Mobile responsiveness - stack image below text */
