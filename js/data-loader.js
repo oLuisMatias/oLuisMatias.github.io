@@ -57,56 +57,69 @@ class DataLoader {
     }
 
     static parseCSV(csv) {
-        const lines = csv.split('\n').filter(line => line.trim());
-        if (lines.length === 0) return [];
-
-        // Parse header row
-        const headers = this.parseCSVLine(lines[0]);
-        console.log('CSV Headers:', headers);
-        const data = [];
-
-        // Parse data rows
-        for (let i = 1; i < lines.length; i++) {
-            const values = this.parseCSVLine(lines[i]);
-            console.log('CSV Row values:', values);
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = values[index] || '';
-            });
-            data.push(row);
-        }
-
-        return data;
-    }
-
-    static parseCSVLine(line) {
-        const result = [];
-        let current = '';
+        const rows = [];
+        let currentRow = [];
+        let currentField = '';
         let inQuotes = false;
 
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            const nextChar = line[i + 1];
+        for (let i = 0; i < csv.length; i++) {
+            const char = csv[i];
+            const nextChar = csv[i + 1];
 
-            if (char === '"' && nextChar === '"') {
-                // Escaped quote
-                current += '"';
+            if (char === '"' && nextChar === '"' && inQuotes) {
+                // Escaped quote inside quoted field
+                currentField += '"';
                 i++; // Skip next quote
             } else if (char === '"') {
                 // Toggle quote mode
                 inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
                 // Field separator
-                result.push(current);
-                current = '';
+                currentRow.push(currentField.trim());
+                currentField = '';
+            } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                // Row separator (only when not in quotes)
+                if (char === '\r' && nextChar === '\n') {
+                    i++; // Skip \n in \r\n
+                }
+                if (currentField || currentRow.length > 0) {
+                    currentRow.push(currentField.trim());
+                    if (currentRow.some(field => field)) { // Only add non-empty rows
+                        rows.push(currentRow);
+                    }
+                    currentRow = [];
+                    currentField = '';
+                }
             } else {
-                current += char;
+                currentField += char;
             }
         }
-        result.push(current);
 
-        // Clean up values (remove quotes, trim)
-        return result.map(v => v.trim().replace(/^"|"$/g, ''));
+        // Add last field and row
+        if (currentField || currentRow.length > 0) {
+            currentRow.push(currentField.trim());
+            if (currentRow.some(field => field)) {
+                rows.push(currentRow);
+            }
+        }
+
+        if (rows.length === 0) return [];
+
+        // First row is headers
+        const headers = rows[0];
+        console.log('CSV Headers:', headers);
+        
+        // Convert remaining rows to objects
+        const data = [];
+        for (let i = 1; i < rows.length; i++) {
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = rows[i][index] || '';
+            });
+            data.push(row);
+        }
+
+        return data;
     }
 
     static getCountryFlag(countryCode) {
@@ -156,6 +169,27 @@ class DataLoader {
                 console.log('Tools for', row.company, ':', toolsArray);
             }
             
+            // Parse responsibilities - support both old format (multiple columns) and new format (single column with line breaks)
+            let responsibilitiesArray;
+            if (row.responsibilities) {
+                // New format: single column with line breaks
+                // Try different line break formats: \n, \r\n, or actual line breaks in CSV
+                const responsibilities = row.responsibilities
+                    .replace(/\\n/g, '\n')  // Handle escaped \n
+                    .replace(/\r\n/g, '\n')  // Handle Windows line breaks
+                    .replace(/\r/g, '\n');   // Handle Mac line breaks
+                
+                responsibilitiesArray = responsibilities.split('\n').map(r => r.trim()).filter(r => r);
+                
+                if (data.indexOf(row) === 0) {
+                    console.log('Responsibilities raw:', row.responsibilities);
+                    console.log('Responsibilities parsed:', responsibilitiesArray);
+                }
+            } else {
+                // Old format: multiple columns
+                responsibilitiesArray = [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r);
+            }
+            
             const transformed = {
                 title: row.title,
                 company: row.company,
@@ -164,7 +198,7 @@ class DataLoader {
                 countryCode: row.countryCode || row.countrycode || '',
                 link: row.link || '',
                 companyLogo: row.companyLogo,
-                responsibilities: [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r),
+                responsibilities: responsibilitiesArray,
                 tools: toolsArray
             };
             

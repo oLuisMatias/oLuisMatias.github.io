@@ -825,16 +825,17 @@ footer {
 }
 
 .company-logo, .project-image, .university-logo {
-    width: fit-content !important;
-    height: fit-content !important;
+    width: 100%;
+    max-width: 320px;
     flex-shrink: 0;
     display: flex !important;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 1);
     border-radius: 12px;
     border: 1px solid var(--border-color);
     padding: 0.75rem;
+    box-sizing: border-box;
 }
 
 /* Mobile responsiveness - stack image below text */
@@ -842,26 +843,45 @@ footer {
     .experience-item, .education-item {
         flex-direction: column;
         align-items: flex-start;
+        overflow: hidden;
     }
     
     .experience-content, .education-content {
         text-align: left;
         width: 100%;
+        box-sizing: border-box;
     }
     
     .experience-visual {
-        width: 100%;
+        width: calc(100% - 2rem);
+        max-width: 100%;
         align-items: center;
+        box-sizing: border-box;
+        margin: 0 auto;
     }
     
-    .company-logo, .project-image, .university-logo {
+    .experience-visual .company-logo {
         width: 100%;
-        max-width: none;
+        max-width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    
+    .experience-item .experience-visual .company-logo .company-image {
+        width: 100% !important;
+        max-width: 200px !important;
+        height: auto !important;
+        max-height: 100px !important;
+        object-fit: contain !important;
+        display: block !important;
     }
     
     .company-image, .university-image, .project-photo {
-        width: 200px;
-        height: 150px;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 150px;
         object-fit: contain;
     }
 }
@@ -1321,19 +1341,19 @@ footer {
 }
 
 .experience-visual .company-logo {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    width: auto;
 }
 
 .experience-visual .company-image {
-    width: 320px !important;
-    height: auto !important;
+    width: 320px;
+    max-width: 100%;
+    height: auto;
     max-height: 100%;
-    object-fit: contain !important;
-    display: block !important;
+    object-fit: contain;
+    display: block;
 }
 
 
@@ -1361,5 +1381,35 @@ footer {
     
     .location-info {
         display: none;
+    }
+}
+
+
+/* MOBILE FIX - Must be at the end to override everything */
+@media (max-width: 768px) {
+    .company-logo, .project-image, .university-logo {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        padding: 0.5rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .experience-item .experience-visual .company-logo {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.5rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .experience-item .experience-visual .company-logo .company-image,
+    .company-image, .university-image, .project-photo {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: 150px !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 0 auto !important;
     }
 }
