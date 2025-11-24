@@ -132,6 +132,12 @@ class DataLoader {
             // Debug: log the row to see what fields are available
             if (data.indexOf(row) === 0) {
                 console.log('First work experience row:', row);
+                console.log('Available columns:', Object.keys(row));
+                console.log('location value:', row.location);
+                console.log('countryCode value:', row.countryCode);
+                console.log('countrycode value:', row.countrycode);
+                console.log('link value:', row.link);
+                console.log('tools value:', row.tools);
             }
             
             // Parse tools from comma-separated string
@@ -150,7 +156,7 @@ class DataLoader {
                 console.log('Tools for', row.company, ':', toolsArray);
             }
             
-            return {
+            const transformed = {
                 title: row.title,
                 company: row.company,
                 period: row.period,
@@ -161,6 +167,12 @@ class DataLoader {
                 responsibilities: [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r),
                 tools: toolsArray
             };
+            
+            if (data.indexOf(row) === 0) {
+                console.log('Transformed first row:', transformed);
+            }
+            
+            return transformed;
         });
     }
 
@@ -229,23 +241,36 @@ class DataLoader {
                 ${data.workExperience.map(job => `
                     <div class="experience-item">
                         <div class="experience-content">
-                            <h4>${job.title}</h4>
-                            <div class="date">${job.period}</div>
-                            <div class="company-location-row">
-                                <p><strong>${job.link ? `<a href="${job.link}" class="company-link" target="_blank" rel="noopener">${job.company}</a>` : job.company}</strong></p>
-                                ${job.location ? `<span class="location">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</span>` : ''}
+                            <div class="title-row">
+                                <h4>${job.title}</h4>
+                                ${job.location ? `<span class="location-mobile">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</span>` : ''}
                             </div>
+                            <div class="date">${job.period}</div>
+                            <p><strong>${job.link ? `<a href="${job.link}" class="company-link" target="_blank" rel="noopener">${job.company}</a>` : job.company}</strong></p>
                             <ul>
                                 ${job.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
                             </ul>
                             ${job.tools && job.tools.length > 0 ? `
                             <div class="software-tools">
-                                ${job.tools.map(tool => `<img src="assets/images/tools/${tool}" alt="${tool}" class="tool-icon">`).join('')}
+                                ${job.tools.map(tool => {
+                                    // Extract tool name from filename (remove extension and capitalize)
+                                    const toolName = tool.replace(/\.(png|svg|jpg|jpeg)$/i, '')
+                                        .split(/[-_]/)
+                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                        .join(' ');
+                                    return `<div class="tool-item">
+                                        <img src="assets/images/tools/${tool}" alt="${toolName}" class="tool-icon">
+                                        <span class="tool-name">${toolName}</span>
+                                    </div>`;
+                                }).join('')}
                             </div>
                             ` : ''}
                         </div>
-                        <div class="company-logo">
-                            <img src="${job.companyLogo}" alt="${job.company}" class="company-image" style="width: 320px !important; height: auto !important; display: block !important;">
+                        <div class="experience-visual">
+                            ${job.location ? `<div class="location-info">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</div>` : ''}
+                            <div class="company-logo">
+                                <img src="${job.companyLogo}" alt="${job.company}" class="company-image">
+                            </div>
                         </div>
                     </div>
                 `).join('')}
@@ -372,3 +397,5 @@ document.addEventListener('DOMContentLoaded', function () {
         DataLoader.loadProjectsData();
     }
 });
+
+
