@@ -27,6 +27,9 @@ class DataLoader {
 
             console.log('DataLoader: CV data loaded:', data);
 
+            // Store data globally for map view
+            window.cvData = data;
+
             const container = document.querySelector('.page-content .container');
             if (container) {
                 this.renderCVData(data);
@@ -140,6 +143,40 @@ class DataLoader {
         }
     }
 
+    static parsePapers(row) {
+        // Parse published papers - support both old format (multiple columns) and new format (single column with line breaks)
+        // Format: "Paper Title | URL" or just "Paper Title"
+        let papersArray;
+        if (row.papers) {
+            // New format: single column with line breaks
+            const papers = row.papers
+                .replace(/\\n/g, '\n')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n');
+            papersArray = papers.split('\n').map(p => {
+                const trimmed = p.trim();
+                if (!trimmed) return null;
+                
+                // Check if paper has URL (format: "Title | URL")
+                if (trimmed.includes('|')) {
+                    const [title, url] = trimmed.split('|').map(s => s.trim());
+                    return { title, url };
+                }
+                return { title: trimmed, url: null };
+            }).filter(p => p);
+        } else {
+            // Old format: multiple columns
+            papersArray = [row.paper1, row.paper2, row.paper3].filter(p => p).map(p => {
+                if (p.includes('|')) {
+                    const [title, url] = p.split('|').map(s => s.trim());
+                    return { title, url };
+                }
+                return { title: p, url: null };
+            });
+        }
+        return papersArray;
+    }
+
     static transformWorkExperience(data) {
         return data.map(row => {
             // Debug: log the row to see what fields are available
@@ -190,6 +227,8 @@ class DataLoader {
                 responsibilitiesArray = [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r);
             }
             
+            const papersArray = this.parsePapers(row);
+            
             const transformed = {
                 title: row.title,
                 company: row.company,
@@ -199,6 +238,7 @@ class DataLoader {
                 link: row.link || '',
                 companyLogo: row.companyLogo,
                 responsibilities: responsibilitiesArray,
+                papers: papersArray,
                 tools: toolsArray
             };
             
@@ -221,13 +261,31 @@ class DataLoader {
     }
 
     static transformEducation(data) {
-        return data.map(row => ({
-            degree: row.degree,
-            institution: row.institution,
-            period: row.period,
-            institutionLogo: row.institutionLogo,
-            details: row.details
-        }));
+        return data.map(row => {
+            // Parse tools from comma-separated string
+            const toolsArray = row.tools ? row.tools.split(',').map(t => {
+                const trimmed = t.trim();
+                if (trimmed.includes('.')) {
+                    return trimmed;
+                }
+                return trimmed + '.png';
+            }).filter(t => t !== '') : [];
+            
+            const papersArray = this.parsePapers(row);
+            
+            return {
+                degree: row.degree,
+                institution: row.institution,
+                period: row.period,
+                location: row.location || '',
+                countryCode: row.countryCode || row.countrycode || '',
+                link: row.link || '',
+                institutionLogo: row.institutionLogo,
+                details: row.details,
+                papers: papersArray,
+                tools: toolsArray
+            };
+        });
     }
 
     static transformExperiences(data) {
@@ -235,6 +293,9 @@ class DataLoader {
             title: row.title,
             organization: row.organization,
             period: row.period,
+            location: row.location || '',
+            countryCode: row.countryCode || row.countrycode || '',
+            link: row.link || '',
             organizationLogo: row.organizationLogo,
             description: [row.description1, row.description2, row.description3].filter(d => d)
         }));
@@ -284,6 +345,14 @@ class DataLoader {
                             <ul>
                                 ${job.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
                             </ul>
+                            ${job.papers && job.papers.length > 0 ? `
+                            <div style="margin-top: 0.75rem;">
+                                <strong>Published Papers:</strong>
+                                <ul style="margin-top: 0.25rem;">
+                                    ${job.papers.map(paper => `<li>${paper.url ? `<a href="${paper.url}" target="_blank" rel="noopener">${paper.title}</a>` : paper.title}</li>`).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
                             ${job.tools && job.tools.length > 0 ? `
                             <div class="software-tools">
                                 ${job.tools.map(tool => {
@@ -348,13 +417,41 @@ class DataLoader {
                 ${data.education.map(edu => `
                     <div class="education-item">
                         <div class="education-content">
-                            <h4>${edu.degree}</h4>
+                            <div class="title-row">
+                                <h4>${edu.degree}</h4>
+                                ${edu.location ? `<span class="location-mobile">${edu.countryCode ? `<img src="https://flagcdn.com/16x12/${edu.countryCode.toLowerCase()}.png" alt="${edu.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${edu.location}</span>` : ''}
+                            </div>
                             <div class="date">${edu.period}</div>
-                            <p><strong>${edu.institution}</strong></p>
+                            <p><strong>${edu.link ? `<a href="${edu.link}" class="company-link" target="_blank" rel="noopener">${edu.institution}</a>` : edu.institution}</strong></p>
                             <p>${edu.details}</p>
+                            ${edu.papers && edu.papers.length > 0 ? `
+                            <div style="margin-top: 0.75rem;">
+                                <strong>Published Papers:</strong>
+                                <ul style="margin-top: 0.25rem;">
+                                    ${edu.papers.map(paper => `<li>${paper.url ? `<a href="${paper.url}" target="_blank" rel="noopener">${paper.title}</a>` : paper.title}</li>`).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+                            ${edu.tools && edu.tools.length > 0 ? `
+                            <div class="software-tools">
+                                ${edu.tools.map(tool => {
+                                    const toolName = tool.replace(/\.(png|svg|jpg|jpeg)$/i, '')
+                                        .split(/[-_]/)
+                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                        .join(' ');
+                                    return `<div class="tool-item">
+                                        <img src="assets/images/tools/${tool}" alt="${toolName}" class="tool-icon">
+                                        <span class="tool-name">${toolName}</span>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                            ` : ''}
                         </div>
-                        <div class="university-logo">
-                            <img src="${edu.institutionLogo}" alt="${edu.institution}" class="university-image" style="width: 320px !important; height: auto !important; display: block !important;">
+                        <div class="experience-visual">
+                            ${edu.location ? `<div class="location-info">${edu.countryCode ? `<img src="https://flagcdn.com/16x12/${edu.countryCode.toLowerCase()}.png" alt="${edu.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${edu.location}</div>` : ''}
+                            <div class="university-logo">
+                                <img src="${edu.institutionLogo}" alt="${edu.institution}" class="university-image">
+                            </div>
                         </div>
                     </div>
                 `).join('')}
@@ -365,15 +462,21 @@ class DataLoader {
                 ${data.experiences.map(exp => `
                     <div class="experience-item">
                         <div class="experience-content">
-                            <h4>${exp.title}</h4>
+                            <div class="title-row">
+                                <h4>${exp.title}</h4>
+                                ${exp.location ? `<span class="location-mobile">${exp.countryCode ? `<img src="https://flagcdn.com/16x12/${exp.countryCode.toLowerCase()}.png" alt="${exp.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${exp.location}</span>` : ''}
+                            </div>
                             <div class="date">${exp.period}</div>
-                            <p><strong>${exp.organization}</strong></p>
+                            <p><strong>${exp.link ? `<a href="${exp.link}" class="company-link" target="_blank" rel="noopener">${exp.organization}</a>` : exp.organization}</strong></p>
                             <ul>
                                 ${exp.description.map(desc => `<li>${desc}</li>`).join('')}
                             </ul>
                         </div>
-                        <div class="company-logo">
-                            <img src="${exp.organizationLogo}" alt="${exp.organization}" class="company-image" style="width: 320px !important; height: auto !important; display: block !important;">
+                        <div class="experience-visual">
+                            ${exp.location ? `<div class="location-info">${exp.countryCode ? `<img src="https://flagcdn.com/16x12/${exp.countryCode.toLowerCase()}.png" alt="${exp.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${exp.location}</div>` : ''}
+                            <div class="company-logo">
+                                <img src="${exp.organizationLogo}" alt="${exp.organization}" class="company-image">
+                            </div>
                         </div>
                     </div>
                 `).join('')}
