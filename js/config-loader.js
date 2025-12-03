@@ -1,9 +1,14 @@
-// Site Configuration Loader
+// ===================================
+// SITE CONFIGURATION LOADER
+// ===================================
+
 class SiteConfig {
-    
     static async loadConfig() {
         try {
             const response = await fetch('data/site-config.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const config = await response.json();
             
             this.applyConfig(config);
@@ -26,96 +31,108 @@ class SiteConfig {
     }
     
     static updateSocialLinks(socialMedia) {
+        if (!socialMedia) return;
+        
         // Update LinkedIn links
-        const linkedinLinks = document.querySelectorAll('a[href*="linkedin.com"]');
-        linkedinLinks.forEach(link => {
-            link.href = socialMedia.linkedin.url;
-        });
+        if (socialMedia.linkedin?.url) {
+            document.querySelectorAll('a[href*="linkedin.com"]').forEach(link => {
+                link.href = socialMedia.linkedin.url;
+            });
+        }
         
         // Update Instagram links
-        const instagramLinks = document.querySelectorAll('a[href*="instagram.com"]');
-        instagramLinks.forEach(link => {
-            link.href = socialMedia.instagram.url;
-        });
+        if (socialMedia.instagram?.url) {
+            document.querySelectorAll('a[href*="instagram.com"]').forEach(link => {
+                link.href = socialMedia.instagram.url;
+            });
+        }
     }
     
     static updatePersonalInfo(personalInfo) {
+        if (!personalInfo) return;
+        
         // Update logo/header name
-        const logoElements = document.querySelectorAll('.logo h1');
-        logoElements.forEach(logo => {
-            logo.innerHTML = `${personalInfo.firstName}<span class="highlight">${personalInfo.lastName}</span>`;
-        });
+        if (personalInfo.firstName && personalInfo.lastName) {
+            document.querySelectorAll('.logo h1').forEach(logo => {
+                logo.innerHTML = `${personalInfo.firstName}<span class="highlight">${personalInfo.lastName}</span>`;
+            });
+        }
         
         // Update hero image if on homepage
         const profileImage = document.querySelector('.profile-photo');
-        if (profileImage) {
+        if (profileImage && personalInfo.profileImage) {
             profileImage.src = personalInfo.profileImage;
-            profileImage.alt = personalInfo.name;
+            profileImage.alt = personalInfo.name || 'Profile Photo';
         }
         
         // Update page titles
-        const titleElements = document.querySelectorAll('title');
-        titleElements.forEach(title => {
-            if (title.textContent.includes('Luis Matias')) {
-                title.textContent = title.textContent.replace('Luis Matias', personalInfo.name);
-            }
-        });
+        if (personalInfo.name) {
+            document.querySelectorAll('title').forEach(title => {
+                if (title.textContent.includes('Luis Matias')) {
+                    title.textContent = title.textContent.replace('Luis Matias', personalInfo.name);
+                }
+            });
+        }
         
         // Update hero subtitle if on homepage
         const heroSubtitle = document.querySelector('.hero-content p');
-        if (heroSubtitle && heroSubtitle.textContent.includes('Mechanical Designer')) {
+        if (heroSubtitle && personalInfo.subtitle) {
             heroSubtitle.textContent = personalInfo.subtitle;
         }
         
-        // Update copyright
-        const copyrightElements = document.querySelectorAll('footer p');
-        copyrightElements.forEach(copyright => {
-            if (copyright.textContent.includes('Luis Matias')) {
-                copyright.textContent = copyright.textContent.replace('Luis Matias', personalInfo.name);
-            }
-        });
+        // Update copyright (preserve HTML links)
+        if (personalInfo.name) {
+            document.querySelectorAll('footer p').forEach(copyright => {
+                if (copyright.innerHTML.includes('Luis Matias')) {
+                    copyright.innerHTML = copyright.innerHTML.replace('Luis Matias', personalInfo.name);
+                }
+            });
+        }
     }
     
     static applyThemeSettings(themeSettings) {
+        if (!themeSettings) return;
+        
         // Set default theme
-        if (!localStorage.getItem('theme')) {
+        if (!localStorage.getItem('theme') && themeSettings.default) {
             localStorage.setItem('theme', themeSettings.default);
             document.documentElement.setAttribute('data-theme', themeSettings.default);
         }
         
         // Hide theme toggle if disabled
-        if (!themeSettings.enableToggle) {
+        if (themeSettings.enableToggle === false) {
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.style.display = 'none';
             }
         }
     }
+    
+    static checkPageAvailability(config) {
+        if (!config?.pages) return;
+        
+        const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+        
+        // Check if we're on a page that might be disabled
+        if (config.pages.hasOwnProperty(currentPage)) {
+            const isEnabled = config.pages[currentPage];
+            
+            // If page is disabled, redirect to coming soon
+            if (!isEnabled && !window.location.pathname.includes('coming-soon.html')) {
+                window.location.href = 'coming-soon.html';
+            }
+        }
+    }
 }
 
-// Load configuration when page loads
-document.addEventListener('DOMContentLoaded', function() {
+// ===================================
+// INITIALIZATION
+// ===================================
+
+document.addEventListener('DOMContentLoaded', () => {
     SiteConfig.loadConfig().then(config => {
         if (config) {
             SiteConfig.checkPageAvailability(config);
         }
     });
 });
-
-// Check if current page should be available
-SiteConfig.checkPageAvailability = function(config) {
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    
-    // Check if we're on a page that might be disabled
-    if (config.pages && config.pages.hasOwnProperty(currentPage)) {
-        const isEnabled = config.pages[currentPage];
-        
-        // If page is disabled, redirect to coming soon
-        if (!isEnabled) {
-            // Only redirect if we're not already on the coming soon page
-            if (!window.location.pathname.includes('coming-soon.html')) {
-                window.location.href = 'coming-soon.html';
-            }
-        }
-    }
-};

@@ -27,6 +27,7 @@
 /* ===================================
    RESET & BASE STYLES
    =================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -44,7 +45,16 @@ body {
     background-color: var(--charcoal);
 }
 
-/* Yellow accent scrollbar */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ===================================
+   SCROLLBAR STYLING
+   =================================== */
+
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -60,12 +70,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--dark-blue);
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
 }
 
 /* ===================================
@@ -184,6 +188,28 @@ nav {
 .theme-toggle:hover {
     border-color: var(--primary-blue);
     color: var(--primary-blue);
+    transform: rotate(180deg);
+}
+
+.logout-btn {
+    background: none;
+    border: 2px solid var(--border-color);
+    color: var(--text-light);
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-btn:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
     transform: rotate(180deg);
 }
 
@@ -338,7 +364,10 @@ nav {
     margin-top: 2.5rem;
 }
 
-/* Sections */
+/* ===================================
+   SECTIONS
+   =================================== */
+
 .section {
     padding: 80px 0;
 }
@@ -368,7 +397,10 @@ nav {
     border-radius: 2px;
 }
 
-/* Services Grid */
+/* ===================================
+   SERVICE CARDS
+   =================================== */
+
 .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -399,7 +431,10 @@ nav {
     font-size: 1.3rem;
 }
 
-/* Contact Form */
+/* ===================================
+   CONTACT FORM
+   =================================== */
+
 .contact-form {
     max-width: 600px;
     margin: 0 auto;
@@ -410,9 +445,11 @@ nav {
     width: 100%;
     padding: 12px;
     margin-bottom: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     font-size: 1rem;
+    background: var(--light-charcoal);
+    color: var(--text-white);
 }
 
 .contact-form textarea {
@@ -421,7 +458,7 @@ nav {
 }
 
 .contact-form button {
-    background: #3498db;
+    background: var(--primary-blue);
     color: white;
     border: none;
     padding: 12px 30px;
@@ -432,10 +469,37 @@ nav {
 }
 
 .contact-form button:hover {
-    background: #2980b9;
+    background: var(--dark-blue);
 }
 
-/* Footer */
+/* ===================================
+   FOOTER
+   =================================== */
+
+/* ===================================
+   CV IMAGES STYLES
+   =================================== */
+
+.company-image, .university-image, .project-photo {
+    width: 350px !important;
+    height: 200px !important;
+    object-fit: fill !important;
+    border-radius: 12px;
+    border: none !important;
+    display: block !important;
+}
+
+.company-logo, .project-image, .university-logo {
+    background: rgba(255, 255, 255, 1);
+    border-radius: 12px;
+    border: none !important;
+    padding: 0.75rem;
+}
+
+/* ===================================
+   FOOTER
+   =================================== */
+
 footer {
     background: var(--charcoal);
     color: var(--text-light);
@@ -468,7 +532,10 @@ footer {
     transform: translateY(-3px);
 }
 
-/* Simplified loading */
+/* ===================================
+   LOADING SCREEN
+   =================================== */
+
 .loading {
     position: fixed;
     top: 0;
@@ -496,13 +563,8 @@ footer {
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* ===================================
@@ -1220,8 +1282,9 @@ footer {
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
-}/
-* ===================================
+}
+
+/* ===================================
    CV IMAGES STYLES
    =================================== */
 
@@ -1476,10 +1539,18 @@ footer {
 }
 
 .map-wrapper {
-    position: relative;
     flex: 1;
-    width: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.map-image-container {
+    position: relative;
+    display: inline-block;
     max-width: 100%;
+    background: transparent;
+    border: none;
 }
 
 .map-details-panel {
@@ -1519,7 +1590,8 @@ footer {
     max-width: 100%;
     height: auto;
     display: block;
-    border-radius: 8px;
+    border: none;
+    background: transparent;
 }
 
 .map-marker {
@@ -1547,6 +1619,27 @@ footer {
 
 .map-marker.experience {
     background: #e74c3c;
+}
+
+/* Flag marker styles */
+.map-marker.flag-marker {
+    width: auto;
+    height: auto;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    animation: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-marker.flag-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.map-marker.flag-marker img {
+    pointer-events: none;
 }
 
 @keyframes pulse {
@@ -1623,4 +1716,175 @@ body.map-view-active .page-header {
 
 body.map-view-active .page-content {
     padding-top: 0;
+}
+
+/* ===================================
+   MAP VITAE PAGE - 2 COLUMN LAYOUT
+   =================================== */
+
+.map-vitae-main {
+    min-height: calc(100vh - 140px);
+    padding-top: 100px;
+    background: var(--charcoal);
+}
+
+.container.map-vitae-container {
+    max-width: 100%;
+    padding: 2rem;
+    background: transparent !important;
+}
+
+.map-vitae-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Column 1: Header and Details */
+.map-vitae-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.map-vitae-header {
+    text-align: left;
+}
+
+.map-vitae-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-white);
+    margin-bottom: 0.5rem;
+}
+
+.map-vitae-header p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    opacity: 0.9;
+}
+
+.map-vitae-left .map-details-panel {
+    background: var(--light-charcoal);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    min-height: 400px;
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+}
+
+/* Column 2: Map */
+.map-vitae-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.map-vitae-right .map-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.map-vitae-right .map-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 1024px) {
+    .map-vitae-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .map-vitae-header {
+        text-align: center;
+    }
+    
+    .map-vitae-left .map-details-panel {
+        max-height: 400px;
+    }
+}
+
+/* ===================================
+   MAP VITAE PAGE
+   =================================== */
+
+.map-vitae-main {
+    min-height: calc(100vh - 140px);
+    padding-top: 100px;
+    background: var(--charcoal);
+}
+
+.map-vitae-container {
+    max-width: 100%;
+    padding: 2rem;
+    background: var(--light-charcoal);
+    border-radius: 12px;
+}
+
+.map-vitae-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.map-vitae-header h1 {
+    font-size: 3rem;
+    color: var(--text-white);
+    margin-bottom: 0.5rem;
+}
+
+.map-vitae-header p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    opacity: 0.9;
+}
+
+.map-vitae-container .map-content-wrapper {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+/* ===================================
+   MAP VITAE PAGE
+   =================================== */
+
+.map-vitae-main {
+    min-height: calc(100vh - 140px);
+    padding-top: 100px;
+}
+
+.map-vitae-container {
+    max-width: 100%;
+    padding: 2rem;
+}
+
+.map-vitae-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.map-vitae-header h1 {
+    font-size: 3rem;
+    color: var(--text-white);
+    margin-bottom: 0.5rem;
+}
+
+.map-vitae-header p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    opacity: 0.9;
+}
+
+.map-vitae-container .map-content-wrapper {
+    background: var(--light-charcoal);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

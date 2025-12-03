@@ -23,6 +23,7 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="curriculum.html">Curriculum</a></li>
+                <li><a href="map-vitae.html">Map Vitae</a></li>
                 <li><a href="projects.html">Projects</a></li>
                 <li><a href="photography.html">Photography</a></li>
                 <li><a href="filaments.html">Filaments</a></li>
@@ -30,6 +31,9 @@
             <div class="header-controls">
                 <button class="theme-toggle" id="themeToggle" title="Toggle theme">
                     <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+                <button class="logout-btn" id="logoutBtn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
                 </button>
                 <div class="mobile-menu-toggle" id="mobileMenuToggle">
                     <span></span>
@@ -135,10 +139,29 @@
                     <i class="fab fa-instagram"></i>
                 </a>
             </div>
-            <p>&copy; 2024 Luis Matias. All rights reserved.</p>
+            <p>&copy; 2024 Luis Matias. All rights reserve<a href="login.html" style="color:inherit;text-decoration:none;cursor:pointer">d</a>.</p>
         </div>
     </footer>
 
+    <script src="js/auth.js?v=1"></script>
+    <script>
+        // Protect this page immediately - require login
+        if (window.auth) {
+            window.auth.protectPage();
+        }
+        
+        // Logout button functionality
+        window.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (window.auth) {
+                        window.auth.logout();
+                    }
+                });
+            }
+        });
+    </script>
     <script src="js/script.js"></script>
     <script src="js/filaments.js"></script>
     <script src="js/config-loader.js"></script>

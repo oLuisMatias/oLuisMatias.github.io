@@ -1,10 +1,9 @@
-// Map View functionality for CV page
-class MapView {
+// ===================================
+// MAP VITAE - Dedicated Map Page
+// ===================================
+
+class MapVitae {
     constructor() {
-        this.isMapView = false;
-        this.mapContainer = null;
-        this.listContainer = null;
-        this.toggleBtn = null;
         this.locations = [];
         this.debugMode = false; // Set to true to get coordinates when clicking map
         
@@ -37,13 +36,16 @@ class MapView {
             'AT': 'Austria',
             'PL': 'Poland',
             'CZ': 'Czech Republic',
-            'SK': 'Slovakia'
+            'SK': 'Slovakia',
+            'TH': 'Thailand'
         };
         
-        // Approximate coordinates for countries (you can adjust these)
+        // Coordinates for countries
         this.countryCoordinates = {
             'PT': { x: 42, y: 29.8 }, // Portugal
             'TH': { x: 77, y: 47.6 }, // Thailand
+            'PL': { x: 48.6, y: 20.4 }, // Poland
+            'SK': { x: 48.6, y: 26.5 }, // Slovakia
             'ES': { x: 49, y: 42 }, // Spain
             'FR': { x: 50, y: 40 }, // France
             'DE': { x: 52, y: 38 }, // Germany
@@ -68,101 +70,29 @@ class MapView {
             'BE': { x: 51, y: 38 }, // Belgium
             'CH': { x: 52, y: 40 }, // Switzerland
             'AT': { x: 53, y: 39 }, // Austria
-            'PL': { x: 48.6, y: 20.4 }, // Poland
-            'CZ': { x: 53, y: 38 }, // Czech Republic
-            'SK': { x: 48.6, y: 25.1 }  // Slovakia
+            'CZ': { x: 53, y: 38 }  // Czech Republic
         };
     }
     
     init() {
-        this.toggleBtn = document.getElementById('mapViewToggle');
-        this.listContainer = document.querySelector('.page-content .container');
+        // Show loading message
+        this.showLoading();
         
-        if (!this.toggleBtn || !this.listContainer) return;
+        // Check for CV data immediately and repeatedly
+        this.loadMapData();
         
-        this.toggleBtn.addEventListener('click', () => this.toggleView());
-    }
-    
-    toggleView() {
-        this.isMapView = !this.isMapView;
-        
-        if (this.isMapView) {
-            this.showMapView();
-        } else {
-            this.showListView();
-        }
-    }
-    
-    showMapView() {
-        // Hide list view
-        this.listContainer.style.display = 'none';
-        
-        // Add map view class to body
-        document.body.classList.add('map-view-active');
-        
-        // Update button
-        this.toggleBtn.innerHTML = '<i class="fas fa-list"></i> List View';
-        
-        // Create or show map container
-        if (!this.mapContainer) {
-            this.createMapView();
-        } else {
-            this.mapContainer.classList.add('active');
-        }
-    }
-    
-    showListView() {
-        // Show list view
-        this.listContainer.style.display = 'block';
-        
-        // Remove map view class from body
-        document.body.classList.remove('map-view-active');
-        
-        // Update button
-        this.toggleBtn.innerHTML = '<i class="fas fa-map-marked-alt"></i> Map View';
-        
-        // Hide map container
-        if (this.mapContainer) {
-            this.mapContainer.classList.remove('active');
-        }
-    }
-    
-    createMapView() {
-        const pageContent = document.querySelector('.page-content');
-        
-        this.mapContainer = document.createElement('div');
-        this.mapContainer.className = 'map-view-container active';
-        this.mapContainer.innerHTML = `
-            <div class="map-content-wrapper">
-                <div class="map-wrapper" id="mapWrapper">
-                    <div class="map-image-container">
-                        <img src="assets/images/worldmap/worldmap.svg" alt="World Map" class="map-image" id="mapImage">
-                    </div>
-                    <div id="mapTooltip" class="map-tooltip"></div>
-                </div>
-                <div class="map-details-panel" id="mapDetailsPanel">
-                    <div class="map-details-content">
-                        <p style="text-align: center; color: var(--text-light); opacity: 0.7;">Click on a marker to see details</p>
-                    </div>
-                </div>
-            </div>
-            <div class="map-legend">
-                <div class="legend-item">
-                    <div class="legend-dot work"></div>
-                    <span>Locations (click for details)</span>
-                </div>
-            </div>
-        `;
-        
-        pageContent.insertBefore(this.mapContainer, this.listContainer);
-        
-        // Add debug mode click handler
+        // Enable debug mode if needed
         if (this.debugMode) {
             this.enableDebugMode();
         }
-        
-        // Wait for CV data to load, then add markers
-        setTimeout(() => this.addMarkers(), 1000);
+    }
+    
+    showLoading() {
+        const panel = document.getElementById('mapDetailsPanel');
+        if (panel) {
+            const content = panel.querySelector('.map-details-content');
+            content.innerHTML = '<p style="text-align: center; color: var(--text-light);"><i class="fas fa-spinner fa-spin"></i> Loading map data...</p>';
+        }
     }
     
     enableDebugMode() {
@@ -192,22 +122,33 @@ class MapView {
         });
     }
     
-    addMarkers() {
+    loadMapData() {
         // Get data from DataLoader (assuming it's already loaded)
         const cvData = window.cvData;
         if (!cvData) {
-            console.log('Waiting for CV data...');
-            setTimeout(() => this.addMarkers(), 500);
+            console.log('MapVitae: Waiting for CV data...');
+            setTimeout(() => this.loadMapData(), 200);
             return;
         }
         
-        const mapWrapper = document.querySelector('.map-image-container');
+        console.log('MapVitae: CV data loaded, creating markers...');
+        
+        // Update loading message
+        const panel = document.getElementById('mapDetailsPanel');
+        if (panel) {
+            const content = panel.querySelector('.map-details-content');
+            content.innerHTML = '<p style="text-align: center; color: var(--text-light); opacity: 0.7;">Click on a flag to see details</p>';
+        }
+        
+        const mapContainer = document.querySelector('.map-image-container');
         const tooltip = document.getElementById('mapTooltip');
         
-        if (!mapWrapper) {
-            console.log('Map container not found');
+        if (!mapContainer) {
+            console.error('MapVitae: Map container not found!');
             return;
         }
+        
+        console.log('MapVitae: Map container found:', mapContainer);
         
         // Group all entries by country code
         const groupedByCountry = {};
@@ -270,12 +211,24 @@ class MapView {
         }
         
         // Create one marker per country with all entries
-        Object.keys(groupedByCountry).forEach(countryCode => {
-            this.createGroupedMarker(mapWrapper, tooltip, countryCode, groupedByCountry[countryCode]);
+        console.log('MapVitae: Countries found:', Object.keys(groupedByCountry));
+        
+        // Sort countries so Slovakia renders after Poland (appears on top)
+        const sortedCountries = Object.keys(groupedByCountry).sort((a, b) => {
+            if (a === 'PL') return -1; // Poland first
+            if (b === 'PL') return 1;
+            if (a === 'SK') return 1; // Slovakia after Poland
+            if (b === 'SK') return -1;
+            return 0;
         });
+        
+        sortedCountries.forEach(countryCode => {
+            this.createMarker(mapContainer, tooltip, countryCode, groupedByCountry[countryCode]);
+        });
+        console.log('MapVitae: Markers created successfully');
     }
     
-    createGroupedMarker(mapWrapper, tooltip, countryCode, entries) {
+    createMarker(mapContainer, tooltip, countryCode, entries) {
         const coords = this.countryCoordinates[countryCode];
         if (!coords) {
             console.log('No coordinates for:', countryCode);
@@ -319,7 +272,7 @@ class MapView {
             marker.appendChild(badge);
         }
         
-        marker.addEventListener('mouseenter', (e) => {
+        marker.addEventListener('mouseenter', () => {
             const countryName = this.countryNames[countryCode] || countryCode;
             tooltip.innerHTML = `<strong>${countryName}</strong><br><small>Click for details</small>`;
             tooltip.style.left = `${coords.x}%`;
@@ -335,7 +288,7 @@ class MapView {
             this.showDetailsPanel(entries, countryCode);
         });
         
-        mapWrapper.appendChild(marker);
+        mapContainer.appendChild(marker);
     }
     
     showDetailsPanel(entries, countryCode) {
@@ -399,13 +352,13 @@ class MapView {
     }
 }
 
-// Initialize when DOM is ready
+// ===================================
+// INITIALIZATION
+// ===================================
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('curriculum.html')) {
-        const mapView = new MapView();
-        mapView.init();
-        
-        // Store reference for DataLoader
-        window.mapView = mapView;
+    if (window.location.pathname.includes('map-vitae.html')) {
+        const mapVitae = new MapVitae();
+        mapVitae.init();
     }
 });

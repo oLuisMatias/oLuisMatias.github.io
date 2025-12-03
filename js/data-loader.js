@@ -1,6 +1,8 @@
-// Data loader for CV and Projects
-class DataLoader {
+// ===================================
+// DATA LOADER FOR CV AND PROJECTS
+// ===================================
 
+class DataLoader {
     // Load CV data and populate curriculum page
     static async loadCVData() {
         try {
@@ -25,18 +27,28 @@ class DataLoader {
                 skills: this.transformSkills(skills)
             };
 
-            console.log('DataLoader: CV data loaded:', data);
+            console.log('DataLoader: CV data loaded successfully');
 
             // Store data globally for map view
             window.cvData = data;
 
-            const container = document.querySelector('.page-content .container');
-            if (container) {
-                this.renderCVData(data);
+            // Only render CV on curriculum page
+            if (window.location.pathname.includes('curriculum.html')) {
+                const container = document.querySelector('.page-content .container');
+                if (container) {
+                    this.renderCVData(data);
+                }
             }
         } catch (error) {
             console.error('Error loading CV data:', error);
-            alert('Error loading CV from Google Sheets. Make sure the sheet is shared as "Anyone with the link can view"');
+            this.showError('Error loading CV from Google Sheets. Make sure the sheet is shared as "Anyone with the link can view"');
+        }
+    }
+    
+    static showError(message) {
+        const container = document.querySelector('.page-content .container');
+        if (container) {
+            container.innerHTML = `<p style="color: var(--text-light); text-align: center; padding: 2rem;">${message}</p>`;
         }
     }
 
@@ -315,6 +327,9 @@ class DataLoader {
     static async loadProjectsData() {
         try {
             const response = await fetch('data/projects-data.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
 
             if (document.querySelector('.projects-grid')) {
@@ -322,6 +337,7 @@ class DataLoader {
             }
         } catch (error) {
             console.error('Error loading projects data:', error);
+            this.showError('Error loading projects data');
         }
     }
 
@@ -518,21 +534,24 @@ class DataLoader {
     }
 }
 
-// Load data when page loads
-document.addEventListener('DOMContentLoaded', function () {
-    console.log('DataLoader: Page loaded, pathname:', window.location.pathname);
+// ===================================
+// INITIALIZATION
+// ===================================
 
-    // Load CV data on curriculum page
-    if (window.location.pathname.includes('curriculum.html')) {
+document.addEventListener('DOMContentLoaded', () => {
+    const pathname = window.location.pathname;
+    console.log('DataLoader: Page loaded, pathname:', pathname);
+
+    // Load CV data on curriculum and map-vitae pages
+    if (pathname.includes('curriculum.html') || pathname.includes('map-vitae.html')) {
         console.log('DataLoader: Loading CV data...');
+        // Load immediately without delay
         DataLoader.loadCVData();
     }
 
     // Load projects data on projects page
-    if (window.location.pathname.includes('projects.html')) {
+    if (pathname.includes('projects.html')) {
         console.log('DataLoader: Loading projects data...');
         DataLoader.loadProjectsData();
     }
 });
-
-
