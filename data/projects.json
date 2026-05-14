@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Project One",
+    "role": "Mechanical Designer",
+    "period": "2024",
+    "image": "placeholder.svg",
+    "cadFile": "data/models/Part8.glb",
+    "descriptions": [
+      "Short description of what this project involved.",
+      "Tools and methods used during the design process."
+    ]
+  },
+  {
+    "title": "Project Two",
+    "role": "CAD Specialist",
+    "period": "2023",
+    "image": "placeholder.svg",
+    "cadFile": "",
+    "descriptions": [
+      "Overview of the second project.",
+      "Key challenges and solutions."
+    ]
+  }
+]

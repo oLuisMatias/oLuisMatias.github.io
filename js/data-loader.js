@@ -1,538 +1,272 @@
-// Data loader for CV and Projects
-class DataLoader {
+const SHEET_ID = '1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ';
 
-    // Load CV data and populate curriculum page
-    static async loadCVData() {
-        try {
-            console.log('DataLoader: Fetching CV data from Google Sheets...');
-            const sheetId = '1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ';
+const SHEETS = {
+  work:           { gid: 0 },
+  projects:       { gid: 1451783063 },
+  education:      { gid: 1174712494 },
+  experiences:    { gid: 167754228 },
+  skills:         { gid: 547470293 },
+};
 
-            // Fetch all sheets using their GIDs
-            const [workExp, projects, education, experiences, skills] = await Promise.all([
-                this.fetchSheetByGid(sheetId, 0, 'WorkExperience'),
-                this.fetchSheetByGid(sheetId, 1451783063, 'KeyProjects'),
-                this.fetchSheetByGid(sheetId, 1174712494, 'Education'),
-                this.fetchSheetByGid(sheetId, 167754228, 'Experiences'),
-                this.fetchSheetByGid(sheetId, 547470293, 'Skills')
-            ]);
+// ── Fetch & parse ─────────────────────────────────────
 
-            // Transform data to match expected format
-            const data = {
-                workExperience: this.transformWorkExperience(workExp),
-                keyProjects: this.transformKeyProjects(projects),
-                education: this.transformEducation(education),
-                experiences: this.transformExperiences(experiences),
-                skills: this.transformSkills(skills)
-            };
-
-            console.log('DataLoader: CV data loaded:', data);
-
-            // Store data globally for map view
-            window.cvData = data;
-
-            const container = document.querySelector('.page-content .container');
-            if (container) {
-                this.renderCVData(data);
-            }
-        } catch (error) {
-            console.error('Error loading CV data:', error);
-            alert('Error loading CV from Google Sheets. Make sure the sheet is shared as "Anyone with the link can view"');
-        }
-    }
-
-    static async fetchSheetByGid(sheetId, gid, sheetName) {
-        try {
-            // Use export format with specific GID
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-            console.log(`Fetching sheet: ${sheetName} (gid: ${gid})`);
-            
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch ${sheetName}: ${response.status}`);
-            }
-            const csvText = await response.text();
-            console.log(`${sheetName} raw CSV:`, csvText.substring(0, 300));
-            return this.parseCSV(csvText);
-        } catch (error) {
-            console.error(`Error fetching ${sheetName}:`, error);
-            return [];
-        }
-    }
-
-    static parseCSV(csv) {
-        const rows = [];
-        let currentRow = [];
-        let currentField = '';
-        let inQuotes = false;
-
-        for (let i = 0; i < csv.length; i++) {
-            const char = csv[i];
-            const nextChar = csv[i + 1];
-
-            if (char === '"' && nextChar === '"' && inQuotes) {
-                // Escaped quote inside quoted field
-                currentField += '"';
-                i++; // Skip next quote
-            } else if (char === '"') {
-                // Toggle quote mode
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                // Field separator
-                currentRow.push(currentField.trim());
-                currentField = '';
-            } else if ((char === '\n' || char === '\r') && !inQuotes) {
-                // Row separator (only when not in quotes)
-                if (char === '\r' && nextChar === '\n') {
-                    i++; // Skip \n in \r\n
-                }
-                if (currentField || currentRow.length > 0) {
-                    currentRow.push(currentField.trim());
-                    if (currentRow.some(field => field)) { // Only add non-empty rows
-                        rows.push(currentRow);
-                    }
-                    currentRow = [];
-                    currentField = '';
-                }
-            } else {
-                currentField += char;
-            }
-        }
-
-        // Add last field and row
-        if (currentField || currentRow.length > 0) {
-            currentRow.push(currentField.trim());
-            if (currentRow.some(field => field)) {
-                rows.push(currentRow);
-            }
-        }
-
-        if (rows.length === 0) return [];
-
-        // First row is headers
-        const headers = rows[0];
-        console.log('CSV Headers:', headers);
-        
-        // Convert remaining rows to objects
-        const data = [];
-        for (let i = 1; i < rows.length; i++) {
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = rows[i][index] || '';
-            });
-            data.push(row);
-        }
-
-        return data;
-    }
-
-    static getCountryFlag(countryCode) {
-        if (!countryCode || countryCode.trim() === '') return '';
-        // Convert country code to flag emoji using regional indicator symbols
-        const code = countryCode.trim().toUpperCase();
-        if (code.length !== 2) return '';
-        
-        try {
-            // Convert to regional indicator symbols (U+1F1E6 - U+1F1FF)
-            const codePoints = [...code].map(char => 0x1F1E6 - 65 + char.charCodeAt(0));
-            const flag = String.fromCodePoint(...codePoints);
-            console.log(`Country code ${code} converted to flag:`, flag, 'codePoints:', codePoints);
-            return flag;
-        } catch (e) {
-            console.error('Error converting country code to flag:', countryCode, e);
-            return '';
-        }
-    }
-
-    static parsePapers(row) {
-        // Parse published papers - support both old format (multiple columns) and new format (single column with line breaks)
-        // Format: "Paper Title | URL" or just "Paper Title"
-        let papersArray;
-        if (row.papers) {
-            // New format: single column with line breaks
-            const papers = row.papers
-                .replace(/\\n/g, '\n')
-                .replace(/\r\n/g, '\n')
-                .replace(/\r/g, '\n');
-            papersArray = papers.split('\n').map(p => {
-                const trimmed = p.trim();
-                if (!trimmed) return null;
-                
-                // Check if paper has URL (format: "Title | URL")
-                if (trimmed.includes('|')) {
-                    const [title, url] = trimmed.split('|').map(s => s.trim());
-                    return { title, url };
-                }
-                return { title: trimmed, url: null };
-            }).filter(p => p);
-        } else {
-            // Old format: multiple columns
-            papersArray = [row.paper1, row.paper2, row.paper3].filter(p => p).map(p => {
-                if (p.includes('|')) {
-                    const [title, url] = p.split('|').map(s => s.trim());
-                    return { title, url };
-                }
-                return { title: p, url: null };
-            });
-        }
-        return papersArray;
-    }
-
-    static transformWorkExperience(data) {
-        return data.map(row => {
-            // Debug: log the row to see what fields are available
-            if (data.indexOf(row) === 0) {
-                console.log('First work experience row:', row);
-                console.log('Available columns:', Object.keys(row));
-                console.log('location value:', row.location);
-                console.log('countryCode value:', row.countryCode);
-                console.log('countrycode value:', row.countrycode);
-                console.log('link value:', row.link);
-                console.log('tools value:', row.tools);
-            }
-            
-            // Parse tools from comma-separated string
-            // If tool doesn't have extension, add .png by default
-            const toolsArray = row.tools ? row.tools.split(',').map(t => {
-                const trimmed = t.trim();
-                // Check if it already has an extension
-                if (trimmed.includes('.')) {
-                    return trimmed;
-                }
-                // Default to .png if no extension
-                return trimmed + '.png';
-            }).filter(t => t !== '') : [];
-            
-            if (toolsArray.length > 0) {
-                console.log('Tools for', row.company, ':', toolsArray);
-            }
-            
-            // Parse responsibilities - support both old format (multiple columns) and new format (single column with line breaks)
-            let responsibilitiesArray;
-            if (row.responsibilities) {
-                // New format: single column with line breaks
-                // Try different line break formats: \n, \r\n, or actual line breaks in CSV
-                const responsibilities = row.responsibilities
-                    .replace(/\\n/g, '\n')  // Handle escaped \n
-                    .replace(/\r\n/g, '\n')  // Handle Windows line breaks
-                    .replace(/\r/g, '\n');   // Handle Mac line breaks
-                
-                responsibilitiesArray = responsibilities.split('\n').map(r => r.trim()).filter(r => r);
-                
-                if (data.indexOf(row) === 0) {
-                    console.log('Responsibilities raw:', row.responsibilities);
-                    console.log('Responsibilities parsed:', responsibilitiesArray);
-                }
-            } else {
-                // Old format: multiple columns
-                responsibilitiesArray = [row.responsibility1, row.responsibility2, row.responsibility3, row.responsibility4].filter(r => r);
-            }
-            
-            const papersArray = this.parsePapers(row);
-            
-            const transformed = {
-                title: row.title,
-                company: row.company,
-                period: row.period,
-                location: row.location || '',
-                countryCode: row.countryCode || row.countrycode || '',
-                link: row.link || '',
-                companyLogo: row.companyLogo,
-                responsibilities: responsibilitiesArray,
-                papers: papersArray,
-                tools: toolsArray
-            };
-            
-            if (data.indexOf(row) === 0) {
-                console.log('Transformed first row:', transformed);
-            }
-            
-            return transformed;
-        });
-    }
-
-    static transformKeyProjects(data) {
-        return data.map(row => ({
-            title: row.title,
-            role: row.role,
-            period: row.period,
-            projectImage: row.projectImage,
-            description: [row.description1, row.description2, row.description3, row.description4].filter(d => d)
-        }));
-    }
-
-    static transformEducation(data) {
-        return data.map(row => {
-            // Parse tools from comma-separated string
-            const toolsArray = row.tools ? row.tools.split(',').map(t => {
-                const trimmed = t.trim();
-                if (trimmed.includes('.')) {
-                    return trimmed;
-                }
-                return trimmed + '.png';
-            }).filter(t => t !== '') : [];
-            
-            const papersArray = this.parsePapers(row);
-            
-            return {
-                degree: row.degree,
-                institution: row.institution,
-                period: row.period,
-                location: row.location || '',
-                countryCode: row.countryCode || row.countrycode || '',
-                link: row.link || '',
-                institutionLogo: row.institutionLogo,
-                details: row.details,
-                papers: papersArray,
-                tools: toolsArray
-            };
-        });
-    }
-
-    static transformExperiences(data) {
-        return data.map(row => ({
-            title: row.title,
-            organization: row.organization,
-            period: row.period,
-            location: row.location || '',
-            countryCode: row.countryCode || row.countrycode || '',
-            link: row.link || '',
-            organizationLogo: row.organizationLogo,
-            description: [row.description1, row.description2, row.description3].filter(d => d)
-        }));
-    }
-
-    static transformSkills(data) {
-        const skills = {};
-        data.forEach(row => {
-            const category = row.category;
-            const skillList = [row.skill1, row.skill2, row.skill3, row.skill4, row.skill5, row.skill6].filter(s => s);
-            skills[category] = skillList;
-        });
-        return skills;
-    }
-
-    // Load projects data and populate projects page
-    static async loadProjectsData() {
-        try {
-            const response = await fetch('data/projects-data.json');
-            const data = await response.json();
-
-            if (document.querySelector('.projects-grid')) {
-                this.renderProjectsData(data);
-            }
-        } catch (error) {
-            console.error('Error loading projects data:', error);
-        }
-    }
-
-    // Render CV data to the page
-    static renderCVData(data) {
-        const container = document.querySelector('.page-content .container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="cv-section">
-                <h3>Work Experience</h3>
-                ${data.workExperience.map(job => `
-                    <div class="experience-item">
-                        <div class="experience-content">
-                            <div class="title-row">
-                                <h4>${job.title}</h4>
-                                ${job.location ? `<span class="location-mobile">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</span>` : ''}
-                            </div>
-                            <div class="date">${job.period}</div>
-                            <p><strong>${job.link ? `<a href="${job.link}" class="company-link" target="_blank" rel="noopener">${job.company}</a>` : job.company}</strong></p>
-                            <ul>
-                                ${job.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
-                            </ul>
-                            ${job.papers && job.papers.length > 0 ? `
-                            <div style="margin-top: 0.75rem;">
-                                <strong>Published Papers:</strong>
-                                <ul style="margin-top: 0.25rem;">
-                                    ${job.papers.map(paper => `<li>${paper.url ? `<a href="${paper.url}" target="_blank" rel="noopener">${paper.title}</a>` : paper.title}</li>`).join('')}
-                                </ul>
-                            </div>
-                            ` : ''}
-                            ${job.tools && job.tools.length > 0 ? `
-                            <div class="software-tools">
-                                ${job.tools.map(tool => {
-                                    // Extract tool name from filename (remove extension and capitalize)
-                                    const toolName = tool.replace(/\.(png|svg|jpg|jpeg)$/i, '')
-                                        .split(/[-_]/)
-                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                        .join(' ');
-                                    return `<div class="tool-item">
-                                        <img src="assets/images/tools/${tool}" alt="${toolName}" class="tool-icon">
-                                        <span class="tool-name">${toolName}</span>
-                                    </div>`;
-                                }).join('')}
-                            </div>
-                            ` : ''}
-                        </div>
-                        <div class="experience-visual">
-                            ${job.location ? `<div class="location-info">${job.countryCode ? `<img src="https://flagcdn.com/16x12/${job.countryCode.toLowerCase()}.png" alt="${job.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${job.location}</div>` : ''}
-                            <div class="company-logo">
-                                <img src="${job.companyLogo}" alt="${job.company}" class="company-image">
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="cv-section">
-                <h3>Key Projects</h3>
-                ${data.keyProjects.map(project => `
-                    <div class="experience-item">
-                        <div class="experience-content">
-                            <h4>${project.title}</h4>
-                            <div class="date">${project.period}</div>
-                            <p><strong>${project.role}</strong></p>
-                            <ul>
-                                ${project.description.map(desc => `<li>${desc}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="project-image">
-                            <img src="${project.projectImage}" alt="${project.title}" class="project-photo" style="width: 320px !important; height: auto !important; display: block !important;">
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="cv-section">
-                <h3>Technical Skills</h3>
-                <div class="skills-grid">
-                    ${Object.entries(data.skills).map(([category, skills]) => `
-                        <div class="skill-category">
-                            <h4>${category}</h4>
-                            <ul class="skill-list">
-                                ${skills.map(skill => `<li>${skill}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div class="cv-section">
-                <h3>Education</h3>
-                ${data.education.map(edu => `
-                    <div class="education-item">
-                        <div class="education-content">
-                            <div class="title-row">
-                                <h4>${edu.degree}</h4>
-                                ${edu.location ? `<span class="location-mobile">${edu.countryCode ? `<img src="https://flagcdn.com/16x12/${edu.countryCode.toLowerCase()}.png" alt="${edu.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${edu.location}</span>` : ''}
-                            </div>
-                            <div class="date">${edu.period}</div>
-                            <p><strong>${edu.link ? `<a href="${edu.link}" class="company-link" target="_blank" rel="noopener">${edu.institution}</a>` : edu.institution}</strong></p>
-                            <p>${edu.details}</p>
-                            ${edu.papers && edu.papers.length > 0 ? `
-                            <div style="margin-top: 0.75rem;">
-                                <strong>Published Papers:</strong>
-                                <ul style="margin-top: 0.25rem;">
-                                    ${edu.papers.map(paper => `<li>${paper.url ? `<a href="${paper.url}" target="_blank" rel="noopener">${paper.title}</a>` : paper.title}</li>`).join('')}
-                                </ul>
-                            </div>
-                            ` : ''}
-                            ${edu.tools && edu.tools.length > 0 ? `
-                            <div class="software-tools">
-                                ${edu.tools.map(tool => {
-                                    const toolName = tool.replace(/\.(png|svg|jpg|jpeg)$/i, '')
-                                        .split(/[-_]/)
-                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                        .join(' ');
-                                    return `<div class="tool-item">
-                                        <img src="assets/images/tools/${tool}" alt="${toolName}" class="tool-icon">
-                                        <span class="tool-name">${toolName}</span>
-                                    </div>`;
-                                }).join('')}
-                            </div>
-                            ` : ''}
-                        </div>
-                        <div class="experience-visual">
-                            ${edu.location ? `<div class="location-info">${edu.countryCode ? `<img src="https://flagcdn.com/16x12/${edu.countryCode.toLowerCase()}.png" alt="${edu.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${edu.location}</div>` : ''}
-                            <div class="university-logo">
-                                <img src="${edu.institutionLogo}" alt="${edu.institution}" class="university-image">
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="cv-section">
-                <h3>Experiences</h3>
-                ${data.experiences.map(exp => `
-                    <div class="experience-item">
-                        <div class="experience-content">
-                            <div class="title-row">
-                                <h4>${exp.title}</h4>
-                                ${exp.location ? `<span class="location-mobile">${exp.countryCode ? `<img src="https://flagcdn.com/16x12/${exp.countryCode.toLowerCase()}.png" alt="${exp.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${exp.location}</span>` : ''}
-                            </div>
-                            <div class="date">${exp.period}</div>
-                            <p><strong>${exp.link ? `<a href="${exp.link}" class="company-link" target="_blank" rel="noopener">${exp.organization}</a>` : exp.organization}</strong></p>
-                            <ul>
-                                ${exp.description.map(desc => `<li>${desc}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="experience-visual">
-                            ${exp.location ? `<div class="location-info">${exp.countryCode ? `<img src="https://flagcdn.com/16x12/${exp.countryCode.toLowerCase()}.png" alt="${exp.countryCode}" class="country-flag">` : '<i class="fas fa-location-dot"></i>'} ${exp.location}</div>` : ''}
-                            <div class="company-logo">
-                                <img src="${exp.organizationLogo}" alt="${exp.organization}" class="company-image">
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    // Render projects data to the page
-    static renderProjectsData(data) {
-        const container = document.querySelector('.page-content .container');
-        if (!container) return;
-
-        container.innerHTML = Object.entries(data.categories).map(([categoryName, projects]) => `
-            <div class="section">
-                <h2>${categoryName}</h2>
-                <div class="projects-grid">
-                    ${projects.map(project => `
-                        <div class="project-card">
-                            <div class="project-image">
-                                ${project.icon}
-                            </div>
-                            <div class="project-content">
-                                <h3>${project.title}</h3>
-                                <p>${project.description}</p>
-                                
-                                <div class="project-tags">
-                                    ${project.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                                
-                                <div class="project-links">
-                                    ${project.links.map(link => `<a href="${link.url}" class="project-link">${link.text}</a>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
+async function fetchSheet(gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Sheet gid=${gid} failed: ${res.status}`);
+  return parseCSV(await res.text());
 }
 
-// Load data when page loads
-document.addEventListener('DOMContentLoaded', function () {
-    console.log('DataLoader: Page loaded, pathname:', window.location.pathname);
+function parseCSV(csv) {
+  const rows = [];
+  let row = [], field = '', inQ = false;
 
-    // Load CV data on curriculum page
-    if (window.location.pathname.includes('curriculum.html')) {
-        console.log('DataLoader: Loading CV data...');
-        DataLoader.loadCVData();
-    }
+  for (let i = 0; i < csv.length; i++) {
+    const c = csv[i], n = csv[i + 1];
+    if (c === '"' && n === '"' && inQ) { field += '"'; i++; }
+    else if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { row.push(field.trim()); field = ''; }
+    else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && n === '\n') i++;
+      row.push(field.trim()); field = '';
+      if (row.some(f => f)) rows.push(row);
+      row = [];
+    } else { field += c; }
+  }
+  row.push(field.trim());
+  if (row.some(f => f)) rows.push(row);
 
-    // Load projects data on projects page
-    if (window.location.pathname.includes('projects.html')) {
-        console.log('DataLoader: Loading projects data...');
-        DataLoader.loadProjectsData();
+  if (!rows.length) return [];
+  const headers = rows[0];
+  return rows.slice(1).map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] || ''])));
+}
+
+// ── Helpers ───────────────────────────────────────────
+
+function flagImg(code, label) {
+  if (!code) return '';
+  return `<img src="https://flagcdn.com/16x12/${code.toLowerCase()}.png" alt="${label}">`;
+}
+
+function parseLines(val) {
+  if (!val) return [];
+  return val.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    .split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function parseTools(val) {
+  if (!val) return [];
+  return val.split(',').map(t => t.trim()).filter(Boolean);
+}
+
+// Resolve image without knowing extension — tries png, svg, jpg, webp in order
+function resolveImage(folder, name) {
+  if (!name) return '';
+  if (/\.(png|svg|jpg|jpeg|webp)$/i.test(name)) return `${folder}/${name}`;
+  // Return a proxy img src that falls through extensions via onerror
+  return `${folder}/${name}.png" onerror="tryNextExt(this,'${folder}/${name}')`;
+}
+
+const EXT_ORDER = ['png', 'svg', 'jpg', 'jpeg', 'webp'];
+
+function tryNextExt(img, base) {
+  const current = img.src.split('.').pop().toLowerCase();
+  const idx = EXT_ORDER.indexOf(current);
+  if (idx < EXT_ORDER.length - 1) {
+    img.src = `${base}.${EXT_ORDER[idx + 1]}`;
+  } else {
+    img.style.display = 'none'; // all failed, hide
+  }
+}
+
+function parsePapers(row) {
+  const src = row.papers || [row.paper1, row.paper2, row.paper3].filter(Boolean).join('\n');
+  return parseLines(src).map(p => {
+    if (p.includes('|')) {
+      const [title, url] = p.split('|').map(s => s.trim());
+      return { title, url };
     }
+    return { title: p, url: null };
+  });
+}
+
+function toolsHTML(tools, section) {
+  if (!tools.length) return '';
+  return `<div class="cv__card-tags">
+    ${tools.map(t => {
+      const name = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
+        .split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const base = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
+      const src = resolveImage('images/skills', t);
+      return `<div class="tool-item">
+        <img src="${src}" alt="${name}" class="tool-icon" onerror="tryNextExt(this,'images/skills/${base}')">
+        <span class="tool-label">${name}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function papersHTML(papers) {
+  if (!papers.length) return '';
+  return `<p class="cv__card-papers-label">Published Papers:</p>
+  <ul>${papers.map(p => `<li>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">${p.title}</a>` : p.title}</li>`).join('')}</ul>`;
+}
+
+function cardHTML({ title, date, subtitle, subtitleLink, location, countryCode, logo, bullets, thesis, papers, tools }) {
+  return `
+  <div class="cv__card">
+    <div class="cv__card-main">
+      <div class="cv__card-title">${title}</div>
+      <div class="cv__card-date">${date}</div>
+      <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
+      ${thesis ? `<p class="cv__card-thesis">${thesis}</p>` : ''}
+      ${bullets.length ? `<ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
+      ${papersHTML(papers)}
+      ${toolsHTML(tools)}
+    </div>
+    <div class="cv__card-side">
+      ${location ? `<div class="cv__card-location">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      ${logo ? `<div class="cv__card-logo">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">` : ''}<img src="${logo}" alt="${subtitle}" onerror="tryNextExt(this,'${logo.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')}')">${subtitleLink ? '</a>' : ''}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── Renderers ─────────────────────────────────────────
+
+function renderWork(data) {
+  const body = document.querySelector('#section-work');
+  if (!body) return;
+  body.innerHTML = data.map(row => cardHTML({
+    title: row.title,
+    date: row.period,
+    subtitle: row.company,
+    subtitleLink: row.link,
+    location: row.location,
+    countryCode: row.countryCode || row.countrycode,
+    logo: resolveImage('images/cv/work', row.companyLogo),
+    bullets: parseLines(row.responsibilities),
+    papers: parsePapers(row),
+    tools: parseTools(row.tools),
+  })).join('');
+}
+
+function renderEducation(data) {
+  const body = document.querySelector('#section-studies');
+  if (!body) return;
+  body.innerHTML = data.map(row => cardHTML({
+    title: row.degree,
+    date: row.period,
+    subtitle: row.institution,
+    subtitleLink: row.link,
+    location: row.location,
+    countryCode: row.countryCode || row.countrycode,
+    logo: resolveImage('images/cv/studies', row.institutionLogo),
+    bullets: [],
+    thesis: row.details,
+    papers: parsePapers(row),
+    tools: parseTools(row.tools),
+  })).join('');
+}
+
+function renderExperiences(data) {
+  const body = document.querySelector('#section-experiences');
+  if (!body) return;
+  body.innerHTML = data.map(row => cardHTML({
+    title: row.title,
+    date: row.period,
+    subtitle: row.organization,
+    subtitleLink: row.link,
+    location: row.location,
+    countryCode: row.countryCode || row.countrycode,
+    logo: resolveImage('images/cv/experiences', row.organizationLogo),
+    bullets: [row.description1, row.description2, row.description3].filter(Boolean),
+    papers: [],
+    tools: [],
+  })).join('');
+}
+
+function renderSkills(data) {
+  const body = document.querySelector('#section-skills');
+  if (!body) return;
+  const map = {};
+  data.forEach(row => {
+    if (!row.category) return;
+    map[row.category] = [row.skill1, row.skill2, row.skill3, row.skill4, row.skill5, row.skill6].filter(Boolean);
+  });
+  body.innerHTML = `<div class="cv__skills-grid">
+    ${Object.entries(map).map(([cat, skills]) => `
+      <div class="cv__skill-category">
+        <h4>${cat}</h4>
+        <ul>${skills.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderProjects(data) {
+  const body = document.querySelector('#section-projects');
+  if (!body) return;
+  body.innerHTML = `<div class="cv__projects">
+    ${data.map(row => `
+      <a href="${row.link || '#'}" class="cv__project-item">
+        <img src="${row.projectImage || 'images/projects/placeholder.jpg'}" alt="${row.title}">
+        <span>${row.title}</span>
+      </a>`).join('')}
+  </div>`;
+}
+
+// ── Init ──────────────────────────────────────────────
+
+async function loadCV() {
+  try {
+    const [work, projects, education, experiences, skills] = await Promise.all([
+      fetchSheet(SHEETS.work.gid),
+      fetchSheet(SHEETS.projects.gid),
+      fetchSheet(SHEETS.education.gid),
+      fetchSheet(SHEETS.experiences.gid),
+      fetchSheet(SHEETS.skills.gid),
+    ]);
+
+    renderWork(work);
+    renderEducation(education);
+    renderExperiences(experiences);
+    renderSkills(skills);
+    renderProjects(projects);
+
+    document.dispatchEvent(new Event('cvDataLoaded'));
+  } catch (err) {
+    console.error('CV load error:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.querySelector('.cv-page') || document.querySelector('.cv')) loadCV();
 });
 
+// ── CV sidebar navigation ─────────────────────────────
+function initCVNav() {
+  const detail = document.getElementById('cvDetail');
+  const items  = document.querySelectorAll('.cv-sidebar__item');
+  if (!detail || !items.length) return;
 
+  function showSection(name) {
+    const src = document.getElementById(`section-${name}`);
+    if (!src) return;
+    detail.innerHTML = `<div class="cv-detail__panel">${src.innerHTML}</div>`;
+  }
+
+  items.forEach(btn => {
+    btn.addEventListener('click', () => {
+      items.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showSection(btn.dataset.section);
+    });
+  });
+
+  // Show first active section once data is loaded
+  document.addEventListener('cvDataLoaded', () => {
+    const active = document.querySelector('.cv-sidebar__item.active');
+    if (active) showSection(active.dataset.section);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initCVNav);

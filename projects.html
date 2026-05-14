@@ -1,270 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects - Luis Matias</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects – Luis Matias</title>
+  <link rel="stylesheet" href="css/main.css" />
 </head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
+<body class="projects-page">
+
+  <header class="navbar">
+    <div class="navbar__logo">
+      <a href="index.html">MySite</a>
     </div>
+    <nav class="navbar__links">
+      <a href="cv.html">Curriculum</a>
+      <a href="projects.html">Projects</a>
+      <a href="#">Contact</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="theme-toggle__icon" id="iconSun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="theme-toggle__icon" id="iconMoon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </header>
 
-    <header>
-        <nav>
-            <div class="logo">
-                <h1>LUIS<span class="highlight">MATIAS</span></h1>
-            </div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="curriculum.html">Curriculum</a></li>
-                <li><a href="projects.html">Projects</a></li>
-                <li><a href="photography.html">Photography</a></li>
-                <li><a href="filaments.html">Filaments</a></li>
-            </ul>
-            <div class="header-controls">
-                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
-                    <i class="fas fa-sun" id="themeIcon"></i>
-                </button>
-                <div class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+  <div class="projects-layout">
 
-    <main>
-        <section class="page-header">
-            <div class="container">
-                <h1>My Projects</h1>
-                <p>Python automation, 3D printing, laser engraving, and VBA solutions</p>
-            </div>
-        </section>
+    <!-- Left: project list -->
+    <aside class="projects-sidebar" id="projectsSidebar">
+      <div class="projects-sidebar__item">
+        <img src="images/projects/placeholder.jpg" alt="Project">
+        <span>Project Name</span>
+      </div>
+    </aside>
 
-        <section class="page-content">
-            <div class="container">
-                
-                <div class="section">
-                    <h2>Python Automation</h2>
-                    <div class="projects-grid">
-                        <div class="project-card">
-                            <div class="project-image">
-                                🐍
-                            </div>
-                            <div class="project-content">
-                                <h3>CAD File Batch Processor</h3>
-                                <p>Python script that automates the processing of multiple CAD files, extracting dimensions, generating reports, and organizing files by project specifications.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Python</span>
-                                    <span class="tag">CAD API</span>
-                                    <span class="tag">File Processing</span>
-                                    <span class="tag">Automation</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">GitHub</a>
-                                    <a href="#" class="project-link">Documentation</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="project-card">
-                            <div class="project-image">
-                                📊
-                            </div>
-                            <div class="project-content">
-                                <h3>Manufacturing Data Analyzer</h3>
-                                <p>Data analysis tool that processes production metrics, identifies bottlenecks, and generates optimization reports for manufacturing processes.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Python</span>
-                                    <span class="tag">Pandas</span>
-                                    <span class="tag">Matplotlib</span>
-                                    <span class="tag">Data Analysis</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">GitHub</a>
-                                    <a href="#" class="project-link">Demo</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>Excel VBA Tools</h2>
-                    <div class="projects-grid">
-                        <div class="project-card">
-                            <div class="project-image">
-                                📈
-                            </div>
-                            <div class="project-content">
-                                <h3>Engineering Calculator Suite</h3>
-                                <p>Comprehensive Excel VBA application with material property calculators, stress analysis tools, and automated design verification for mechanical components.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Excel VBA</span>
-                                    <span class="tag">Engineering</span>
-                                    <span class="tag">Calculations</span>
-                                    <span class="tag">Automation</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">Download</a>
-                                    <a href="#" class="project-link">Manual</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="project-card">
-                            <div class="project-image">
-                                📋
-                            </div>
-                            <div class="project-content">
-                                <h3>Project Management Dashboard</h3>
-                                <p>Excel-based project tracking system with automated progress reports, resource allocation, and timeline management for engineering projects.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Excel VBA</span>
-                                    <span class="tag">Project Management</span>
-                                    <span class="tag">Dashboard</span>
-                                    <span class="tag">Reporting</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">Download</a>
-                                    <a href="#" class="project-link">Tutorial</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>3D Printing Projects</h2>
-                    <div class="projects-grid">
-                        <div class="project-card">
-                            <div class="project-image">
-                                🖨️
-                            </div>
-                            <div class="project-content">
-                                <h3>Custom Mechanical Parts</h3>
-                                <p>Collection of 3D printed mechanical components including gears, brackets, and housings designed for specific industrial applications and prototyping.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">3D Printing</span>
-                                    <span class="tag">CAD Design</span>
-                                    <span class="tag">Prototyping</span>
-                                    <span class="tag">PLA/ABS</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">STL Files</a>
-                                    <a href="#" class="project-link">Gallery</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="project-card">
-                            <div class="project-image">
-                                🔧
-                            </div>
-                            <div class="project-content">
-                                <h3>Workshop Tool Organizers</h3>
-                                <p>Custom-designed 3D printed organizers and holders for workshop tools, optimized for space efficiency and easy access in manufacturing environments.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">3D Printing</span>
-                                    <span class="tag">Organization</span>
-                                    <span class="tag">Workshop</span>
-                                    <span class="tag">Custom Design</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">Designs</a>
-                                    <a href="#" class="project-link">Print Guide</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>Laser Engraving & CNC</h2>
-                    <div class="projects-grid">
-                        <div class="project-card">
-                            <div class="project-image">
-                                ⚡
-                            </div>
-                            <div class="project-content">
-                                <h3>Precision Marking System</h3>
-                                <p>Laser engraving setup for marking serial numbers, QR codes, and specifications on manufactured parts with high precision and repeatability.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Laser Engraving</span>
-                                    <span class="tag">Automation</span>
-                                    <span class="tag">Quality Control</span>
-                                    <span class="tag">Manufacturing</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">Process</a>
-                                    <a href="#" class="project-link">Examples</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="project-card">
-                            <div class="project-image">
-                                🎨
-                            </div>
-                            <div class="project-content">
-                                <h3>Custom Signage & Prototypes</h3>
-                                <p>Laser-cut acrylic and wood signage, along with rapid prototyping of mechanical components using CNC and laser cutting technologies.</p>
-                                
-                                <div class="project-tags">
-                                    <span class="tag">Laser Cutting</span>
-                                    <span class="tag">Signage</span>
-                                    <span class="tag">Prototyping</span>
-                                    <span class="tag">Acrylic/Wood</span>
-                                </div>
-                                
-                                <div class="project-links">
-                                    <a href="#" class="project-link">Portfolio</a>
-                                    <a href="#" class="project-link">Materials</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
+    <!-- Right: project detail -->
+    <main class="projects-detail" id="projectsDetail">
+      <div class="projects-detail__empty">
+        <p>Select a project to view details</p>
+      </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="social-links">
-                <a href="https://linkedin.com/in/yourprofile" target="_blank" class="social-link" title="LinkedIn">
-                    <i class="fab fa-linkedin-in"></i>
-                </a>
-                <a href="https://instagram.com/yourprofile" target="_blank" class="social-link" title="Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-            </div>
-            <p>&copy; 2024 Luis Matias. All rights reserved.</p>
-        </div>
-    </footer>
+  </div>
 
-    <script src="js/script.js"></script>
-    <script src="js/data-loader.js"></script>
-    <script src="js/config-loader.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="js/main.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/projects-loader.js"></script>
+  <script type="module" src="js/viewer3d.js"></script>
+
+  <!-- 3D viewer modal -->
+  <div class="model-modal" id="modelModal" hidden>
+    <div class="model-modal__backdrop" id="modelBackdrop"></div>
+    <div class="model-modal__box">
+      <button class="model-modal__close" id="modelClose">✕</button>
+      <div class="model-modal__layout">
+        <div class="model-modal__tree-panel">
+          <div class="model-modal__tree-header">Parts</div>
+          <div class="model-modal__tree" id="modelTree"></div>
+        </div>
+        <div class="model-modal__viewport">
+          <div class="model-modal__controls">
+            <div class="model-modal__controls-row">
+              Left – Rotate &nbsp;|&nbsp; Mid – Zoom &nbsp;|&nbsp; Right – Pan
+            </div>
+            <div class="model-modal__controls-row">
+              <span class="model-modal__label">Background</span>
+              <span class="model-modal__bg-swatch active" id="bgSwatch0" data-bg="0" style="background:#1a1a1a;"></span>
+              <span class="model-modal__bg-swatch" id="bgSwatch1" data-bg="1" style="background:#ffffff;"></span>
+              <span class="model-modal__sep">|</span>
+              <button id="modelCamToggle" class="model-modal__bg-btn">Perspective</button>
+              <span class="model-modal__sep">|</span>
+              <button id="modelIso" class="model-modal__bg-btn">ISO View</button>
+            </div>
+          </div>
+          <canvas id="modelCanvas"></canvas>
+          <div class="model-modal__context-menu" id="modelContextMenu" hidden>
+            <button id="ctxHidePart">Hide Part</button>
+            <button id="ctxShowOnly">Show Only This</button>
+            <button id="ctxShowAll">Show All</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

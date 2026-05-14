@@ -1,119 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luis Matias - Mechanical Designer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Website</title>
+  <link rel="stylesheet" href="css/main.css" />
 </head>
-
 <body>
-    <!-- Loading Screen -->
-    <div class="spinner"></div>
-    <div class="loading" id="loading">
+
+  <header class="navbar">
+    <div class="navbar__logo">
+      <a href="index.html">MySite</a>
     </div>
+    <nav class="navbar__links">
+      <a href="cv.html">Curriculum</a>
+      <a href="projects.html">Projects</a>
+      <a href="#">Contact</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="theme-toggle__icon" id="iconSun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="theme-toggle__icon" id="iconMoon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </header>
 
-    <header>
-        <nav>
-            <div class="logo">
-                <h1>LUIS<span class="highlight">MATIAS</span></h1>
-            </div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="curriculum.html">Curriculum</a></li>
-                <li><a href="projects.html">Projects</a></li>
-                <li><a href="photography.html">Photography</a></li>
-                <li><a href="filaments.html">Filaments</a></li>
-            </ul>
-            <div class="header-controls">
-                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
-                    <i class="fas fa-sun" id="themeIcon"></i>
-                </button>
-                <div class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+  <section class="hero">
+    <div class="hero__avatar">
+      <img src="images/profile.jpg" alt="Luis Matias" />
+    </div>
+    <div class="hero__content">
+      <h1 class="hero__title" id="typewriter"></h1>
+      <p class="hero__sub">Mechanical Designer • CAD • 3D Printing Enthusiast</p>
+      <div class="hero__actions">
+        <a href="cv.html" class="btn btn--outline">View CV</a>
+        <a href="projects.html" class="btn">My Projects</a>
+      </div>
+    </div>
+  </section>
 
-    <main>
-        <section class="hero">
-            <div class="hero-container">
-                <div class="hero-photo">
-                    <img src="assets/images/fotowhite_3x3.5.jpg" alt="Luis Matias" class="profile-photo">
-                </div>
-                <div class="hero-content">
-                    <h2>Hello, I'm Luis Matias</h2>
-                    <p>Mechanical Designer • CAD Specialist • 3D Printing Enthusiast</p>
-                    <div class="hero-buttons">
-                        <a href="curriculum.html" class="cta-button">View CV</a>
-                        <a href="projects.html" class="cta-button secondary">My Projects</a>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <main class="container">
+    <!-- page content goes here -->
+  </main>
 
-        <section class="section">
-            <div class="container">
-                <h2>About Me</h2>
-                <div class="about-content">
-                    <div class="about-text">
-                        <p>I'm a passionate mechanical designer with expertise in CAD software, 3D printing, and
-                            automated manufacturing systems. I combine technical precision with creative problem-solving
-                            to bring innovative designs to life.</p>
-                        <p>Explore my curriculum to learn about my professional journey, check out my projects spanning
-                            custom DIY machines and fabrication, 3D printing innovations, and programming automation
-                            with Python and VBA.</p>
-                        <p>When I'm not designing or building, I explore the world through photography, capturing the
-                            essence of different cultures and landscapes. Browse my photography collection featuring
-                            moments from my travels to Japan, New York, Thailand, and other destinations that have
-                            inspired my creative
-                    </div>
-                </div>
-            </div>
-        </section>
+  <footer class="footer">
+    <p>&copy; 2026 MySite</p>
+  </footer>
 
-        <section class="section portfolio-preview">
-            <div class="container">
-                <h2>Quick Links</h2>
-                <div class="preview-grid">
-                    <a href="curriculum.html" class="preview-card">
-                        <h3>📋 Curriculum</h3>
-                        <p>My professional experience, education, and technical skills</p>
-                    </a>
-                    <a href="projects.html" class="preview-card">
-                        <h3>⚙️ Projects</h3>
-                        <p>Python automation, 3D printing, laser engraving, and VBA tools</p>
-                    </a>
-                    <a href="photography.html" class="preview-card">
-                        <h3>📸 Photography</h3>
-                        <p>Travel photography from Japan, New York, and Thailand</p>
-                    </a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <div class="social-links">
-                <a href="https://linkedin.com/in/yourprofile" target="_blank" class="social-link" title="LinkedIn">
-                    <i class="fab fa-linkedin-in"></i>
-                </a>
-                <a href="https://instagram.com/yourprofile" target="_blank" class="social-link" title="Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-            </div>
-            <p>&copy; 2024 Luis Matias. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="js/script.js"></script>
-    <script src="js/config-loader.js"></script>
+  <script src="js/main.js"></script>
 </body>
-
 </html>
