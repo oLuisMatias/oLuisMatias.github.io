@@ -1,17 +1,29 @@
+const PROJECTS_SHEET_ID = '1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ';
+const PROJECTS_GID = 150361186;
+
+async function fetchProjectsSheet() {
+  const url = `https://docs.google.com/spreadsheets/d/${PROJECTS_SHEET_ID}/export?format=csv&gid=${PROJECTS_GID}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Projects sheet failed: ${res.status}`);
+  return parseCSV(await res.text());
+}
+
 async function loadProjects() {
   const sidebar = document.getElementById('projectsSidebar');
   const detail  = document.getElementById('projectsDetail');
   if (!sidebar) return;
 
   try {
-    const res  = await fetch('data/projects.json');
-    const data = await res.json();
+    const data = (await fetchProjectsSheet()).filter(row => row.title);
 
-    if (!data.length) return;
+    if (!data.length) {
+      sidebar.innerHTML = '<p style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">No projects yet.</p>';
+      return;
+    }
 
     sidebar.innerHTML = data.map((p, i) => `
       <button class="projects-sidebar__item" data-index="${i}">
-        <img src="images/projects/${p.image}" alt="${p.title}"
+        <img src="${p.banner || 'images/projects/placeholder.svg'}" alt="${p.title}"
              onerror="this.style.display='none'">
         <span>${p.title}</span>
       </button>
@@ -30,27 +42,58 @@ async function loadProjects() {
 
   } catch (err) {
     console.error('Projects load error:', err);
+    sidebar.innerHTML = '<p style="padding:1rem;color:var(--accent);font-size:0.85rem;">Failed to load projects.</p>';
   }
 }
 
+function projectToolsHTML(tools) {
+  if (!tools.length) return '';
+  return `<div class="cv__card-tags" style="margin-top:1rem;">
+    ${tools.map(t => {
+      const name = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
+        .split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const base = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
+      const src = /\.(png|svg|jpg|jpeg|webp)$/i.test(t) ? `images/skills/${t}` : `images/skills/${t}.png`;
+      return `<div class="tool-item">
+        <img src="${src}" alt="${name}" class="tool-icon" onerror="window.tryNextExt(this,'images/skills/${base}')">
+        <span class="tool-label">${name}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 function renderDetail(container, p) {
+  const tools = p.software ? p.software.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const descriptions = p.description ? p.description.replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean) : [];
+
   container.innerHTML = `
     <div class="projects-detail__content">
-      <div class="projects-detail__image">
-        <img src="images/projects/${p.image}" alt="${p.title}" onerror="this.style.display='none'">
-      </div>
+      ${p.banner ? `<div class="projects-detail__image">
+        <img src="${p.banner}" alt="${p.title}" onerror="this.style.display='none'">
+      </div>` : ''}
       <div class="projects-detail__info">
         <div class="projects-detail__title-row">
           <h1>${p.title}</h1>
-          ${p.cadFile ? `<button class="btn btn--outline" onclick="openModel('${p.cadFile}')">View CAD File</button>` : ''}
+          ${p.cadFile ? `<button class="btn btn--outline" id="cadBtn-${Date.now()}">View CAD File</button>` : ''}
         </div>
-        ${p.role   ? `<p class="projects-detail__role">${p.role}</p>` : ''}
-        ${p.period ? `<p class="projects-detail__period">${p.period}</p>` : ''}
         <div class="projects-detail__desc">
-          ${p.descriptions.map(d => `<p>${d}</p>`).join('')}
+          ${descriptions.map(d => `<p>${d}</p>`).join('')}
         </div>
+        ${projectToolsHTML(tools)}
       </div>
     </div>`;
+
+  // Attach CAD button event listener
+  if (p.cadFile) {
+    const cadBtn = container.querySelector('[id^="cadBtn-"]');
+    if (cadBtn) {
+      cadBtn.addEventListener('click', () => {
+        if (typeof window.openModel === 'function') {
+          window.openModel(p.cadFile);
+        }
+      });
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

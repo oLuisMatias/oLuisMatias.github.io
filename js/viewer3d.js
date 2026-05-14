@@ -383,8 +383,17 @@ function buildTree(model) {
 function destroyViewer() {
   if (animId) cancelAnimationFrame(animId);
   window.removeEventListener('resize', window._viewerResize);
+  
+  // Clean up canvas event listeners
+  if (viewerCanvas) {
+    const newCanvas = viewerCanvas.cloneNode(true);
+    viewerCanvas.parentNode.replaceChild(newCanvas, viewerCanvas);
+    viewerCanvas = null;
+  }
+  
   if (renderer) renderer.dispose();
-  renderer = scene = camera = controls = null;
+  if (controls) controls.dispose();
+  renderer = scene = camera = orthoCamera = controls = null;
 }
 
 // ── Modal wiring ──────────────────────────────────────
@@ -403,14 +412,27 @@ if (modal) {
     }, 100);
   };
 
+  function handleEscape(e) {
+    if (e.key === 'Escape' && !modal.hasAttribute('hidden')) {
+      closeModel();
+    }
+  }
+
   function closeModel() {
     modal.setAttribute('hidden', '');
     destroyViewer();
+    document.removeEventListener('keydown', handleEscape);
   }
 
   closeBtn.addEventListener('click', closeModel);
   backdrop.addEventListener('click', closeModel);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModel(); });
+  
+  // Add escape listener when modal opens
+  const originalOpenModel = window.openModel;
+  window.openModel = function(src) {
+    document.addEventListener('keydown', handleEscape);
+    originalOpenModel(src);
+  };
 
   // Background swatches
   const bgColors = [0x1a1a1a, 0xffffff];
