@@ -24,12 +24,30 @@ async function loadProjects() {
       return;
     }
 
-    sidebar.innerHTML = data.map((p, i) => `
-      <button class="projects-sidebar__item" data-index="${i}">
-        <img src="${p.banner || 'images/projects/placeholder.svg'}" alt="${p.title}"
-             onerror="this.style.display='none'">
-        <span>${p.title}</span>
-      </button>
+    // Group projects by topic
+    const grouped = {};
+    data.forEach((p, i) => {
+      const topic = p.topic || 'Other';
+      if (!grouped[topic]) grouped[topic] = [];
+      grouped[topic].push({ ...p, _index: i });
+    });
+
+    sidebar.innerHTML = Object.entries(grouped).map(([topic, projects]) => `
+      <div class="projects-sidebar__group">
+        <button class="projects-sidebar__topic" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>${topic}</span>
+          <span class="projects-sidebar__toggle">−</span>
+        </button>
+        <div class="projects-sidebar__items">
+          ${projects.map(p => `
+            <button class="projects-sidebar__item" data-index="${p._index}">
+              <img src="${p.banner || 'images/projects/placeholder.svg'}" alt="${p.title}"
+                   onerror="this.style.display='none'">
+              <span>${p.title}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
     `).join('');
 
     sidebar.querySelectorAll('.projects-sidebar__item').forEach(btn => {
@@ -92,7 +110,7 @@ function renderDetail(container, p) {
     if (cadBtn) {
       cadBtn.addEventListener('click', () => {
         if (typeof window.openModel === 'function') {
-          window.openModel(p.cadFile);
+          window.openModel(p.cadFile, p.title);
         }
       });
     }

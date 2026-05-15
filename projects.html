@@ -10,11 +10,14 @@
 
   <header class="navbar">
     <div class="navbar__logo">
-      <a href="index.html">Luis Matias</a>
+      <a href="index.html"><span style="color:var(--text);text-transform:uppercase;font-weight:700;">LUIS</span><span style="color:var(--accent);text-transform:uppercase;font-weight:700;">MATIAS</span></a>
     </div>
     <nav class="navbar__links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About Me</a>
       <a href="cv.html">Curriculum</a>
       <a href="projects.html">Projects</a>
+      <a href="contact.html">Contact</a>
     </nav>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
       <svg class="theme-toggle__icon" id="iconSun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -45,7 +48,6 @@
 
   </div>
 
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <script type="importmap">
   {
     "imports": {
@@ -66,7 +68,7 @@
       <button class="model-modal__close" id="modelClose">✕</button>
       <div class="model-modal__layout">
         <div class="model-modal__tree-panel">
-          <div class="model-modal__tree-header">Parts</div>
+          <div class="model-modal__tree-header" id="modelTreeHeader">Parts</div>
           <div class="model-modal__tree" id="modelTree"></div>
         </div>
         <div class="model-modal__viewport">
@@ -78,8 +80,6 @@
               <span class="model-modal__label">Background</span>
               <span class="model-modal__bg-swatch active" id="bgSwatch0" data-bg="0" style="background:#1a1a1a;"></span>
               <span class="model-modal__bg-swatch" id="bgSwatch1" data-bg="1" style="background:#ffffff;"></span>
-              <span class="model-modal__sep">|</span>
-              <button id="modelCamToggle" class="model-modal__bg-btn">Perspective</button>
               <span class="model-modal__sep">|</span>
               <button id="modelIso" class="model-modal__bg-btn">ISO View</button>
             </div>

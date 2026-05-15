@@ -17,6 +17,34 @@ async function fetchSheet(gid) {
   return parseCSV(await res.text());
 }
 
+// Cached fetch: returns cached data instantly, refreshes in background
+async function fetchSheetCached(gid) {
+  const cacheKey = `sheet_${gid}`;
+  const cached = localStorage.getItem(cacheKey);
+  
+  if (cached) {
+    // Return cached data immediately, refresh in background
+    const parsed = JSON.parse(cached);
+    
+    // Background refresh (don't await)
+    fetchSheet(gid).then(freshData => {
+      const freshJSON = JSON.stringify(freshData);
+      if (freshJSON !== cached) {
+        localStorage.setItem(cacheKey, freshJSON);
+        // Data changed - reload on next visit
+        localStorage.setItem('dataUpdated', 'true');
+      }
+    }).catch(() => {}); // silently fail background refresh
+    
+    return parsed;
+  }
+  
+  // No cache - fetch and store
+  const data = await fetchSheet(gid);
+  localStorage.setItem(cacheKey, JSON.stringify(data));
+  return data;
+}
+
 function parseCSV(csv) {
   const rows = [];
   let row = [], field = '', inQ = false;
@@ -276,7 +304,18 @@ function certificationCardHTML({ title, issuer, period, id, image, pdf, verify }
           ${pdf ? `<button class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;font-family:inherit;line-height:1.6;cursor:pointer;" onclick="openPdfModal('data/documents/${pdf}')">View</button>` : ''}
           ${pdf ? `<a href="data/documents/${pdf}" download class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;">Download</a>` : ''}
         </div>
-        ${verify ? `<a href="data/documents/${verify}" target="_blank" rel="noopener" class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;">Verify</a>` : ''}
+        ${verify ? (() => {
+          // Check if verify is a URL (starts with http) or an image file
+          const isUrl = verify.startsWith('http');
+          const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(verify);
+          if (isUrl) {
+            return `<button class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;font-family:inherit;cursor:pointer;" onclick="window.open('${verify}','verify','width=500,height=500,scrollbars=yes,resizable=yes')">Verify</button>`;
+          } else if (isImage) {
+            return `<button class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;font-family:inherit;cursor:pointer;" onclick="openImageModal('data/documents/${verify}')">Verify</button>`;
+          } else {
+            return `<a href="data/documents/${verify}" target="_blank" rel="noopener" class="btn btn--outline" style="font-size:0.8rem;padding:0.4rem 1rem;">Verify</a>`;
+          }
+        })() : ''}
       </div>
     </div>
   </div>`;
@@ -297,21 +336,148 @@ function renderCertifications(data) {
   })).join('')}</div>`;
 }
 
+function renderContact(data) {
+  // data is an array of rows; we just need the first row
+  const info = data[0] || {};
+  window.__contactInfo = info; // store globally for homepage use
+  const el = document.getElementById('contact-section');
+  if (!el) return;
+  buildContactSection(el, info);
+}
+
+function buildContactSection(el, info) {
+  const email    = info.email    || '';
+  const linkedin = info.linkedin || '';
+  const phone    = info.phone    || '';
+  const location = info.location || '';
+
+  // Extract LinkedIn display name from URL
+  const linkedinDisplay = linkedin ? linkedin.replace('https://www.', '').replace('https://', '').replace(/\/$/, '') : '';
+
+  el.innerHTML = `
+    <div class="contact__info">
+      <h2 class="contact__title">Get in Touch</h2>
+      <p class="contact__sub">Feel free to reach out for opportunities, or just a chat.</p>
+      <ul class="contact__list">
+        ${email    ? `<li><span class="contact__icon">✉</span><a href="mailto:${email}">${email}</a></li>` : ''}
+        ${phone    ? `<li><span class="contact__icon">📞</span><span>${phone}</span></li>` : ''}
+        ${location ? `<li><span class="contact__icon">📍</span><span>${location}</span></li>` : ''}
+      </ul>
+      ${linkedin ? `<a href="${linkedin}" target="_blank" rel="noopener" class="btn contact__linkedin">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:white;border-radius:50%;margin-right:0.5rem;flex-shrink:0;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--accent)"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        </span>
+        Connect on LinkedIn
+      </a>` : ''}
+    </div>
+    <form class="contact__form" onsubmit="submitContactForm(event)">
+      <h3 class="contact__form-title">Send a Message</h3>
+      <div class="contact__field">
+        <label for="contactName">Name</label>
+        <input type="text" id="contactName" name="name" placeholder="Your name" required>
+      </div>
+      <div class="contact__field">
+        <label for="contactEmail">Email</label>
+        <input type="email" id="contactEmail" name="email" placeholder="your@email.com" required>
+      </div>
+      <div class="contact__field">
+        <label for="contactSubject">Subject</label>
+        <input type="text" id="contactSubject" name="subject" placeholder="Subject">
+      </div>
+      <div class="contact__field">
+        <label for="contactMessage">Message</label>
+        <textarea id="contactMessage" name="message" rows="5" placeholder="Your message..." required></textarea>
+      </div>
+      <button type="submit" class="btn contact__submit">Send Message</button>
+    </form>
+  `;
+
+  // Store email and EmailJS config for form submission
+  el.dataset.email = email;
+  el.dataset.emailjsPublicKey  = info.emailjs_public_key  || '';
+  el.dataset.emailjsServiceId  = info.emailjs_service_id  || '';
+  el.dataset.emailjsTemplateId = info.emailjs_template_id || '';
+}
+
+window.submitContactForm = function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const section = form.closest('[data-email]') || document.getElementById('contact-section');
+  const publicKey  = section ? section.dataset.emailjsPublicKey  : '';
+  const serviceId  = section ? section.dataset.emailjsServiceId  : '';
+  const templateId = section ? section.dataset.emailjsTemplateId : '';
+
+  // Fallback to mailto if EmailJS not configured
+  if (!publicKey || !serviceId || !templateId) {
+    const toEmail = section ? section.dataset.email : '';
+    const name    = form.name.value.trim();
+    const from    = form.email.value.trim();
+    const subject = form.subject.value.trim() || 'Message from portfolio';
+    const message = form.message.value.trim();
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${from}\n\n${message}`);
+    window.location.href = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    return;
+  }
+
+  const btn = form.querySelector('.contact__submit');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  emailjs.init(publicKey);
+  emailjs.send(serviceId, templateId, {
+    from_name: form.name.value.trim(),
+    from_email: form.email.value.trim(),
+    subject: form.subject.value.trim() || 'Message from portfolio',
+    message: form.message.value.trim(),
+  }).then(() => {
+    btn.textContent = '✓ Sent!';
+    btn.style.background = '#27ae60';
+    btn.style.borderColor = '#27ae60';
+    form.reset();
+    setTimeout(() => {
+      btn.textContent = 'Send Message';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.disabled = false;
+    }, 3000);
+  }).catch((err) => {
+    console.error('EmailJS error:', err);
+    btn.textContent = 'Failed - Try again';
+    btn.style.background = '#e74c3c';
+    btn.style.borderColor = '#e74c3c';
+    setTimeout(() => {
+      btn.textContent = 'Send Message';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.disabled = false;
+    }, 3000);
+  });
+};
+
 // ── Init ──────────────────────────────────────────────
 
 async function loadCV() {
   try {
-    const [work, projects, education, experiences] = await Promise.all([
-      fetchSheet(SHEETS.work.gid),
-      fetchSheet(SHEETS.projects.gid),
-      fetchSheet(SHEETS.education.gid),
-      fetchSheet(SHEETS.experiences.gid),
+    // Check if data was updated in background on previous visit
+    if (localStorage.getItem('dataUpdated') === 'true') {
+      localStorage.removeItem('dataUpdated');
+      // Clear cache to force fresh load
+      Object.keys(localStorage).filter(k => k.startsWith('sheet_')).forEach(k => localStorage.removeItem(k));
+    }
+
+    const [work, projects, education, experiences, contact] = await Promise.all([
+      fetchSheetCached(SHEETS.work.gid),
+      fetchSheetCached(SHEETS.projects.gid),
+      fetchSheetCached(SHEETS.education.gid),
+      fetchSheetCached(SHEETS.experiences.gid),
+      fetchSheetCached(539278378),
     ]);
 
     renderWork(work);
     renderEducation(education);
     renderExperiences(experiences);
     await renderProjects(projects);
+    renderContact(contact);
 
     // Certifications loaded separately so it doesn't block the rest
     try {
