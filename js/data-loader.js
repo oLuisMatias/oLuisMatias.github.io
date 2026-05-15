@@ -227,23 +227,6 @@ function renderExperiences(data) {
   })).join('')}</div>`;
 }
 
-function renderSkills(data) {
-  const body = document.querySelector('#section-skills');
-  if (!body) return;
-  const map = {};
-  data.forEach(row => {
-    if (!row.category) return;
-    map[row.category] = [row.skill1, row.skill2, row.skill3, row.skill4, row.skill5, row.skill6].filter(Boolean);
-  });
-  body.innerHTML = `<div class="cv__skills-grid">
-    ${Object.entries(map).map(([cat, skills]) => `
-      <div class="cv__skill-category">
-        <h4>${cat}</h4>
-        <ul>${skills.map(s => `<li>${s}</li>`).join('')}</ul>
-      </div>`).join('')}
-  </div>`;
-}
-
 async function renderProjects(data) {
   const body = document.querySelector('#section-projects');
   if (!body) return;

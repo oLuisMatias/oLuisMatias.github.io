@@ -5,7 +5,10 @@ async function fetchProjectsSheet() {
   const url = `https://docs.google.com/spreadsheets/d/${PROJECTS_SHEET_ID}/export?format=csv&gid=${PROJECTS_GID}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Projects sheet failed: ${res.status}`);
-  return parseCSV(await res.text());
+  const text = await res.text();
+  // parseCSV is defined in data-loader.js which is loaded before this script
+  if (typeof parseCSV !== 'function') throw new Error('parseCSV not available');
+  return parseCSV(text);
 }
 
 async function loadProjects() {
