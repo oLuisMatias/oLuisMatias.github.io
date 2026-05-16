@@ -41,7 +41,7 @@ async function loadProjects() {
         <div class="projects-sidebar__items">
           ${projects.map(p => `
             <button class="projects-sidebar__item" data-index="${p._index}">
-              <img src="${p.banner || 'images/projects/placeholder.svg'}" alt="${p.title}"
+              <img src="images/projects/${p.banner || 'placeholder.svg'}" alt="${p.title}"
                    onerror="this.style.display='none'">
               <span>${p.title}</span>
             </button>
@@ -50,16 +50,51 @@ async function loadProjects() {
       </div>
     `).join('');
 
+    function slugify(text) {
+      return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    function getProjectHash(p) {
+      const topic = slugify(p.topic || 'other');
+      const title = slugify(p.title || '');
+      return `${topic}_${title}`;
+    }
+
     sidebar.querySelectorAll('.projects-sidebar__item').forEach(btn => {
       btn.addEventListener('click', () => {
         sidebar.querySelectorAll('.projects-sidebar__item').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        renderDetail(detail, data[+btn.dataset.index]);
+        const idx = +btn.dataset.index;
+        const hash = getProjectHash(data[idx]);
+        history.pushState({ project: idx }, '', `#${hash}`);
+        renderDetail(detail, data[idx]);
       });
     });
 
-    // Select first by default
-    sidebar.querySelector('.projects-sidebar__item')?.click();
+    // Find project index by hash
+    function findByHash(hash) {
+      return data.findIndex(p => getProjectHash(p) === hash);
+    }
+
+    // Handle back/forward
+    window.addEventListener('popstate', (e) => {
+      const idx = e.state?.project ?? findByHash(location.hash.replace('#', ''));
+      if (idx >= 0 && data[idx]) {
+        sidebar.querySelectorAll('.projects-sidebar__item').forEach(b => b.classList.remove('active'));
+        const target = sidebar.querySelector(`[data-index="${idx}"]`);
+        if (target) target.classList.add('active');
+        renderDetail(detail, data[idx]);
+      }
+    });
+
+    // Restore from hash or select first
+    const hashIdx = findByHash(location.hash.replace('#', ''));
+    if (hashIdx >= 0) {
+      const target = sidebar.querySelector(`[data-index="${hashIdx}"]`);
+      if (target) target.click();
+    } else {
+      sidebar.querySelector('.projects-sidebar__item')?.click();
+    }
 
   } catch (err) {
     console.error('Projects load error:', err);
@@ -87,21 +122,30 @@ function renderDetail(container, p) {
   const tools = p.software ? p.software.split(',').map(t => t.trim()).filter(Boolean) : [];
   const descriptions = p.description ? p.description.replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean) : [];
 
+  function formatText(text) {
+    return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
   container.innerHTML = `
     <div class="projects-detail__content">
-      ${p.banner ? `<div class="projects-detail__image">
-        <img src="${p.banner}" alt="${p.title}" onerror="this.style.display='none'">
-      </div>` : ''}
-      <div class="projects-detail__info">
+      <div class="projects-detail__header">
         <div class="projects-detail__title-row">
           <h1>${p.title}</h1>
           ${p.cadFile ? `<button class="btn btn--outline" id="cadBtn-${Date.now()}">View CAD File</button>` : ''}
         </div>
-        <div class="projects-detail__desc">
-          ${descriptions.map(d => `<p>${d}</p>`).join('')}
-        </div>
-        ${projectToolsHTML(tools)}
+        <div class="projects-detail__separator"></div>
       </div>
+      <div class="projects-detail__body">
+        <div class="projects-detail__body-text">
+          <div class="projects-detail__desc">
+            ${descriptions.map(d => `<p>• ${formatText(d)}</p>`).join('')}
+          </div>
+        </div>
+        ${p.banner ? `<div class="projects-detail__body-image">
+          <img src="images/projects/${p.banner}" alt="${p.title}" onerror="this.style.display='none'">
+        </div>` : ''}
+      </div>
+      ${projectToolsHTML(tools)}
     </div>`;
 
   // Attach CAD button event listener

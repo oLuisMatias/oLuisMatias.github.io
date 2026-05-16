@@ -47,7 +47,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const data = await fetchSheetCached(1472778998);
+        const data = await fetchSheet(1472778998);
         const el = document.getElementById('aboutContent');
         if (el && data.length) {
           const paragraphs = data.map(row => row.text).filter(Boolean);

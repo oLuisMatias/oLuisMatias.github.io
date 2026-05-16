@@ -515,18 +515,32 @@ function initCVNav() {
     detail.innerHTML = `<div class="cv-detail__panel">${src.innerHTML}</div>`;
   }
 
+  function activateTab(name) {
+    const target = Array.from(items).find(b => b.dataset.section === name);
+    if (!target) return;
+    items.forEach(b => b.classList.remove('active'));
+    target.classList.add('active');
+    showSection(name);
+  }
+
   items.forEach(btn => {
     btn.addEventListener('click', () => {
-      items.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      showSection(btn.dataset.section);
+      const section = btn.dataset.section;
+      history.pushState({ section }, '', `#${section}`);
+      activateTab(section);
     });
   });
 
-  // Show first active section once data is loaded
+  // Handle back/forward
+  window.addEventListener('popstate', (e) => {
+    const section = e.state?.section || location.hash.replace('#', '') || 'work';
+    activateTab(section);
+  });
+
+  // Restore from hash or default to work
   document.addEventListener('cvDataLoaded', () => {
-    const active = document.querySelector('.cv-sidebar__item.active');
-    if (active) showSection(active.dataset.section);
+    const hash = location.hash.replace('#', '');
+    activateTab(hash || 'work');
   });
 }
 

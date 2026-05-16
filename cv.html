@@ -126,7 +126,7 @@
     function openPdfModal(src) {
       const modal = document.getElementById('pdfModal');
       const frame = document.getElementById('pdfFrame');
-      frame.src = src;
+      frame.src = src + '#toolbar=0&zoom=page-fit';
       modal.removeAttribute('hidden');
     }
     function closePdfModal() {

@@ -48,7 +48,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const data = await fetchSheetCached(539278378);
+        const data = await fetchSheet(539278378);
         const el = document.getElementById('contact-section');
         if (el && data.length) buildContactSection(el, data[0]);
       } catch(e) { console.error('Contact load error:', e); }
