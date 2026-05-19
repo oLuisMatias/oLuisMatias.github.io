@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Projects – Luis Matias</title>
+  <meta name="description" content="Engineering and design projects by Luis Matias – CAD, 3D Printing, Automation">
+  <link rel="icon" href="images/favicon.png" type="image/png">
   <link rel="stylesheet" href="css/main.css" />
 </head>
 <body class="projects-page">
@@ -60,6 +62,40 @@
   <script src="js/data-loader.js"></script>
   <script src="js/projects-loader.js"></script>
   <script type="module" src="js/viewer3d.js"></script>
+
+  <!-- YouTube modal -->
+  <div class="yt-modal" id="ytModal" hidden>
+    <div class="yt-modal__backdrop" onclick="closeYoutubeModal()"></div>
+    <div class="yt-modal__box">
+      <button class="yt-modal__close" onclick="closeYoutubeModal()">✕</button>
+      <iframe id="ytFrame" src="" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+    </div>
+  </div>
+
+  <script>
+    function openYoutubeModal(url) {
+      const modal = document.getElementById('ytModal');
+      const frame = document.getElementById('ytFrame');
+      // Convert youtube URL to embed URL
+      let embedUrl = url;
+      if (url.includes('youtube.com/watch')) {
+        const videoId = new URL(url).searchParams.get('v');
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      } else if (url.includes('youtu.be/')) {
+        const videoId = url.split('youtu.be/')[1].split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+      frame.src = embedUrl;
+      modal.removeAttribute('hidden');
+    }
+    function closeYoutubeModal() {
+      const modal = document.getElementById('ytModal');
+      const frame = document.getElementById('ytFrame');
+      frame.src = '';
+      modal.setAttribute('hidden', '');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeYoutubeModal(); });
+  </script>
 
   <!-- 3D viewer modal -->
   <div class="model-modal" id="modelModal" hidden>

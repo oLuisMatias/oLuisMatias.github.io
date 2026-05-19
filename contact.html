@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact – Luis Matias</title>
+  <meta name="description" content="Get in touch with Luis Matias – Mechanical Designer">
+  <link rel="icon" href="images/favicon.png" type="image/png">
   <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
@@ -48,7 +50,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const data = await fetchSheet(539278378);
+        const data = await fetchSheetCached(539278378);
         const el = document.getElementById('contact-section');
         if (el && data.length) buildContactSection(el, data[0]);
       } catch(e) { console.error('Contact load error:', e); }

@@ -262,28 +262,38 @@ async function renderProjects(data) {
   // Fetch projects sheet for descriptions
   let projectsData = [];
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=150361186`;
-    const res = await fetch(url);
-    if (res.ok) projectsData = parseCSV(await res.text());
+    projectsData = await fetchSheetCached(150361186);
   } catch (e) { /* ignore */ }
 
   const filtered = data.filter(row => row.title);
 
-  body.innerHTML = `<div class="cv__projects">
-    ${filtered.map(row => {
-      // Find matching project in projects sheet
-      const match = projectsData.find(p => p.title && p.title.toLowerCase() === row.title.toLowerCase());
-      const image = row.projectImage || (match && match.banner ? match.banner : 'images/projects/placeholder.svg');
-      const description = match && match.description ? match.description.replace(/\\n/g, ' ').split('\n')[0] : '';
-      const link = row.link || 'projects.html';
-      return `
-      <a href="${link}" class="cv__project-item">
-        <img src="${image}" alt="${row.title}" onerror="this.style.display='none'">
-        <span class="cv__project-item-title">${row.title}</span>
-        ${description ? `<span class="cv__project-item-desc">${description}</span>` : ''}
-      </a>`;
-    }).join('')}
-  </div>`;
+  body.innerHTML = filtered.map(row => {
+    // Find matching project in projects sheet
+    const match = projectsData.find(p => p.title && p.title.toLowerCase() === row.title.toLowerCase());
+    const image = match && match.banner ? `images/projects/${match.banner}` : (row.projectImage || '');
+    const description = match && match.description ? match.description.replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const link = row.link || `projects.html#${(row.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    
+    // Get first paragraph lines (skip [img] tags)
+    const textLines = description.filter(d => !d.startsWith('[img') && !d.startsWith('[---]'));
+    const descText = textLines.slice(0, 3).join(' ');
+
+    return `
+    <div class="cv__project-card">
+      <div class="cv__project-card-title">
+        <a href="${link}">${row.title}</a>
+      </div>
+      <div class="cv__project-card-body">
+        ${image ? `<div class="cv__project-card-img">
+          <img src="${image}" alt="${row.title}" onerror="this.parentElement.style.display='none'">
+        </div>` : ''}
+        <div class="cv__project-card-desc">
+          <p>${descText}</p>
+          <a href="${link}" class="btn btn--outline" style="margin-top:1rem;display:inline-block;font-size:0.85rem;padding:0.5rem 1.25rem;">View Details</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function certificationCardHTML({ title, issuer, period, id, image, pdf, verify }) {
@@ -334,15 +344,6 @@ function renderCertifications(data) {
     pdf:    row.pdf,
     verify: row.verify,
   })).join('')}</div>`;
-}
-
-function renderContact(data) {
-  // data is an array of rows; we just need the first row
-  const info = data[0] || {};
-  window.__contactInfo = info; // store globally for homepage use
-  const el = document.getElementById('contact-section');
-  if (!el) return;
-  buildContactSection(el, info);
 }
 
 function buildContactSection(el, info) {
@@ -465,23 +466,21 @@ async function loadCV() {
       Object.keys(localStorage).filter(k => k.startsWith('sheet_')).forEach(k => localStorage.removeItem(k));
     }
 
-    const [work, projects, education, experiences, contact] = await Promise.all([
+    const [work, projects, education, experiences] = await Promise.all([
       fetchSheetCached(SHEETS.work.gid),
       fetchSheetCached(SHEETS.projects.gid),
       fetchSheetCached(SHEETS.education.gid),
       fetchSheetCached(SHEETS.experiences.gid),
-      fetchSheetCached(539278378),
     ]);
 
     renderWork(work);
     renderEducation(education);
     renderExperiences(experiences);
     await renderProjects(projects);
-    renderContact(contact);
 
     // Certifications loaded separately so it doesn't block the rest
     try {
-      const certifications = await fetchSheet(SHEETS.certifications.gid);
+      const certifications = await fetchSheetCached(SHEETS.certifications.gid);
       renderCertifications(certifications);
     } catch (e) {
       console.error('Certifications load error:', e);
@@ -506,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── CV sidebar navigation ─────────────────────────────
 function initCVNav() {
   const detail = document.getElementById('cvDetail');
-  const items  = document.querySelectorAll('.cv-sidebar__item');
+  const items  = document.querySelectorAll('.cv-sidebar__nav .cv-sidebar__item');
   if (!detail || !items.length) return;
 
   function showSection(name) {
@@ -534,7 +533,9 @@ function initCVNav() {
   // Handle back/forward
   window.addEventListener('popstate', (e) => {
     const section = e.state?.section || location.hash.replace('#', '') || 'work';
-    activateTab(section);
+    // Only activate if section exists
+    const src = document.getElementById(`section-${section}`);
+    if (src && src.innerHTML) activateTab(section);
   });
 
   // Restore from hash or default to work
@@ -542,6 +543,13 @@ function initCVNav() {
     const hash = location.hash.replace('#', '');
     activateTab(hash || 'work');
   });
+
+  // If data already loaded (cached), activate immediately
+  const workSection = document.getElementById('section-work');
+  if (workSection && workSection.innerHTML) {
+    const hash = location.hash.replace('#', '');
+    activateTab(hash || 'work');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initCVNav);

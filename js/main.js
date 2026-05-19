@@ -25,16 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Load site settings from Google Sheet ──────────
   loadSiteSettings();
 
-  // ── CV section toggles ────────────────────────────
-  document.querySelectorAll('.cv__toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const body = btn.closest('.cv__section').querySelector('.cv__body');
-      const open = body.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open);
-      btn.textContent = open ? '−' : '+';
-    });
-  });
   // ── Typewriter ────────────────────────────────────
   const el = document.getElementById('typewriter');
   if (el) {
@@ -97,18 +87,22 @@ function parseSettingsCSV(csv) {
 
 function applySettings(settings) {
   const root = document.documentElement;
+  const theme = root.getAttribute('data-theme') || 'dark';
 
   // Only apply settings that don't start with _ (those are saved/notes)
   if (settings.accent_color) {
     root.style.setProperty('--accent', settings.accent_color);
   }
-  if (settings.bg_dark) {
-    root.style.setProperty('--bg', settings.bg_dark);
-  }
-  if (settings.bg_surface_dark) {
-    root.style.setProperty('--bg-surface', settings.bg_surface_dark);
-  }
-  if (settings.text_color) {
-    root.style.setProperty('--text', settings.text_color);
+  // Only apply bg/text overrides in dark mode to avoid breaking light theme
+  if (theme === 'dark') {
+    if (settings.bg_dark) {
+      root.style.setProperty('--bg', settings.bg_dark);
+    }
+    if (settings.bg_surface_dark) {
+      root.style.setProperty('--bg-surface', settings.bg_surface_dark);
+    }
+    if (settings.text_color) {
+      root.style.setProperty('--text', settings.text_color);
+    }
   }
 }

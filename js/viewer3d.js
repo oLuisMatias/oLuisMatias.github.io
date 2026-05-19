@@ -26,7 +26,7 @@ const CONFIG = {
 };
 
 let renderer, scene, camera, orthoCamera, controls, animId;
-let useOrtho = true;
+let useOrtho = false;
 let lastModelSize = 1;
 let viewerCanvas;
 
