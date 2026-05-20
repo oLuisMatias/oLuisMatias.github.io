@@ -147,16 +147,21 @@ function cardHTML({ title, date, subtitle, subtitleLink, location, countryCode, 
   return `
   <div class="cv__card">
     <div class="cv__card-main">
-      <div class="cv__card-title" style="font-size:1.2rem;">${title}</div>
+      <div class="cv__card-title-row">
+        <div class="cv__card-title" style="font-size:1.2rem;">${title}</div>
+        ${location ? `<div class="cv__card-location cv__card-location--desktop">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      </div>
       <div class="cv__card-date">${date}</div>
-      <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
+      <div class="cv__card-company-row">
+        <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
+        ${location ? `<div class="cv__card-location cv__card-location--mobile">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      </div>
       ${thesis ? `<p class="cv__card-thesis">${thesis}</p>` : ''}
       ${bullets.length ? `<ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
       ${papersHTML(papers)}
       ${toolsHTML(tools)}
     </div>
     <div class="cv__card-side">
-      ${location ? `<div class="cv__card-location">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
       ${logo ? `<div class="cv__card-logo">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">` : ''}<img src="${logo}" alt="${subtitle}" onerror="window.tryNextExt(this,'${logoBase}')">${subtitleLink ? '</a>' : ''}</div>` : ''}
     </div>
   </div>`;
@@ -184,20 +189,23 @@ function renderWork(data) {
 function educationCardHTML({ title, date, subtitle, subtitleLink, location, countryCode, logo, thesis, papers, tools }) {
   const logoBase = logo ? logo.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '') : '';
   return `
-  <div class="cv__card cv__card--edu">
-    <div class="cv__card-edu-header">
-      <div class="cv__card-title" style="font-size:1.2rem;">${title}</div>
+  <div class="cv__card">
+    <div class="cv__card-main">
+      <div class="cv__card-title-row">
+        <div class="cv__card-title" style="font-size:1.2rem;">${title}</div>
+        ${location ? `<div class="cv__card-location cv__card-location--desktop">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      </div>
       <div class="cv__card-date">${date}</div>
-    </div>
-    <div class="cv__card-edu-body">
-      <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
-      ${location ? `<div class="cv__card-location">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      <div class="cv__card-company-row">
+        <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
+        ${location ? `<div class="cv__card-location cv__card-location--mobile">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
+      </div>
       ${thesis ? `<p class="cv__card-thesis"><strong>Thesis:</strong> ${thesis}</p>` : ''}
       ${papersHTML(papers)}
-    </div>
-    <div class="cv__card-edu-footer">
       ${tools.length ? `<div class="cv__card-software"><span class="cv__card-papers-label">Software:</span>${toolsHTML(tools)}</div>` : ''}
-      ${logo ? `<div class="cv__card-logo cv__card-logo--bottom">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">` : ''}<img src="${logo}" alt="${subtitle}" onerror="window.tryNextExt(this,'${logoBase}')">${subtitleLink ? '</a>' : ''}</div>` : ''}
+    </div>
+    <div class="cv__card-side">
+      ${logo ? `<div class="cv__card-logo">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">` : ''}<img src="${logo}" alt="${subtitle}" onerror="window.tryNextExt(this,'${logoBase}')">${subtitleLink ? '</a>' : ''}</div>` : ''}
     </div>
   </div>`;
 }
@@ -205,7 +213,7 @@ function educationCardHTML({ title, date, subtitle, subtitleLink, location, coun
 function renderEducation(data) {
   const body = document.querySelector('#section-studies');
   if (!body) return;
-  body.innerHTML = `<div class="cv__cards-row">${data.map(row => educationCardHTML({
+  body.innerHTML = data.map(row => educationCardHTML({
     title: row.degree,
     date: row.period,
     subtitle: row.institution,
@@ -216,21 +224,21 @@ function renderEducation(data) {
     thesis: row.details,
     papers: parsePapers(row),
     tools: parseTools(row.tools),
-  })).join('')}</div>`;
+  })).join('');
 }
 
 function experienceCardHTML({ type, title, date, subtitle, subtitleLink, location, countryCode, logo, bullets }) {
   const logoBase = logo ? logo.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '') : '';
   return `
   <div class="cv__card cv__card--edu">
-    <div class="cv__card-edu-header">
+    <div class="cv__card-edu-header cv__card-edu-header--nowrap">
       <div class="cv__card-date">${type}</div>
       <div class="cv__card-date">${date}</div>
     </div>
-    <div class="cv__card-title" style="margin-bottom:0.3rem;font-size:1.2rem;">${title}</div>
+    <div class="cv__card-title" style="font-size:1.2rem;margin-bottom:0.2rem;">${title}</div>
+    ${location ? `<div class="cv__card-location" style="margin-bottom:0.3rem;">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
     <div class="cv__card-edu-body">
       <div class="cv__card-company">${subtitleLink ? `<a href="${subtitleLink}" target="_blank" rel="noopener">${subtitle}</a>` : subtitle}</div>
-      ${location ? `<div class="cv__card-location">${flagImg(countryCode, countryCode)} ${location}</div>` : ''}
       ${bullets.length ? bullets.map(b => `<p class="cv__card-thesis">• ${b}</p>`).join('') : ''}
     </div>
     <div class="cv__card-edu-footer">
