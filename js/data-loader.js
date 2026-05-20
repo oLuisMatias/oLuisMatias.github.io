@@ -285,6 +285,9 @@ async function renderProjects(data) {
     // Get first paragraph lines (skip [img] tags)
     const textLines = description.filter(d => !d.startsWith('[img') && !d.startsWith('[---]'));
     const descText = textLines.slice(0, 3).join(' ');
+    
+    // Get tools from projects sheet
+    const tools = match && match.software ? parseTools(match.software) : [];
 
     return `
     <div class="cv__project-card">
@@ -297,6 +300,7 @@ async function renderProjects(data) {
         </div>` : ''}
         <div class="cv__project-card-desc">
           <p>${descText}</p>
+          ${toolsHTML(tools)}
           <a href="${link}" class="btn btn--outline" style="margin-top:1rem;display:inline-block;font-size:0.85rem;padding:0.5rem 1.25rem;">View Details</a>
         </div>
       </div>

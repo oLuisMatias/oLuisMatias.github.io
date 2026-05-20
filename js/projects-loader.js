@@ -21,11 +21,12 @@ async function loadProjects() {
       grouped[topic].push({ ...p, _index: i });
     });
 
+    const isSmall = window.innerWidth < 1000;
     sidebar.innerHTML = Object.entries(grouped).map(([topic, projects]) => `
-      <div class="projects-sidebar__group">
-        <button class="projects-sidebar__topic" onclick="this.parentElement.classList.toggle('collapsed')">
+      <div class="projects-sidebar__group${isSmall ? ' collapsed' : ''}">
+        <button class="projects-sidebar__topic" onclick="toggleTopicGroup(this)">
           <span>${topic}</span>
-          <span class="projects-sidebar__toggle">−</span>
+          <span class="projects-sidebar__toggle"></span>
         </button>
         <div class="projects-sidebar__items">
           ${projects.map(p => `
@@ -328,4 +329,33 @@ function renderDetail(container, p) {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (document.querySelector('.projects-page')) loadProjects();
+});
+
+function toggleTopicGroup(btn) {
+  const group = btn.parentElement;
+  const isCollapsed = group.classList.contains('collapsed');
+  
+  // If under 1000px, close all others first
+  if (window.innerWidth < 1000) {
+    document.querySelectorAll('.projects-sidebar__group').forEach(g => {
+      g.classList.add('collapsed');
+    });
+  }
+  
+  // Toggle the clicked one
+  if (isCollapsed) {
+    group.classList.remove('collapsed');
+  } else {
+    group.classList.add('collapsed');
+  }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+  if (window.innerWidth >= 1000) return;
+  if (!e.target.closest('.projects-sidebar__group')) {
+    document.querySelectorAll('.projects-sidebar__group').forEach(g => {
+      g.classList.add('collapsed');
+    });
+  }
 });
