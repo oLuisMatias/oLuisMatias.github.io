@@ -42,6 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── Close info tooltips on outside click ──────────
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.cv-info-btn')) {
+      document.querySelectorAll('.cv-info-tooltip.show').forEach(t => t.classList.remove('show'));
+    }
+  });
+
   // ── Typewriter ────────────────────────────────────
   const el = document.getElementById('typewriter');
   if (el) {
@@ -61,6 +68,27 @@ document.addEventListener('DOMContentLoaded', () => {
     type();
   }
 });
+
+// Show info tooltip at click position
+function showInfoTooltip(e, tooltip) {
+  e.stopPropagation();
+  const isShowing = tooltip.classList.contains('show');
+  document.querySelectorAll('.cv-info-tooltip.show').forEach(t => t.classList.remove('show'));
+  if (!isShowing) {
+    if (window.innerWidth < 1000) {
+      // Small screen: top-right corner at click position (tooltip goes left)
+      tooltip.style.left = 'auto';
+      tooltip.style.right = (window.innerWidth - e.clientX) + 'px';
+      tooltip.style.top = e.clientY + 'px';
+    } else {
+      // Desktop: top-left corner at click position (tooltip goes right)
+      tooltip.style.left = e.clientX + 'px';
+      tooltip.style.right = 'auto';
+      tooltip.style.top = e.clientY + 'px';
+    }
+    tooltip.classList.add('show');
+  }
+}
 
 // ── Site Settings Loader ────────────────────────────
 const SETTINGS_SHEET_ID = '1gT2fLInodV6ohZQd4eBoyqGWmZG0vK31Yp3UFJ_XkUQ';
