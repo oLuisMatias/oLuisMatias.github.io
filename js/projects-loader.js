@@ -29,13 +29,28 @@ async function loadProjects() {
           <span class="projects-sidebar__toggle"></span>
         </button>
         <div class="projects-sidebar__items">
-          ${projects.map(p => `
+          ${projects.map(p => {
+            const isModel = /\.(glb|gltf)$/i.test(p.banner);
+            let thumbSrc = 'images/projects/placeholder.png';
+            if (p.banner && !isModel) {
+              thumbSrc = `images/projects/${p.banner}`;
+            } else if (isModel) {
+              // Find first image in description or specs to use as thumbnail
+              const allText = [p.description || '', p.specs || ''].join('\\n');
+              const lines = allText.replace(/\\n/g, '\n').split('\n');
+              const imgLine = lines.find(l => /^\[img[rlt]?\]/.test(l.trim()));
+              if (imgLine) {
+                const filename = imgLine.trim().replace(/^\[img[rlt]?\]/, '').trim();
+                thumbSrc = filename.startsWith('http') ? filename : `images/projects/${filename}`;
+              }
+            }
+            return `
             <button class="projects-sidebar__item" data-index="${p._index}">
-              <img src="images/projects/${p.banner || 'placeholder.svg'}" alt="${p.title}"
+              <img src="${thumbSrc}" alt="${p.title}"
                    onerror="this.style.display='none'">
               <span>${p.title}</span>
             </button>
-          `).join('')}
+          `}).join('')}
         </div>
       </div>
     `).join('');
@@ -96,10 +111,11 @@ function projectToolsHTML(tools) {
   if (!tools.length) return '';
   return `<div class="cv__card-tags" style="margin-top:1rem;">
     ${tools.map(t => {
-      const name = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
+      const file = t.file || t;
+      const name = t.name || file.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
         .split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-      const base = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
-      const src = /\.(png|svg|jpg|jpeg|webp)$/i.test(t) ? `images/skills/${t}` : `images/skills/${t}.png`;
+      const base = file.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
+      const src = /\.(png|svg|jpg|jpeg|webp)$/i.test(file) ? `images/skills/${file}` : `images/skills/${file}.png`;
       return `<div class="tool-item">
         <img src="${src}" alt="${name}" class="tool-icon" onerror="window.tryNextExt(this,'images/skills/${base}')">
         <span class="tool-label">${name}</span>
@@ -109,7 +125,7 @@ function projectToolsHTML(tools) {
 }
 
 function renderDetail(container, p) {
-  const tools = p.software ? p.software.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const tools = p.software ? parseTools(p.software) : [];
   const descriptions = p.description ? p.description.replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean) : [];
 
   // Check if project description is empty (documenting)
@@ -176,20 +192,20 @@ function renderDetail(container, p) {
       if (hasFloat) { descHTML += '<div class="clear"></div>'; hasFloat = false; }
       const filename = d.replace('[img]', '').trim();
       const src = filename.startsWith('http') ? filename : `images/projects/${filename}`;
-      descHTML += `<div class="projects-detail__inline-img"><img src="${src}" alt="" onerror="this.parentElement.style.display='none'"></div>`;
+      descHTML += `<div class="projects-detail__inline-img"><img src="${src}" alt="" onclick="openProjectImage(this.src)" onerror="this.parentElement.style.display='none'"></div>`;
     } else if (d.startsWith('[imgr]')) {
       if (inList) { descHTML += '</ul>'; inList = false; }
       if (hasFloat) { descHTML += '<div class="clear"></div>'; }
       const filename = d.replace('[imgr]', '').trim();
       const src = filename.startsWith('http') ? filename : `images/projects/${filename}`;
-      descHTML += `<div class="projects-detail__inline-img projects-detail__inline-img--right"><img src="${src}" alt="" onerror="this.parentElement.style.display='none'"></div>`;
+      descHTML += `<div class="projects-detail__inline-img projects-detail__inline-img--right"><img src="${src}" alt="" onclick="openProjectImage(this.src)" onerror="this.parentElement.style.display='none'"></div>`;
       hasFloat = true;
     } else if (d.startsWith('[imgl]')) {
       if (inList) { descHTML += '</ul>'; inList = false; }
       if (hasFloat) { descHTML += '<div class="clear"></div>'; }
       const filename = d.replace('[imgl]', '').trim();
       const src = filename.startsWith('http') ? filename : `images/projects/${filename}`;
-      descHTML += `<div class="projects-detail__inline-img projects-detail__inline-img--left"><img src="${src}" alt="" onerror="this.parentElement.style.display='none'"></div>`;
+      descHTML += `<div class="projects-detail__inline-img projects-detail__inline-img--left"><img src="${src}" alt="" onclick="openProjectImage(this.src)" onerror="this.parentElement.style.display='none'"></div>`;
       hasFloat = true;
     } else if (d.startsWith('- ')) {
       if (!inList) { descHTML += '<ul>'; inList = true; }
@@ -256,7 +272,7 @@ function renderDetail(container, p) {
       if (inL) textHTML += '</ul>';
 
       const imgSrc = image ? (image.startsWith('http') ? image : `images/projects/${image}`) : '';
-      const imgTag = image ? `<div class="spec-section__img"><img src="${imgSrc}" alt="" onerror="this.parentElement.style.display='none'"></div>` : '';
+      const imgTag = image ? `<div class="spec-section__img"><img src="${imgSrc}" alt="" onclick="openProjectImage(this.src)" onerror="this.parentElement.style.display='none'"></div>` : '';
 
       if (!image) {
         return `<div class="spec-section"><div class="spec-section__text">${textHTML}</div></div>`;
@@ -297,9 +313,26 @@ function renderDetail(container, p) {
           </div>
           ${projectToolsHTML(tools)}
         </div>
-        ${p.banner ? `<div class="projects-detail__body-image">
-          <img src="images/projects/${p.banner}" alt="${p.title}" onerror="this.style.display='none'">
-        </div>` : ''}
+        ${p.banner ? (() => {
+          const isModel = /\.(glb|gltf)$/i.test(p.banner);
+          if (isModel) {
+            const modelSrc = p.banner.includes('/') ? p.banner : 'data/models/' + p.banner;
+            return `<div class="projects-detail__body-image projects-detail__body-model">
+              <model-viewer
+                src="${modelSrc}"
+                alt="${p.title}"
+                camera-controls
+                auto-rotate
+                shadow-intensity="1"
+                environment-image="neutral"
+                style="width:100%;height:100%;background:#1a1a1a;border-radius:8px;"
+              ></model-viewer>
+            </div>`;
+          }
+          return `<div class="projects-detail__body-image">
+            <img src="images/projects/${p.banner}" alt="${p.title}" onclick="openProjectImage(this.src)" onerror="this.style.display='none'">
+          </div>`;
+        })() : ''}
       </div>
       ${specsHTML}
     </div>`;

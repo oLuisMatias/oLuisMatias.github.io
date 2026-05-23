@@ -43,7 +43,7 @@
     <aside class="cv-sidebar">
       <div class="cv-sidebar__header">
         <h1>Curriculum Vitae</h1>
-        <a href="data/documents/CV_Luis_Matias.pdf" download class="btn cv-download-mobile" style="font-size:0.75rem;padding:0.4rem 0.8rem;">
+        <a href="data/documents/CV_Luis_Matias_NoPhone.pdf" download class="btn cv-download-mobile" style="font-size:0.75rem;padding:0.4rem 0.8rem;">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:0.3rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF
         </a>
         <button class="cv-info-btn cv-info-btn--mobile" onclick="showInfoTooltip(event, this.nextElementSibling)" aria-label="Info">?</button>
@@ -72,7 +72,7 @@
         </button>
       </nav>
       <div class="cv-sidebar__footer">
-        <a href="data/documents/CV_Luis_Matias.pdf" download class="cv-sidebar__item">
+        <a href="data/documents/CV_Luis_Matias_NoPhone.pdf" download class="cv-sidebar__item">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download PDF
         </a>
@@ -124,6 +124,7 @@
 
   <script src="js/main.js"></script>
   <script src="js/data-loader.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 
   <!-- PDF viewer modal -->
   <div class="pdf-modal" id="pdfModal" hidden>

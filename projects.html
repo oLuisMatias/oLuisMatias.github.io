@@ -53,18 +53,9 @@
 
   </div>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
   <script src="js/main.js"></script>
   <script src="js/data-loader.js"></script>
   <script src="js/projects-loader.js"></script>
-  <script type="module" src="js/viewer3d.js"></script>
 
   <!-- YouTube modal -->
   <div class="yt-modal" id="ytModal" hidden>
@@ -100,38 +91,121 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeYoutubeModal(); });
   </script>
 
-  <!-- 3D viewer modal -->
+  <!-- Image fullscreen modal -->
+  <div class="project-img-modal" id="projectImgModal" hidden>
+    <div class="project-img-modal__backdrop" onclick="closeProjectImage()"></div>
+    <div class="project-img-modal__box">
+      <button class="project-img-modal__close" onclick="closeProjectImage()">✕</button>
+      <img id="projectImgModalImg" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+    function openProjectImage(src) {
+      const modal = document.getElementById('projectImgModal');
+      const img = document.getElementById('projectImgModalImg');
+      img.src = src;
+      modal.removeAttribute('hidden');
+    }
+    function closeProjectImage() {
+      const modal = document.getElementById('projectImgModal');
+      const img = document.getElementById('projectImgModalImg');
+      img.src = '';
+      modal.setAttribute('hidden', '');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProjectImage(); });
+  </script>
+
+  <!-- 3D viewer modal (Google Model Viewer) -->
   <div class="model-modal" id="modelModal" hidden>
     <div class="model-modal__backdrop" id="modelBackdrop"></div>
     <div class="model-modal__box">
       <button class="model-modal__close" id="modelClose">✕</button>
-      <div class="model-modal__layout">
-        <div class="model-modal__tree-panel">
-          <div class="model-modal__tree-header" id="modelTreeHeader">Parts</div>
-          <div class="model-modal__tree" id="modelTree"></div>
-        </div>
-        <div class="model-modal__viewport">
-          <div class="model-modal__controls">
-            <div class="model-modal__controls-row">
-              Left – Rotate &nbsp;|&nbsp; Mid – Zoom &nbsp;|&nbsp; Right – Pan
-            </div>
-            <div class="model-modal__controls-row">
-              <span class="model-modal__label">Background</span>
-              <span class="model-modal__bg-swatch active" id="bgSwatch0" data-bg="0" style="background:#1a1a1a;"></span>
-              <span class="model-modal__bg-swatch" id="bgSwatch1" data-bg="1" style="background:#ffffff;"></span>
-              <span class="model-modal__sep">|</span>
-              <button id="modelIso" class="model-modal__bg-btn">ISO View</button>
-            </div>
-          </div>
-          <canvas id="modelCanvas"></canvas>
-          <div class="model-modal__context-menu" id="modelContextMenu" hidden>
-            <button id="ctxHidePart">Hide Part</button>
-            <button id="ctxShowOnly">Show Only This</button>
-            <button id="ctxShowAll">Show All</button>
-          </div>
-        </div>
-      </div>
+      <model-viewer
+        id="modelViewer"
+        alt="3D Model"
+        camera-controls
+        touch-action="pan-y"
+        auto-rotate
+        shadow-intensity="1"
+        environment-image="neutral"
+        style="width:100%;flex:1;min-height:0;background:#1a1a1a;border-radius:8px;"
+      ></model-viewer>
     </div>
   </div>
+
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <script>
+    (function() {
+      const modal = document.getElementById('modelModal');
+      const viewer = document.getElementById('modelViewer');
+      const backdrop = document.getElementById('modelBackdrop');
+      const closeBtn = document.getElementById('modelClose');
+
+      window.openModel = function(src, title) {
+        modal.removeAttribute('hidden');
+        // Prepend data/models/ if no folder path is specified
+        let modelSrc = src;
+        if (!modelSrc.includes('/')) {
+          modelSrc = 'data/models/' + modelSrc;
+        }
+        const encodedSrc = modelSrc.split('/').map(part => encodeURIComponent(part)).join('/');
+        requestAnimationFrame(() => {
+          viewer.setAttribute('src', encodedSrc);
+          viewer.setAttribute('alt', title || '3D Model');
+        });
+      };
+
+      function closeModel() {
+        modal.setAttribute('hidden', '');
+        viewer.removeAttribute('src');
+      }
+
+      closeBtn.addEventListener('click', closeModel);
+      backdrop.addEventListener('click', closeModel);
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModel();
+      });
+
+      // ── Interaction hint for all model-viewers ──────
+      function addInteractionHint(mv) {
+        const hint = document.createElement('div');
+        hint.className = 'model-hint';
+        hint.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 13"/>
+          </svg>
+          <span>Drag to rotate</span>
+        `;
+        mv.parentElement.style.position = 'relative';
+        mv.parentElement.appendChild(hint);
+
+        function removeHint() {
+          hint.classList.add('model-hint--hidden');
+          setTimeout(() => hint.remove(), 300);
+          mv.removeEventListener('camera-change', removeHint);
+        }
+        mv.addEventListener('camera-change', removeHint);
+      }
+
+      // Observe for dynamically added model-viewers (inline banner)
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(m => {
+          m.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            const viewers = node.tagName === 'MODEL-VIEWER' ? [node] : node.querySelectorAll ? node.querySelectorAll('model-viewer') : [];
+            viewers.forEach(mv => {
+              if (mv.id === 'modelViewer') return; // modal viewer handled separately
+              mv.addEventListener('load', () => addInteractionHint(mv), { once: true });
+            });
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Hint for modal viewer
+      viewer.addEventListener('load', () => addInteractionHint(viewer));
+    })();
+  </script>
 </body>
 </html>

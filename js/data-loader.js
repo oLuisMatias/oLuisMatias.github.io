@@ -84,7 +84,31 @@ function parseLines(val) {
 
 function parseTools(val) {
   if (!val) return [];
-  return val.split(',').map(t => t.trim()).filter(Boolean);
+  // Support newline-separated format: "filename.ext Display Name"
+  const normalized = val.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  if (normalized.includes('\n')) {
+    return normalized.split('\n').map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return null;
+      // Match filename with extension, rest is display name
+      const match = trimmed.match(/^(\S+\.\w+)\s+(.+)$/);
+      if (match) {
+        return { file: match[1], name: match[2] };
+      }
+      return { file: trimmed, name: null };
+    }).filter(Boolean);
+  }
+  // Legacy comma-separated format (also supports "filename.ext Name" per entry)
+  return val.split(',').map(t => {
+    const trimmed = t.trim();
+    if (!trimmed) return null;
+    // Check if entry has "filename.ext Display Name" format
+    const match = trimmed.match(/^(\S+\.\w+)\s+(.+)$/);
+    if (match) {
+      return { file: match[1], name: match[2] };
+    }
+    return { file: trimmed, name: null };
+  }).filter(Boolean);
 }
 
 // Resolve image without knowing extension — tries png, svg, jpg, webp in order
@@ -122,10 +146,11 @@ function toolsHTML(tools, section) {
   if (!tools.length) return '';
   return `<div class="cv__card-tags">
     ${tools.map(t => {
-      const name = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
+      const file = t.file || t;
+      const name = t.name || file.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '')
         .split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-      const base = t.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
-      const src = resolveImage('images/skills', t);
+      const base = file.replace(/\.(png|svg|jpg|jpeg|webp)$/i, '');
+      const src = resolveImage('images/skills', file);
       return `<div class="tool-item">
         <img src="${src}" alt="${name}" class="tool-icon" onerror="window.tryNextExt(this,'images/skills/${base}')">
         <span class="tool-label">${name}</span>
@@ -278,7 +303,19 @@ async function renderProjects(data) {
   body.innerHTML = filtered.map(row => {
     // Find matching project in projects sheet
     const match = projectsData.find(p => p.title && p.title.toLowerCase() === row.title.toLowerCase());
-    const image = match && match.banner ? `images/projects/${match.banner}` : (row.projectImage || '');
+    // Priority: row.image (key projects sheet) > match.banner (projects sheet) > row.projectImage
+    let image = '';
+    const rawImage = row.image || (match && match.banner) || row.projectImage || '';
+    const isModel = /\.(glb|gltf)$/i.test(rawImage);
+    if (rawImage) {
+      if (isModel) {
+        image = rawImage.includes('/') ? rawImage : `data/models/${rawImage}`;
+      } else if (rawImage.startsWith('http')) {
+        image = rawImage;
+      } else {
+        image = `images/projects/${rawImage}`;
+      }
+    }
     const description = match && match.description ? match.description.replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean) : [];
     const link = row.link || `projects.html#${(row.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
     
@@ -295,9 +332,11 @@ async function renderProjects(data) {
         <a href="${link}">${row.title}</a>
       </div>
       <div class="cv__project-card-body">
-        ${image ? `<div class="cv__project-card-img">
+        ${image ? (isModel ? `<div class="cv__project-card-img cv__project-card-model">
+          <model-viewer src="${image}" alt="${row.title}" camera-controls auto-rotate shadow-intensity="1" environment-image="neutral" style="width:100%;height:100%;background:#1a1a1a;border-radius:8px;"></model-viewer>
+        </div>` : `<div class="cv__project-card-img">
           <img src="${image}" alt="${row.title}" onerror="this.parentElement.style.display='none'">
-        </div>` : ''}
+        </div>`) : ''}
         <div class="cv__project-card-desc">
           <p>${descText}</p>
           ${toolsHTML(tools)}
