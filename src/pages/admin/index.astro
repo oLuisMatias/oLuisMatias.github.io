@@ -1,0 +1,41 @@
+---
+// Start page of the private area. On Cloudflare, everything under /admin is protected by Cloudflare Access.
+import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
+
+const tools = [
+  {
+    href: "/admin/editor/",
+    icon: "edit",
+    title: "Content editor",
+    text: "Add and change projects, 3D prints, CV entries and site settings. Saving publishes the change.",
+  },
+];
+---
+<Base title="Admin" noindex>
+  <header class="wrap page-head">
+    <p class="eyebrow">Private area</p>
+    <h1 style="margin-top:10px">Admin</h1>
+    <p>Only you can open this page.</p>
+  </header>
+
+  <section class="wrap tools">
+    {tools.map((t) => (
+      <a class="card tool" href={t.href}>
+        <span class="tool__icon"><Icon name={t.icon} size={22} /></span>
+        <h2>{t.title}</h2>
+        <p>{t.text}</p>
+      </a>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-top: 36px; }
+  .tool { display: grid; gap: 8px; align-content: start; padding: 26px; text-decoration: none; color: var(--ink); transition: transform 0.2s; }
+  .tool:hover { transform: translateY(-2px); color: var(--ink); }
+  .tool:hover h2 { color: var(--accent-text); }
+  .tool__icon { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 12px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-text); }
+  .tool h2 { font-size: 20px; margin-top: 6px; }
+  .tool p { color: var(--text); font-size: 15px; }
+</style>

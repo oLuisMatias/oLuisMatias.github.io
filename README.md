@@ -1,20 +1,30 @@
 # lmatias.com
 
-Portfolio of Luis Matias, Mechanical Design Engineer. Built with [Astro](https://astro.build), edited with [Sveltia CMS](https://github.com/sveltia/sveltia-cms) and hosted on GitHub Pages.
+Portfolio of Luis Matias, Mechanical Design Engineer. Built with [Astro](https://astro.build), edited with [Sveltia CMS](https://sveltiacms.app) and hosted on Cloudflare Pages.
 
-## Editing content
+## Private area (`/admin`)
 
-Go to **lmatias.com/admin** and choose **Sign in using access token**. Paste a GitHub personal access token (fine-grained, this repository only, permission *Contents: Read and write*). Every save becomes a commit on `main`, and the site rebuilds in about 1–2 minutes.
+Everything under `/admin` is for the owner only. On Cloudflare it is protected by **Cloudflare Access** (login with the owner's email). The start page `/admin` links to the tools:
 
-| In the admin | Where it shows |
-|---|---|
-| Projects | Projects page, project pages, Home (max 3 with "Show on home page") |
-| 3D Prints | 3D Prints page and the Home "Latest prints" strip |
-| CV · Work / Certifications / Education / Other experience | CV page |
-| Settings › Site settings | Name, headline, about, photo, CV PDF, skills, languages, email, EmailJS ids |
-| Settings › Tools | The tool list you pick from everywhere (name + icon) |
+| Tool | Address | Status |
+|---|---|---|
+| Content editor | `/admin/editor/` | ready (needs the one-time setup below) |
+| Documents, CV builder, letter builder | `/admin/...` | planned |
 
-Every entry has a **Visible on website** switch, and a lower **Order** number puts it first.
+### Content editor
+
+Edit projects, 3D prints, CV entries and site settings in forms; every save is a commit on `main`, and Cloudflare rebuilds the site in about a minute. Every entry has a **Visible on website** switch, and a lower **Order** number puts it first.
+
+Sign in with **Sign In with GitHub**. It works through two small functions of this site, `functions/admin/auth.ts` and `functions/admin/callback.ts`, so there is no separate service to run. The signed-in GitHub account needs write access to the repository.
+
+**One-time setup**
+
+1. **GitHub OAuth app:** GitHub › Settings › Developer settings › OAuth Apps › New. Homepage URL `https://lmatias.com`, **Authorization callback URL** `https://lmatias.com/admin/callback`. Copy the Client ID and create a Client secret.
+2. **Cloudflare Pages › Settings › Variables and Secrets:** add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (as encrypted secrets).
+3. **Cloudflare Zero Trust › Access › Applications:** add a self-hosted application for `lmatias.com/admin*` with a policy that allows only the owner's email.
+4. Testing on a `*.pages.dev` address before the domain is switched: in `public/admin/editor/config.yml`, temporarily set `base_url` to that address, and use it as the OAuth app's callback host.
+
+Without the setup, **Sign In Using Access Token** (a GitHub personal access token with *Contents: Read and write*) and **Work with Local Repository** (Chrome or Edge, select this folder) still work.
 
 ## Content files
 
@@ -22,7 +32,7 @@ All content is plain YAML in the repo:
 
 - `src/content/projects/`, `prints/`, `work/`, `education/`, `experiences/`, `certifications/`: one file per entry
 - `src/data/site.yml`: site settings; `src/data/tools.yml`: tool list
-- `public/`: images, PDFs and 3D models (`public/images/uploads/` for admin uploads)
+- `public/`: images, PDFs and 3D models (`public/images/uploads/` for editor uploads)
 
 ## Running locally
 
@@ -32,6 +42,8 @@ npm run dev      # http://localhost:4321
 npm run build    # output in dist/
 ```
 
+To try the private functions locally, put `GITHUB_CLIENT_ID=...` and `GITHUB_CLIENT_SECRET=...` in a `.dev.vars` file (ignored by git), then run `npm run build` and `npx wrangler pages dev dist`.
+
 ## Publishing
 
-`.github/workflows/deploy.yml` builds and deploys on every push to `main`. In the repository settings, **Pages › Build and deployment › Source** must be **GitHub Actions**.
+Cloudflare Pages builds from this repository on every push to `main`: build command `npm run build`, output directory `dist`.
