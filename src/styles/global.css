@@ -195,6 +195,8 @@ p { margin: 0; }
 .site-footer a { display: inline-flex; align-items: center; gap: 6px; color: var(--text); text-decoration: none; }
 .site-footer a:hover { color: var(--ink); }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.site-footer .admin-link { opacity: 0.45; }
+.site-footer .admin-link:hover { opacity: 1; }
 
 /* Forms */
 .form { display: grid; gap: 16px; }
