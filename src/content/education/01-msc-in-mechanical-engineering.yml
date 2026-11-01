@@ -1,0 +1,21 @@
+degree: MSc in Mechanical Engineering
+institution: FEUP University of Porto
+period: July 2022
+location: Porto, Portugal
+country: PT
+link: https://www.up.pt/feup/en/
+logo: /images/cv/studies/FEUP.png
+details: "Thesis: “Semi-Automatic Method of Stent Development in Coronary Arteries with Stenosis - Hemodynamic Simulations”"
+papers:
+  - title: Semi-Automatic Method of Stent Development for Hemodynamic Simulations in Patient Coronary Arteries with Disease
+    url: https://link.springer.com/chapter/10.1007/978-3-031-04548-6_21
+tools:
+  - solidworks
+  - excel
+  - ansys
+  - abaqus
+  - matlab
+  - python
+  - inkscape
+visible: true
+order: 1

@@ -1,0 +1,172 @@
+---
+import Icon from "../components/Icon.astro";
+import Base from "../layouts/Base.astro";
+import ToolTags from "../components/ToolTags.astro";
+import { site, visible } from "../lib/site";
+
+const prints = await visible("prints");
+const categories = [...new Set(prints.map((p) => p.data.category).filter(Boolean))];
+const templateId = site.emailjs.printTemplateId || site.emailjs.contactTemplateId;
+---
+<Base title="3D Prints" description="3D prints made by Luis Matias, and a form to request a print.">
+  <script is:inline slot="head" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+
+  <header class="wrap page-head">
+    <p class="eyebrow">Workshop</p>
+    <h1 style="margin-top:10px">3D Prints</h1>
+    <p>Parts, prototypes and tools I've printed. Need something printed? Send a request below.</p>
+    <p style="margin-top:20px"><a class="btn btn--primary" href="#request"><Icon name="stack-2" />Request a print</a></p>
+  </header>
+
+  {prints.length > 0 && (
+    <section class="wrap section" style="padding-top:32px" aria-label="Prints">
+      {categories.length > 1 && (
+        <div class="filters" role="group" aria-label="Filter by category">
+          <button type="button" class="filter" data-cat="" aria-pressed="true">All</button>
+          {categories.map((c) => <button type="button" class="filter" data-cat={c} aria-pressed="false">{c}</button>)}
+        </div>
+      )}
+      <div class="grid-cards prints" id="print-grid">
+        {prints.map((p, i) => (
+          <details class="card print" id={p.id} data-cat={p.data.category}>
+            <summary>
+              {p.data.photos[0] ? <img src={p.data.photos[0]} alt="" loading="lazy" /> : <div class="print__ph mono muted">[ NO PHOTO ]</div>}
+              <span class="print__body">
+                {p.data.category && <span class="pill">{p.data.category}</span>}
+                <span class="print__title">{p.data.title}</span>
+                <span class="muted print__cat">{[p.data.material, p.data.printTime].filter(Boolean).join(" · ")}</span>
+              </span>
+            </summary>
+            <div class="print__more">
+              {p.data.photos.length > 1 && (
+                <div class="print__photos">{p.data.photos.slice(1).map((src) => <img src={src} alt="" loading="lazy" />)}</div>
+              )}
+              {p.data.note && <p>{p.data.note}</p>}
+              <dl class="print__facts">
+                {p.data.printer && <><dt>Printer</dt><dd>{p.data.printer}</dd></>}
+                {p.data.date && <><dt>Date</dt><dd>{p.data.date}</dd></>}
+              </dl>
+              <ToolTags tools={p.data.tools} />
+              {p.data.project && <a href={`/projects/${p.data.project}`}>See the full project</a>}
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section id="request" class="wrap section">
+    <div class="section__head"><h2>Request a print</h2></div>
+    <div class="request">
+      <div class="request__note card">
+        <h3>How it works</h3>
+        <ol>
+          <li>Describe the part and share a link to the 3D model, or a photo or sketch if you need it designed.</li>
+          <li>I review every request first: size, material and strength. Not everything can be printed.</li>
+          <li>I reply with options and a price, if any. Nothing is printed before we agree.</li>
+        </ol>
+      </div>
+      <form class="card form request__form" data-email-form
+        data-public-key={site.emailjs.publicKey} data-service-id={site.emailjs.serviceId}
+        data-template-id={templateId} data-fallback-email={site.email}>
+        <div class="form__row">
+          <div class="field"><label for="r-name">Name</label><input id="r-name" name="name" autocomplete="name" required /></div>
+          <div class="field"><label for="r-email">Email</label><input id="r-email" name="email" type="email" autocomplete="email" required /></div>
+        </div>
+        <div class="field">
+          <label for="r-what">What do you need?</label>
+          <textarea id="r-what" name="description" required placeholder="A replacement clip for a car door panel, about 4 cm long. The original broke at the hook."></textarea>
+        </div>
+        <div class="field">
+          <label for="r-link">Link to the 3D model or photos</label>
+          <input id="r-link" name="link" type="url" inputmode="url" placeholder="https://drive.google.com/…" />
+          <span class="hint">Google Drive, Printables, Thingiverse, Dropbox… Make sure the link is shared.</span>
+        </div>
+        <label class="check"><input type="checkbox" name="design" value="yes" /> I don't have a 3D model. Please design it for me.</label>
+        <div class="form__row">
+          <div class="field">
+            <label for="r-material">Material</label>
+            <select id="r-material" name="material">
+              <option>Not sure</option><option>PLA</option><option>PETG</option><option>TPU (flexible)</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label for="r-color">Color</label><input id="r-color" name="color" placeholder="Black" /></div>
+          <div class="field"><label for="r-qty">Quantity</label><input id="r-qty" name="quantity" type="number" min="1" value="1" /></div>
+          <div class="field"><label for="r-date">Needed by (optional)</label><input id="r-date" name="needed_by" type="date" /></div>
+        </div>
+        <div class="sr-only" aria-hidden="true"><label for="r-hp">Leave this empty</label><input id="r-hp" name="company_website" tabindex="-1" autocomplete="off" /></div>
+        <div><button class="btn btn--primary" type="submit"><Icon name="send" /><span class="btn__label">Send request</span></button></div>
+        <p class="form__status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .filter { min-height: 40px; padding: 0 16px; font: 500 14px var(--font-sans); color: var(--text); background: var(--surface); border: 0; border-radius: 999px; cursor: pointer; }
+  .filter:hover { color: var(--ink); background: var(--chip); }
+  .filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .prints { align-items: start; }
+  .print summary { list-style: none; cursor: pointer; display: block; }
+  .print summary::-webkit-details-marker { display: none; }
+  .print summary img, .print__ph { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--placeholder); display: flex; align-items: center; justify-content: center; }
+  .print__body { display: grid; gap: 8px; padding: 18px 20px; }
+  .print__title { font-size: 18px; font-weight: 600; }
+  .print__cat { font-size: 14px; }
+  .print[open] { outline: 2px solid var(--accent); }
+  .print__more { padding: 0 20px 20px; display: grid; gap: 12px; color: var(--text); }
+  .print__photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .print__photos img { aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); }
+  .print__facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 14px; }
+  .print__facts dt { color: var(--muted); }
+  .print__facts dd { margin: 0; }
+  .request { display: grid; gap: 20px; }
+  .request__note { padding: 28px 32px; }
+  .request__note h3 { font-size: 18px; }
+  .request__note ol { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px 28px; color: var(--text); counter-reset: step; }
+  .request__note li { counter-increment: step; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; }
+  .request__note li::before { content: counter(step); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-text); font-weight: 700; font-size: 14px; }
+  .request__form { min-width: 0; padding: 32px; }
+  @media (max-width: 560px) { .request__form, .request__note { padding: 22px; } }
+</style>
+
+<script>
+  import { setupEmailForm } from "../scripts/email-form";
+
+  const form = document.querySelector<HTMLFormElement>("[data-email-form]");
+  if (form) {
+    setupEmailForm(form, (d) => {
+      const get = (k: string) => String(d.get(k) || "").trim();
+      const lines = [
+        "3D PRINT REQUEST",
+        "",
+        get("description"),
+        "",
+        `Model / photos: ${get("link") || "(none)"}`,
+        `Needs design: ${get("design") ? "Yes" : "No"}`,
+        `Material: ${get("material")}`,
+        `Color: ${get("color") || "-"}`,
+        `Quantity: ${get("quantity") || "1"}`,
+        `Needed by: ${get("needed_by") || "-"}`,
+      ];
+      return {
+        from_name: get("name"),
+        from_email: get("email"),
+        subject: `3D print request from ${get("name")}`,
+        message: lines.join("\n"),
+      };
+    });
+  }
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter");
+  const items = document.querySelectorAll<HTMLElement>("#print-grid > [data-cat]");
+  buttons.forEach((b) =>
+    b.addEventListener("click", () => {
+      buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      items.forEach((it) => (it.hidden = !!b.dataset.cat && it.dataset.cat !== b.dataset.cat));
+    }),
+  );
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target instanceof HTMLDetailsElement) target.open = true;
+</script>

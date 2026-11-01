@@ -1,0 +1,17 @@
+degree: BSc in Mechanical Engineering
+institution: NOVA University of Lisbon
+period: 2015 - 2019
+location: Lisbon, Portugal
+country: PT
+link: https://www.fct.unl.pt/en
+logo: /images/cv/studies/nova.png
+details: ""
+papers: []
+tools:
+  - solidworks
+  - excel
+  - ansys
+  - matlab
+  - python
+visible: true
+order: 2

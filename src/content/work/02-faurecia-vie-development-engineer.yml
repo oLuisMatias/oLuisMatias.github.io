@@ -1,0 +1,22 @@
+title: VIE Development Engineer
+company: Faurecia
+link: https://www.forvia.com/en
+location: Trnava, Slovakia
+country: SK
+period: 2023 May - 2024 Dec
+logo: /images/cv/work/faurecia.png
+responsibilities:
+  - "Working in Instrument Panel programs: Citroën C3 and Opel Frontera."
+  - Define and articulate the Engineering Levels required for production, serving as a key liaison between R&D and the plant team to ensure seamless collaboration.
+  - Validate mockups for both interim and permanent solutions, ensuring functionality and compliance with design standards.
+  - Prepare production documents including Visual BOM and 3D models in PLM systems.
+  - Provide support to customers during aspect and functional design evaluations.
+  - Assist manufacturing in defining the sequence of assembly operations during the initial stages of the conveyor production process, ensuring efficiency and accuracy.
+  - Independently develop 3D printing solutions for mockups, workstation and conveyor modifications, and production support tools, enhancing functionality and efficiency.
+  - Develop Excel VBA scripts to streamline stock tracking and ensure accurate inventory before SAP deployment.
+tools:
+  - solidworks
+  - excel
+papers: []
+visible: true
+order: 2

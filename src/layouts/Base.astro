@@ -1,0 +1,109 @@
+---
+import "../styles/global.css";
+import { site, cvHref } from "../lib/site";
+import Icon from "../components/Icon.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+}
+const { title, description = site.intro, image = site.photo, noindex = false } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.role}`;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const links = [
+  { href: "/", label: "Home", icon: "home" },
+  { href: "/cv", label: "CV", icon: "file-cv" },
+  { href: "/projects", label: "Projects", icon: "tool" },
+  { href: "/prints", label: "3D Prints", icon: "stack-2" },
+  { href: "/contact", label: "Contact", icon: "mail" },
+];
+const isActive = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(href + "/"));
+const [first, ...rest] = site.name.toLowerCase().split(" ");
+const year = new Date().getFullYear();
+
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={new URL(image, Astro.site)} />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0e0f11" />
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <script is:inline>
+    try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}
+  </script>
+  <slot name="head" />
+</head>
+<body>
+  <a class="sr-only" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="/">{first}<span>{rest.join("")}</span></a>
+      <nav class="nav" aria-label="Main">
+        <ul class="nav__links" id="nav-links">
+          {links.map((l) => (
+            <li><a href={l.href} aria-current={isActive(l.href) ? "page" : undefined}><Icon name={l.icon} size={16} />{l.label}</a></li>
+          ))}
+        </ul>
+        <a class="btn btn--small btn--primary" href={cvHref} download aria-label="Download CV as PDF">
+          <Icon name="download" size={17} />
+          <span class="cv-btn-label">CV</span>
+        </a>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch light or dark mode">
+          <Icon name="sun" class="theme-icon--sun" />
+          <Icon name="moon" class="theme-icon--moon" />
+        </button>
+        <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+          <Icon name="menu-2" />
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <slot />
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <span>© {year} {site.name}</span>
+      <nav aria-label="Footer">
+        {site.linkedin && <a href={site.linkedin} rel="noopener"><Icon name="brand-linkedin" size={16} />LinkedIn</a>}
+        <a href="/contact"><Icon name="mail" size={16} />Contact</a>
+        <a href={cvHref} download><Icon name="download" size={16} />CV (PDF)</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script is:inline>
+    (function () {
+      var root = document.documentElement;
+      document.getElementById("theme-toggle").addEventListener("click", function () {
+        var next = root.dataset.theme === "light" ? "dark" : "light";
+        if (next === "light") root.dataset.theme = "light"; else delete root.dataset.theme;
+        try { localStorage.setItem("theme", next); } catch (e) {}
+      });
+      var btn = document.getElementById("menu-toggle");
+      var list = document.getElementById("nav-links");
+      btn.addEventListener("click", function () {
+        var open = list.classList.toggle("is-open");
+        btn.setAttribute("aria-expanded", String(open));
+        btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+title: SolidWorks CSWP
+issuer: Dassault Systèmes
+date: May 2025
+credentialId: C-5HXUTSZGMA
+badge: /images/cv/certifications/Badge_SolidWorks_CSWP_CAD_Design_Professional.png
+pdf: /data/documents/SolidWorks_CSWP_CAD_Design_Professional.pdf
+verify: https://cv.virtualtester.com/qr/?b=SLDWRKS&i=C-5HXUTSZGMA
+tools:
+  - excel
+  - solidworks
+visible: true
+order: 2

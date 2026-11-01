@@ -1,0 +1,45 @@
+---
+import { toolsFor } from "../lib/site";
+import SkillTag from "./SkillTag.astro";
+import ToolIcon from "./ToolIcon.astro";
+
+interface Props {
+  tools?: string[];
+  skills?: string[];
+  label?: string;
+  /** Icon-only chips whose name slides out on hover (project cards). Tools without an icon keep their name. */
+  compact?: boolean;
+}
+const { tools = [], skills = [], label = "Tools used", compact = false } = Astro.props;
+const list = toolsFor(tools);
+---
+{(list.length > 0 || skills.length > 0) && (
+  <ul class:list={["tags", { "tags--compact": compact }]} aria-label={label}>
+    {list.map((t) => (
+      <li class:list={["tag", { "tag--compact": compact && t.icon }]} title={compact ? t.name : undefined}>
+        {t.icon && <ToolIcon src={t.icon} />}
+        <span class="tag__label">{t.name}</span>
+      </li>
+    ))}
+    {skills.map((s) => <SkillTag name={s} dashed />)}
+  </ul>
+)}
+
+<style>
+  /* Project cards: one shared container for all icons. Names stay in the page (search engines, screen readers). */
+  .tags--compact { display: inline-flex; width: fit-content; max-width: 100%; gap: 2px; padding: 4px; background: var(--chip); border-radius: 12px; }
+  .tags--compact .tag { background: transparent; border-radius: 8px; padding: 3px; gap: 0; }
+  .tags--compact .tag:has(.ticon) { padding-left: 3px; }
+  .tags--compact .ticon { background: transparent; }
+  .tag--compact .tag__label { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0; transition: max-width 0.25s, opacity 0.2s, margin 0.2s; }
+  .tag--compact:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); padding-right: 10px; }
+  .tag--compact:hover .tag__label { max-width: 14em; opacity: 1; margin-left: 8px; }
+  /* Tools without an icon keep their name inside the container. */
+  .tags--compact .tag:not(.tag--compact) { padding: 3px 9px; }
+  /* Touch screens have no hover: show the names. */
+  @media (hover: none) {
+    .tags--compact { flex-wrap: wrap; }
+    .tag--compact { gap: 7px; padding: 3px 9px 3px 3px; }
+    .tag--compact .tag__label { max-width: none; opacity: 1; }
+  }
+</style>

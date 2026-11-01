@@ -1,0 +1,14 @@
+title: Solid Edge Professional Level
+issuer: Siemens
+date: April 2026
+credentialId: 22258-177-563-6070
+badge: /images/cv/certifications/Badge_Solid_Edge_Professional_Level.png
+pdf: /data/documents/Solid_Edge_Professional_Level.pdf
+verify: /data/documents/Solid_Edge_Verification.png
+tools:
+  - solidedge
+  - teamcenter
+  - solidworks
+  - excel
+visible: true
+order: 1

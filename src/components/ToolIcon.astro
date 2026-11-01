@@ -1,0 +1,8 @@
+---
+// A tool's icon inside a small rounded square, so square and round logos all look the same.
+interface Props {
+  src: string;
+}
+const { src } = Astro.props;
+---
+<span class="ticon"><img src={src} alt="" width="22" height="22" loading="lazy" /></span>

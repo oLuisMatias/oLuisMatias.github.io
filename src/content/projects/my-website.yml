@@ -1,0 +1,50 @@
+title: My Website
+topic: Programming / AI
+summary: This portfolio, rebuilt from scratch as a fast, modern site that I update without touching code, with a private area for my job applications.
+cover: /images/projects/my-website.png
+coverSpacing: []
+model: ""
+youtube: ""
+tools:
+  - astro
+  - typescript
+  - svelte
+  - cloudflare
+  - sveltia
+  - github
+  - emailjs
+  - claude
+skills:
+  - Web development
+  - UI design
+  - Serverless backend
+  - 3D on the web
+featured: true
+visible: true
+order: 3
+blocks:
+  - type: text
+    text: |-
+      The first version of this site loaded its content from a Google Sheet in the browser. It worked, but long texts were awkward to edit inside spreadsheet cells, visitors sometimes saw old content, and search engines only saw "Loading…".
+
+      So I rebuilt it from scratch, with three goals: a cleaner design, content I can change without code, and private tools for job applications.
+  - type: text
+    text: |-
+      **What I built**
+
+      - **Astro and TypeScript:** every page is generated as fast, plain HTML that search engines can read.
+      - **Content as files, edited in Sveltia CMS:** forms with image upload and drag-and-drop content blocks (text, images with position and spacing, galleries, 3D models, videos). Every save is a commit on GitHub.
+      - **Cloudflare Pages:** rebuilds and publishes the site after every change.
+      - **Interactive 3D viewer:** models rotate on the page and open in a full-screen viewer to zoom and pan, so scrolling the page is never blocked.
+      - **Contact and 3D print request forms:** sent with EmailJS straight to my inbox, with a hidden spam trap.
+      - **Design:** a dark "Graphite" theme with a light mode, the Inter typeface, and Tabler icons optically aligned with the text.
+  - type: divider
+  - type: text
+    text: |-
+      **In progress**
+
+      - A **private area** that only I can open, protected by Cloudflare Access.
+      - A **CV builder** that keeps several versions of my CV and creates two PDFs from each: a public one for the website and a private one with my phone number.
+      - A **motivation letter builder** with saved versions per company.
+
+      These use Svelte for the interface, Cloudflare Functions for the server side, and a Cloudflare D1 database.

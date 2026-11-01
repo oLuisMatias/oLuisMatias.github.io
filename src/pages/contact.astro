@@ -1,0 +1,96 @@
+---
+import Icon from "../components/Icon.astro";
+import Base from "../layouts/Base.astro";
+import { site } from "../lib/site";
+---
+<Base title="Contact" description={`Contact ${site.name}, ${site.role} based in ${site.location}.`}>
+  <script is:inline slot="head" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+
+  <header class="wrap page-head">
+    <p class="eyebrow">Contact</p>
+    <h1 style="margin-top:10px">Get in touch</h1>
+    <p>Open to opportunities in mechanical design, collaborations, or a chat about engineering and 3D printing.</p>
+  </header>
+
+  <div class="wrap contact">
+    <div class="contact__info">
+      <div class="card info-block">
+        <h2>Email</h2>
+        <div class="email-row">
+          <a class="email" href={`mailto:${site.email}`} id="email-text">{site.email}</a>
+          <button type="button" class="icon-btn copy-btn" id="copy-email" aria-label="Copy email address" title="Copy email"><Icon name="copy" size={17} /></button>
+          <span class="copied" id="copy-status" aria-live="polite"></span>
+        </div>
+      </div>
+      {site.linkedin && (
+        <div class="card info-block">
+          <h2>LinkedIn</h2>
+          <a class="btn btn--primary" href={site.linkedin} rel="noopener"><Icon name="brand-linkedin" />Connect on LinkedIn</a>
+        </div>
+      )}
+      <div class="card info-block">
+        <h2>Location</h2>
+        <p>Based in {site.location}</p>
+      </div>
+    </div>
+
+    <form class="card form contact__form" data-email-form
+      data-public-key={site.emailjs.publicKey} data-service-id={site.emailjs.serviceId}
+      data-template-id={site.emailjs.contactTemplateId} data-fallback-email={site.email}>
+      <h2>Send a message</h2>
+      <div class="form__row">
+        <div class="field"><label for="c-name">Name</label><input id="c-name" name="name" autocomplete="name" required /></div>
+        <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required /></div>
+      </div>
+      <div class="field"><label for="c-subject">Subject</label><input id="c-subject" name="subject" /></div>
+      <div class="field"><label for="c-message">Message</label><textarea id="c-message" name="message" required></textarea></div>
+      <div class="sr-only" aria-hidden="true"><label for="c-hp">Leave this empty</label><input id="c-hp" name="company_website" tabindex="-1" autocomplete="off" /></div>
+      <div><button class="btn btn--primary" type="submit"><Icon name="send" /><span class="btn__label">Send message</span></button></div>
+      <p class="form__status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</Base>
+
+<style>
+  .contact { display: grid; gap: 20px; padding-top: 36px; }
+  .contact__info { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+  .contact__form { min-width: 0; padding: 32px; }
+  .contact__form h2 { font-size: 23px; }
+  .info-block { padding: 22px 24px; display: grid; gap: 10px; align-content: start; justify-items: start; }
+  .info-block h2 { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  .email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+  .email { font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
+  .copy-btn { width: 36px; height: 36px; }
+  .copied { font-size: 14px; color: var(--ok); }
+  .copied:empty { display: none; }
+  @media (max-width: 560px) { .contact__form { padding: 22px; } }
+</style>
+
+<script>
+  import { setupEmailForm } from "../scripts/email-form";
+
+  const form = document.querySelector<HTMLFormElement>("[data-email-form]");
+  if (form) {
+    setupEmailForm(form, (d) => ({
+      from_name: String(d.get("name") || ""),
+      from_email: String(d.get("email") || ""),
+      subject: String(d.get("subject") || "") || "Message from lmatias.com",
+      message: String(d.get("message") || ""),
+    }));
+  }
+
+  const copyBtn = document.getElementById("copy-email");
+  const copyStatus = document.getElementById("copy-status");
+  copyBtn?.addEventListener("click", async () => {
+    const email = document.getElementById("email-text")?.textContent ?? "";
+    try {
+      await navigator.clipboard.writeText(email);
+      if (copyStatus) { copyStatus.textContent = "Copied"; setTimeout(() => (copyStatus.textContent = ""), 2000); }
+    } catch {
+      const range = document.createRange();
+      const el = document.getElementById("email-text");
+      if (el) { range.selectNodeContents(el); getSelection()?.removeAllRanges(); getSelection()?.addRange(range); }
+      if (copyStatus) copyStatus.textContent = "Selected. Press Ctrl+C to copy.";
+    }
+  });
+</script>

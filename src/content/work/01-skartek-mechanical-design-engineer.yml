@@ -1,0 +1,20 @@
+title: Mechanical Design Engineer
+company: Skartek
+link: https://skartek.sk/
+location: Vlčkovce, Slovakia
+country: SK
+period: 2025 - Present
+logo: /images/cv/work/skartek.png
+responsibilities:
+  - Designing conceptual mechanical solutions to secure customer buy-in and formalize service contracts.
+  - "DFM & Process Optimization: Applying Design for Manufacturing principles across CNC machining, welding, laser cutting and 3D Printing to optimize part geometry and ensure structural durability."
+  - "Collision Mitigation & System Adaptation: Re-engineering active machine assemblies to resolve mechanical interference and integrate customer-driven modifications, ensuring zero-collision performance and enhanced operational safety."
+  - "PLM & CAD Integration: Utilizing Solid Edge for precision modeling and Teamcenter for robust version control, BOM creation, and cross-departmental collaboration."
+tools:
+  - solidedge
+  - teamcenter
+  - solidworks
+  - excel
+papers: []
+visible: true
+order: 1

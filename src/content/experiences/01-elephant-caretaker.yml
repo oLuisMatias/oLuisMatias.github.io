@@ -1,0 +1,12 @@
+type: Volunteer
+title: Elephant Caretaker
+organization: Elephant Nature Park
+period: 2017 (1 Week)
+link: https://www.elephantnaturepark.org/
+location: Chiang Mai, Thailand
+country: TH
+logo: /images/cv/experiences/enp.png
+description:
+  - Taking care of exploited elephants and abandoned dogs.
+visible: true
+order: 1

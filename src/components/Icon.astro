@@ -1,0 +1,24 @@
+---
+// Inline Tabler icon (https://tabler.io/icons), outline style. Usage: <Icon name="home" />
+// The SVG is embedded at build time, so pages need no icon font or extra request.
+interface Props {
+  name: string;
+  size?: number;
+  class?: string;
+}
+const { name, size = 17, class: className = "" } = Astro.props;
+
+const files = import.meta.glob<string>("../../node_modules/@tabler/icons/icons/outline/*.svg", {
+  query: "?raw",
+  import: "default",
+});
+const load = files[`../../node_modules/@tabler/icons/icons/outline/${name}.svg`];
+if (!load) throw new Error(`Unknown Tabler icon: "${name}"`);
+const raw = await load();
+const inner = raw
+  .replace(/^[\s\S]*?<svg[^>]*>/, "")
+  .replace(/<\/svg>\s*$/, "")
+  .replace(/<path stroke="none" d="M0 0h24v24H0z" fill="none"\s*\/>/, "");
+---
+<svg class:list={["icon", className]} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={inner} />

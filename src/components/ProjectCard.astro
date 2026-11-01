@@ -1,0 +1,38 @@
+---
+import ToolTags from "./ToolTags.astro";
+import { spacingStyle } from "../lib/site";
+
+interface Props {
+  id: string;
+  title: string;
+  topic: string;
+  summary: string;
+  cover?: string;
+  coverSpacing?: string[];
+  tools?: string[];
+  /** Large horizontal layout for the top featured project. */
+  wide?: boolean;
+}
+const { id, title, topic, summary, cover, coverSpacing = [], tools = [], wide = false } = Astro.props;
+---
+<a class:list={["card project-card", { "project-card--wide": wide }]} href={`/projects/${id}`}>
+  <div class="project-card__media">
+    {cover
+      ? <img src={cover} alt="" loading="lazy" style={spacingStyle(coverSpacing)} />
+      : <div class="muted" style="height:100%;display:flex;align-items:center;justify-content:center;font-size:14px">No image yet</div>}
+  </div>
+  <div class="project-card__body">
+    <span class="pill">{topic}</span>
+    <h3 class="project-card__title">{title}</h3>
+    {summary && <p>{summary}</p>}
+    <div style="margin-top:auto;padding-top:6px"><ToolTags tools={tools} compact /></div>
+  </div>
+</a>
+
+<style>
+  .project-card--wide { flex-direction: row; flex-wrap: wrap; grid-column: 1 / -1; }
+  .project-card--wide .project-card__media { flex: 999 1 460px; min-width: 0; aspect-ratio: 16 / 10; }
+  .project-card--wide .project-card__body { flex: 1 1 320px; justify-content: center; padding: 36px; gap: 14px; }
+  .project-card--wide .project-card__title { font-size: 26px; }
+  .project-card--wide .project-card__body p { font-size: 16px; }
+</style>

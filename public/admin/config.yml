@@ -1,0 +1,313 @@
+# Sveltia CMS: the editor at lmatias.com/admin.
+# Each save becomes a commit on the main branch; GitHub Actions then rebuilds the site (about 1-2 minutes).
+backend:
+  name: github
+  repo: oLuisMatias/oLuisMatias.github.io
+  branch: main
+
+site_url: https://lmatias.com
+display_url: https://lmatias.com
+logo:
+  src: /images/favicon.png
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+collections:
+  # ── Projects ──────────────────────────────────────────
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: Big personal builds. Each one gets its own page.
+    folder: src/content/projects
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{title}} · {{topic}}{{visible | ternary('', ' · HIDDEN')}}"
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: featured, label: Show on home page, widget: boolean, default: false, hint: "Home shows at most 3 featured projects (lowest order first)." }
+      - { name: order, label: Order, widget: number, value_type: int, default: 10, hint: "Lower numbers come first." }
+      - { name: topic, label: Topic, widget: string, hint: "For example: Machine Design, 3D Printing, Programming / AI. Projects with the same topic are grouped in the filter." }
+      - { name: summary, label: Short summary, widget: text, hint: "1-2 sentences, shown on cards and at the top of the page." }
+      - { name: date, label: Date, widget: string, required: false, hint: "Free text, for example 2025 or March 2026." }
+      - { name: cover, label: Cover image, widget: image, required: false }
+      - { name: coverSpacing, label: "Space around cover image", widget: select, multiple: true, required: false, options: [{ label: Top, value: top }, { label: Right, value: right }, { label: Bottom, value: bottom }, { label: Left, value: left }], hint: "Pick the sides that get empty space (5% of the frame width each). Leave empty to fill the frame." }
+      - { name: model, label: 3D model (.glb), widget: file, required: false, media_folder: /public/data/models, public_folder: /data/models, hint: "Shown at the top of the page, interactive. Keep it under 25 MB." }
+      - { name: youtube, label: YouTube link, widget: string, required: false }
+      - name: tools
+        label: Tools used
+        widget: relation
+        collection: settings
+        file: tools
+        value_field: "tools.*.id"
+        search_fields: ["tools.*.name"]
+        display_fields: ["tools.*.name"]
+        multiple: true
+        required: false
+        hint: "Pick software and machines. Add new ones in Settings › Tools."
+      - { name: skills, label: Skills, widget: list, required: false, hint: "What you did, for example: Mechanical design, DFM, CNC kinematics." }
+      - name: blocks
+        label: Content
+        label_singular: Block
+        widget: list
+        required: false
+        hint: "Build the page from blocks. Drag to reorder."
+        types:
+          - label: Text
+            name: text
+            widget: object
+            summary: "{{text | truncate(60)}}"
+            fields:
+              - { name: text, label: Text, widget: markdown, buttons: [bold, italic, link, bulleted-list, numbered-list, heading-three] }
+          - label: Image
+            name: image
+            widget: object
+            summary: "Image · {{position}} · {{caption}}"
+            fields:
+              - { name: src, label: Image, widget: image }
+              - { name: position, label: Position, widget: select, default: full, options: [{ label: Full width, value: full }, { label: Center, value: center }, { label: "Right (text wraps on the left)", value: right }, { label: "Left (text wraps on the right)", value: left }], hint: "Right/Left images sit beside the text block that comes after them." }
+              - { name: spacing, label: "Space around image", widget: select, multiple: true, required: false, options: [{ label: Top, value: top }, { label: Right, value: right }, { label: Bottom, value: bottom }, { label: Left, value: left }], hint: "Pick the sides that get empty space (5% of the frame width each). Leave empty to fill the frame." }
+              - { name: caption, label: Caption, widget: string, required: false }
+              - { name: alt, label: Description for screen readers, widget: string, required: false }
+          - label: Gallery
+            name: gallery
+            widget: object
+            summary: "Gallery"
+            fields:
+              - name: images
+                label: Images
+                widget: list
+                fields:
+                  - { name: src, label: Image, widget: image }
+                  - { name: caption, label: Caption, widget: string, required: false }
+          - label: 3D model
+            name: model
+            widget: object
+            summary: "3D model · {{caption}}"
+            fields:
+              - { name: src, label: Model (.glb), widget: file, media_folder: /public/data/models, public_folder: /data/models }
+              - { name: caption, label: Caption, widget: string, required: false }
+          - label: YouTube video
+            name: youtube
+            widget: object
+            summary: "Video · {{url}}"
+            fields:
+              - { name: url, label: YouTube link, widget: string }
+          - label: Divider
+            name: divider
+            widget: object
+            summary: "──────"
+            fields:
+              - { name: note, label: "(no settings)", widget: hidden, default: "" }
+
+  # ── 3D prints ─────────────────────────────────────────
+  - name: prints
+    label: 3D Prints
+    label_singular: Print
+    description: Small prints and requests. Shown as cards on the 3D Prints page.
+    folder: src/content/prints
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    summary: "{{title}} · {{material}}{{visible | ternary('', ' · HIDDEN')}}"
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: order, label: Order, widget: number, value_type: int, default: 10, hint: "Lower numbers come first. Use 1 to put a new print at the top." }
+      - { name: photos, label: Photos, widget: image, multiple: true, hint: "The first photo is the card image." }
+      - { name: category, label: Category, widget: select, required: false, options: ["Replacement parts", "Prototypes", "Tools / jigs", "Gifts", "Decoration"] }
+      - { name: material, label: Material, widget: string, required: false, hint: "PLA, PETG, TPU…" }
+      - { name: printer, label: Printer, widget: string, required: false }
+      - { name: printTime, label: Print time, widget: string, required: false, hint: "For example 3h 20m" }
+      - { name: date, label: Date, widget: string, required: false }
+      - { name: note, label: Note, widget: text, required: false }
+      - name: tools
+        label: Tools used
+        widget: relation
+        collection: settings
+        file: tools
+        value_field: "tools.*.id"
+        search_fields: ["tools.*.name"]
+        display_fields: ["tools.*.name"]
+        multiple: true
+        required: false
+      - { name: project, label: Related project, widget: relation, collection: projects, value_field: "{{slug}}", search_fields: [title], display_fields: [title], required: false }
+
+  # ── CV ────────────────────────────────────────────────
+  - name: work
+    label: "CV · Work"
+    label_singular: Job
+    folder: src/content/work
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{company}}-{{title}}"
+    summary: "{{title}} · {{company}} · {{period}}"
+    sortable_fields: [order]
+    fields:
+      - { name: title, label: Job title, widget: string }
+      - { name: company, label: Company, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: order, label: Order, widget: number, value_type: int, default: 1, hint: "1 = top (most recent)." }
+      - { name: period, label: Period, widget: string, hint: "For example: 2025 - Present" }
+      - { name: location, label: Location, widget: string }
+      - { name: country, label: Country code, widget: string, required: false, hint: "Two letters, for example SK" }
+      - { name: link, label: Company website, widget: string, required: false }
+      - { name: logo, label: Logo, widget: image, required: false }
+      - { name: responsibilities, label: Responsibilities, widget: list, hint: "One item per bullet point." }
+      - { name: tools, label: Tools used, widget: relation, collection: settings, file: tools, value_field: "tools.*.id", search_fields: ["tools.*.name"], display_fields: ["tools.*.name"], multiple: true, required: false }
+      - name: papers
+        label: Papers
+        widget: list
+        required: false
+        fields:
+          - { name: title, label: Title, widget: string }
+          - { name: url, label: Link, widget: string, required: false }
+
+  - name: certifications
+    label: "CV · Certifications"
+    label_singular: Certification
+    folder: src/content/certifications
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{title}} · {{date}}"
+    sortable_fields: [order]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: issuer, label: Issuer, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: order, label: Order, widget: number, value_type: int, default: 1 }
+      - { name: date, label: Date, widget: string }
+      - { name: credentialId, label: Credential ID, widget: string, required: false }
+      - { name: badge, label: Badge image, widget: image, required: false }
+      - { name: pdf, label: Certificate PDF, widget: file, required: false, media_folder: /public/data/documents, public_folder: /data/documents }
+      - { name: verify, label: Verification link or image, widget: string, required: false, hint: "A URL (https://…) or a file path like /data/documents/…" }
+      - { name: tools, label: Tools, widget: relation, collection: settings, file: tools, value_field: "tools.*.id", search_fields: ["tools.*.name"], display_fields: ["tools.*.name"], multiple: true, required: false }
+
+  - name: education
+    label: "CV · Education"
+    label_singular: Degree
+    folder: src/content/education
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{degree}} · {{institution}}"
+    sortable_fields: [order]
+    fields:
+      - { name: degree, label: Degree, widget: string }
+      - { name: institution, label: Institution, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: order, label: Order, widget: number, value_type: int, default: 1 }
+      - { name: period, label: Period, widget: string }
+      - { name: location, label: Location, widget: string }
+      - { name: country, label: Country code, widget: string, required: false }
+      - { name: link, label: Website, widget: string, required: false }
+      - { name: logo, label: Logo, widget: image, required: false }
+      - { name: details, label: Details, widget: text, required: false, hint: "For example the thesis title." }
+      - name: papers
+        label: Papers
+        widget: list
+        required: false
+        fields:
+          - { name: title, label: Title, widget: string }
+          - { name: url, label: Link, widget: string, required: false }
+      - { name: tools, label: Tools, widget: relation, collection: settings, file: tools, value_field: "tools.*.id", search_fields: ["tools.*.name"], display_fields: ["tools.*.name"], multiple: true, required: false }
+
+  - name: experiences
+    label: "CV · Other experience"
+    label_singular: Experience
+    folder: src/content/experiences
+    format: yml
+    extension: yml
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{title}} · {{organization}}"
+    sortable_fields: [order]
+    fields:
+      - { name: type, label: Type, widget: string, hint: "Volunteer, Internship…" }
+      - { name: title, label: Title, widget: string }
+      - { name: organization, label: Organization, widget: string }
+      - { name: visible, label: Visible on website, widget: boolean, default: true }
+      - { name: order, label: Order, widget: number, value_type: int, default: 1 }
+      - { name: period, label: Period, widget: string }
+      - { name: location, label: Location, widget: string }
+      - { name: country, label: Country code, widget: string, required: false }
+      - { name: link, label: Website, widget: string, required: false }
+      - { name: logo, label: Logo, widget: image, required: false }
+      - { name: description, label: Description, widget: list, required: false }
+
+  # ── Settings ──────────────────────────────────────────
+  - name: settings
+    label: Settings
+    editor: { preview: false }
+    files:
+      - name: site
+        label: Site settings
+        file: src/data/site.yml
+        fields:
+          - { name: name, label: Name, widget: string }
+          - { name: role, label: Role, widget: string }
+          - { name: headline, label: Home headline, widget: string }
+          - { name: intro, label: Home intro, widget: text }
+          - { name: location, label: Location, widget: string }
+          - { name: photo, label: Photo, widget: image }
+          - { name: about, label: About text, widget: markdown, buttons: [bold, italic, link] }
+          - { name: email, label: Email, widget: string }
+          - { name: linkedin, label: LinkedIn URL, widget: string }
+          - { name: cvPdf, label: CV PDF, widget: file, media_folder: /public/data/documents, public_folder: /data/documents, hint: "Upload a new PDF to replace the CV everywhere on the site." }
+          - name: highlights
+            label: Home highlights
+            widget: list
+            fields:
+              - { name: label, label: Label, widget: string }
+              - { name: value, label: Value, widget: string }
+          - name: skills
+            label: CV skills
+            widget: list
+            fields:
+              - { name: group, label: Group, widget: string }
+              - { name: items, label: Items, widget: list }
+          - name: languages
+            label: Languages
+            widget: list
+            fields:
+              - { name: name, label: Language, widget: string }
+              - { name: level, label: Level, widget: string }
+          - { name: printCategories, label: Print categories, widget: list }
+          - name: emailjs
+            label: EmailJS (contact and print request forms)
+            widget: object
+            collapsed: true
+            fields:
+              - { name: publicKey, label: Public key, widget: string }
+              - { name: serviceId, label: Service ID, widget: string }
+              - { name: contactTemplateId, label: Contact template ID, widget: string }
+              - { name: printTemplateId, label: Print request template ID, widget: string, required: false, hint: "Optional. Leave empty to send print requests with the contact template." }
+      - name: tools
+        label: Tools
+        file: src/data/tools.yml
+        fields:
+          - name: tools
+            label: Tools
+            label_singular: Tool
+            widget: list
+            summary: "{{name}}"
+            fields:
+              - { name: id, label: "ID (short, lowercase, no spaces)", widget: string, pattern: ["^[a-z0-9-]+$", "Use lowercase letters, numbers and dashes"] }
+              - { name: name, label: Name, widget: string }
+              - { name: icon, label: Icon, widget: image, required: false, media_folder: /public/images/skills, public_folder: /images/skills }

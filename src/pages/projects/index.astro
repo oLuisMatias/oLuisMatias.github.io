@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { visible } from "../../lib/site";
+
+const projects = await visible("projects");
+const topics = [...new Set(projects.map((p) => p.data.topic))];
+---
+<Base title="Projects" description="Machine design, 3D printing and programming projects by Luis Matias.">
+  <header class="wrap page-head">
+    <p class="eyebrow">Work</p>
+    <h1 style="margin-top:10px">Projects</h1>
+    <p>Personal builds, from CAD model to working machine.</p>
+  </header>
+
+  <section class="wrap section" style="padding-top:32px">
+    {topics.length > 1 && (
+      <div class="filters" role="group" aria-label="Filter by topic">
+        <button type="button" class="filter" data-topic="" aria-pressed="true">All</button>
+        {topics.map((t) => <button type="button" class="filter" data-topic={t} aria-pressed="false">{t}</button>)}
+      </div>
+    )}
+    <div class="grid-cards" id="project-grid">
+      {projects.map((p, i) => (
+        <div data-topic={p.data.topic} style="display:grid">
+          <ProjectCard id={p.id} title={p.data.title} topic={p.data.topic}
+            summary={p.data.summary} cover={p.data.cover} coverSpacing={p.data.coverSpacing} tools={p.data.tools} />
+        </div>
+      ))}
+    </div>
+    {projects.length === 0 && <p class="muted">New projects are on the drawing board.</p>}
+  </section>
+</Base>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .filter { min-height: 40px; padding: 0 16px; font: 500 14px var(--font-sans); color: var(--text); background: var(--surface); border: 0; border-radius: 999px; cursor: pointer; }
+  .filter:hover { color: var(--ink); background: var(--chip); }
+  .filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter");
+  const items = document.querySelectorAll<HTMLElement>("#project-grid > [data-topic]");
+  buttons.forEach((b) =>
+    b.addEventListener("click", () => {
+      const topic = b.dataset.topic;
+      buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      items.forEach((it) => (it.hidden = !!topic && it.dataset.topic !== topic));
+    }),
+  );
+</script>

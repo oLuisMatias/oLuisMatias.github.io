@@ -1,0 +1,22 @@
+# Cloudflare Pages project for lmatias.com.
+# The ids below are filled in once the D1 database and R2 bucket exist in the Cloudflare account.
+name = "lmatias"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lmatias"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "lmatias-files"
+
+[vars]
+# Cloudflare Access: team domain (https://<team>.cloudflareaccess.com) and the application's AUD tag.
+# Empty values switch the API into local-dev mode, where the login check is skipped (wrangler dev only).
+ACCESS_TEAM_DOMAIN = ""
+ACCESS_AUD = ""
+OWNER_EMAIL = "luisdafmatias@gmail.com"

@@ -1,0 +1,17 @@
+title: Research Fellow
+company: INEGI
+link: https://www.inegi.pt/en/
+location: Porto, Portugal
+country: PT
+period: 2021 Dec - 2022 July
+logo: /images/cv/work/inegi.png
+responsibilities:
+  - Computer Vision - Using Python for 3D reconstruction of heart arteries. Region Growing method.
+  - User interface with PyQt.
+tools:
+  - python
+papers:
+  - title: "Dealing with CT Cardiac Imaging Using Python: An Approach for Future Hemodynamic Simulations"
+    url: ""
+visible: true
+order: 4

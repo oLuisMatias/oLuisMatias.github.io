@@ -1,0 +1,82 @@
+---
+import { md, youtubeId, spacingStyle } from "../lib/site";
+import Icon from "./Icon.astro";
+
+type Block =
+  | { type: "text"; text: string }
+  | { type: "image"; src: string; alt: string; caption: string; position: "left" | "right" | "center" | "full"; spacing: string[] }
+  | { type: "gallery"; images: { src: string; caption: string }[] }
+  | { type: "model"; src: string; caption: string }
+  | { type: "youtube"; url: string }
+  | { type: "divider" };
+
+interface Props { blocks: Block[] }
+const { blocks } = Astro.props;
+---
+<div class="blocks">
+  {blocks.map((b) => {
+    if (b.type === "text") return <div class="prose block" set:html={md(b.text)} />;
+    if (b.type === "image") return (
+      <figure class={`block figure figure--${b.position}`}>
+        <img src={b.src} alt={b.alt || b.caption || ""} loading="lazy" style={spacingStyle(b.spacing)} />
+        {b.caption && <figcaption>{b.caption}</figcaption>}
+      </figure>
+    );
+    if (b.type === "gallery") return (
+      <div class="block gallery">
+        {b.images.map((im) => (
+          <figure class="figure">
+            <img src={im.src} alt={im.caption || ""} loading="lazy" />
+            {im.caption && <figcaption>{im.caption}</figcaption>}
+          </figure>
+        ))}
+      </div>
+    );
+    if (b.type === "model") return (
+      <figure class="block figure figure--full model-frame" data-model-frame>
+        <model-viewer src={b.src} camera-controls disable-zoom disable-pan auto-rotate interaction-prompt="none"
+          shadow-intensity="0.6" class="model" alt={b.caption || "3D model"}></model-viewer>
+        <button type="button" class="icon-btn model-expand" data-model-expand={b.src} data-model-title={b.caption}
+          aria-label="Open the 3D model in full view" title="Full view"><Icon name="arrows-maximize" /></button>
+        <span class="model-hint" aria-hidden="true"><Icon name="hand-move" size={20} />Drag to rotate</span>
+        {b.caption && <figcaption>{b.caption}</figcaption>}
+      </figure>
+    );
+    if (b.type === "youtube") {
+      const id = youtubeId(b.url);
+      return id ? (
+        <div class="block video">
+          <iframe src={`https://www.youtube-nocookie.com/embed/${id}`} title="Project video" loading="lazy"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
+        </div>
+      ) : null;
+    }
+    if (b.type === "divider") return <hr class="block divider" />;
+    return null;
+  })}
+</div>
+
+<style>
+  .blocks { display: flow-root; }
+  .block + .block { margin-top: 28px; }
+  .divider { clear: both; border: 0; margin-block: 28px; }
+  .figure { margin: 0; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+  .figure img { width: 100%; background: var(--placeholder); object-fit: contain; }
+  .figure figcaption { padding: 10px 16px 12px; font-size: 13px; color: var(--muted); }
+  .figure--center { max-width: 640px; margin-inline: auto; }
+  .figure--right, .figure--left { width: min(44%, 440px); margin-bottom: 16px; }
+  .figure--right { float: right; margin-left: 36px; }
+  .figure--left { float: left; margin-right: 36px; }
+  .block.figure--right + .block, .block.figure--left + .block { margin-top: 0; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; clear: both; }
+  .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
+  .model { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; background: var(--placeholder); --poster-color: transparent; }
+  .figure.model-frame { max-width: 420px; margin-inline: auto; }
+  .model-frame { position: relative; }
+  .model-expand { position: absolute; top: 12px; right: 12px; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(6px); }
+  .video { clear: both; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; background: #000; }
+  .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+  @media (max-width: 720px) {
+    .figure--right, .figure--left { float: none; width: 100%; margin: 0 0 24px; }
+  }
+</style>

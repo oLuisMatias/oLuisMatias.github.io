@@ -1,0 +1,65 @@
+name: Luis Matias
+role: Mechanical Design Engineer
+headline: I design machines for a living, and build my own for fun.
+intro: Mechanical Design Engineer at Skartek, working in CAD, design for manufacturing and 3D printing. In my free time I design and build my own machines, and code websites and small software tools.
+location: Slovakia
+photo: /images/Luis_Matias_Photo.png
+about: |-
+  I am a Mechanical Design Engineer originally from Portugal, but currently living and working in Slovakia.
+
+  I studied Mechanical Engineering because I love figuring out how things work. Even outside of my daily job, in my free time, I love working on my own machine design projects and experimenting with 3D printing. I really enjoy taking a personal idea, designing it on the computer, and printing a real, working prototype at home.
+
+  Thanks for visiting my website! Feel free to look around or contact me if you want to talk about engineering and 3D printing.
+email: luisdafmatias@gmail.com
+linkedin: https://www.linkedin.com/in/luisdafmatias/
+cvPdf: /data/documents/CV_Luis_Matias_NoPhone.pdf
+highlights:
+  - label: Now
+    value: Skartek · 2025 –
+  - label: Certified
+    value: SolidWorks CSWP
+  - label: Certified
+    value: Solid Edge Professional
+  - label: Education
+    value: MSc Mech. Eng · FEUP
+skills:
+  - group: CAD
+    items:
+      - Solid Edge
+      - SolidWorks
+  - group: PLM / Tools
+    items:
+      - Teamcenter
+      - Excel VBA
+      - Python
+      - MATLAB
+  - group: Simulation
+    items:
+      - Ansys
+      - Abaqus
+  - group: Manufacturing
+    items:
+      - Design for manufacturing (DFM)
+      - CNC machining
+      - Welding
+      - Laser cutting
+      - 3D printing
+      - Assembly sequencing
+languages:
+  - name: Portuguese
+    level: Native
+  - name: English
+    level: C1
+  - name: Spanish
+    level: A1
+printCategories:
+  - Replacement parts
+  - Prototypes
+  - Tools / jigs
+  - Gifts
+  - Decoration
+emailjs:
+  publicKey: 92X2fuMpjfjYHcrC_
+  serviceId: service_6iimjg9
+  contactTemplateId: template_bevuplr
+  printTemplateId: ""

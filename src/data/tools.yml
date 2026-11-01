@@ -1,0 +1,61 @@
+tools:
+  - id: abaqus
+    name: Abaqus
+    icon: /images/skills/abaqus.png
+  - id: ansys
+    name: Ansys
+    icon: /images/skills/ansys.png
+  - id: claude
+    name: Claude AI
+    icon: /images/skills/claude.svg
+  - id: emailjs
+    name: EmailJS
+    icon: /images/skills/EmailJS.png
+  - id: excel
+    name: Excel
+    icon: /images/skills/excel.svg
+  - id: google-sheets
+    name: Google Sheets
+    icon: /images/skills/google_sheets.svg
+  - id: inkscape
+    name: Inkscape
+    icon: /images/skills/inkscape.svg
+  - id: kiro
+    name: Kiro
+    icon: /images/skills/kiro.svg
+  - id: lightburn
+    name: LightBurn
+    icon: /images/skills/lightburn.png
+  - id: matlab
+    name: MATLAB
+    icon: /images/skills/matlab.svg
+  - id: python
+    name: Python
+    icon: /images/skills/python.png
+  - id: solidedge
+    name: Solid Edge
+    icon: /images/skills/solidedge.png
+  - id: solidworks
+    name: SolidWorks
+    icon: /images/skills/solidworks.svg
+  - id: teamcenter
+    name: Teamcenter
+    icon: /images/skills/teamcenter.png
+  - id: astro
+    name: Astro
+    icon: /images/skills/astro.svg
+  - id: sveltia
+    name: Sveltia CMS
+    icon: /images/skills/sveltia-cms.svg
+  - id: github
+    name: GitHub
+    icon: /images/skills/github.svg
+  - id: svelte
+    name: Svelte
+    icon: /images/skills/svelte.svg
+  - id: typescript
+    name: TypeScript
+    icon: /images/skills/typescript.svg
+  - id: cloudflare
+    name: Cloudflare
+    icon: /images/skills/cloudflare.svg
