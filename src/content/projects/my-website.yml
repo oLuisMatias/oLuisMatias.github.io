@@ -1,10 +1,14 @@
 title: My Website
+visible: true
+featured: true
+order: 3
 topic: Programming / AI
 summary: This portfolio, rebuilt from scratch as a fast, modern site that I update without touching code, with a private area for my job applications.
+date: March 2025
 cover: /images/projects/my-website.png
 coverSpacing: []
-model: ""
-youtube: ""
+model: ''
+youtube: ''
 tools:
   - astro
   - typescript
@@ -19,9 +23,6 @@ skills:
   - UI design
   - Serverless backend
   - 3D on the web
-featured: true
-visible: true
-order: 3
 blocks:
   - type: text
     text: |-
@@ -39,6 +40,7 @@ blocks:
       - **Contact and 3D print request forms:** sent with EmailJS straight to my inbox, with a hidden spam trap.
       - **Design:** a dark "Graphite" theme with a light mode, the Inter typeface, and Tabler icons optically aligned with the text.
   - type: divider
+    note: ''
   - type: text
     text: |-
       **In progress**
