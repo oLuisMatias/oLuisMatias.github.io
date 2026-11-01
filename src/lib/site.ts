@@ -51,9 +51,8 @@ export function youtubeId(url = "") {
 /** Short reference codes like P-001, used as blueprint-style labels. */
 export const code = (prefix: string, n: number) => `${prefix}-${String(n).padStart(3, "0")}`;
 
-/** "Download CV" link: on Cloudflare, /cv.pdf serves the CV picked in the private builder.
- *  The plain Astro dev server has no functions, so it links the uploaded file directly. */
-export const cvHref = import.meta.env.DEV ? site.cvPdf : "/cv.pdf";
+/** "Download CV" link: the PDF set in Site settings of the content editor. */
+export const cvHref = site.cvPdf;
 
 /** Inline padding for the image sides chosen in the admin ("Space around image"). */
 export function spacingStyle(sides: string[] = []) {

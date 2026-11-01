@@ -2,11 +2,9 @@
 // The editor opens this address in a popup; we send the browser on to GitHub's sign-in page.
 // Route: /admin/auth. It sits under /admin, so Cloudflare Access protects it like the editor itself.
 
-interface Env {
-  GITHUB_CLIENT_ID?: string;
-}
+import type { Env } from "./env";
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+export async function handleAuth(request: Request, env: Env): Promise<Response> {
   if (!env.GITHUB_CLIENT_ID) {
     return new Response("GitHub sign-in isn't set up yet (GITHUB_CLIENT_ID is missing).", { status: 503 });
   }
@@ -29,4 +27,4 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       "Cache-Control": "no-store",
     },
   });
-};
+}

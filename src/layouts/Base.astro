@@ -32,7 +32,7 @@ const year = new Date().getFullYear();
   <title>{pageTitle}</title>
   <meta name="description" content={description} />
   {noindex && <meta name="robots" content="noindex, nofollow" />}
-  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  <link rel="canonical" href={new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), Astro.site)} />
   <meta property="og:title" content={pageTitle} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content={new URL(image, Astro.site)} />
@@ -84,7 +84,7 @@ const year = new Date().getFullYear();
         {site.linkedin && <a href={site.linkedin} rel="noopener"><Icon name="brand-linkedin" size={16} />LinkedIn</a>}
         <a href="/contact"><Icon name="mail" size={16} />Contact</a>
         <a href={cvHref} download><Icon name="download" size={16} />CV (PDF)</a>
-        <a class="admin-link" href="/admin/" aria-label="Admin" title="Admin" rel="nofollow"><Icon name="lock" size={15} /></a>
+        <a class="admin-link" href="/admin" aria-label="Admin" title="Admin" rel="nofollow"><Icon name="lock" size={15} /></a>
       </nav>
     </div>
   </footer>

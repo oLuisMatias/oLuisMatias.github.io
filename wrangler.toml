@@ -1,7 +1,16 @@
-# Cloudflare Pages project for lmatias.com.
+# lmatias.com on Cloudflare: one Worker that serves the built site (dist/) as static assets.
+# Deploy command in the Cloudflare dashboard: npx wrangler deploy (after the build command: npm run build).
 name = "lmatias"
-pages_build_output_dir = "dist"
+main = "worker/index.ts"
 compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+html_handling = "drop-trailing-slash"
+not_found_handling = "404-page"
+# Only these addresses run Worker code. Everything else is a plain file of the site (free and unlimited).
+run_worker_first = ["/admin/auth", "/admin/callback"]
 
 [vars]
 OWNER_EMAIL = "luisdafmatias@gmail.com"

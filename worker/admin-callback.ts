@@ -2,14 +2,11 @@
 // We swap the code for an access token and hand it to the editor window that opened this popup.
 // Route: /admin/callback (the "Authorization callback URL" of the GitHub OAuth app).
 
-interface Env {
-  GITHUB_CLIENT_ID?: string;
-  GITHUB_CLIENT_SECRET?: string;
-}
+import type { Env } from "./env";
 
 type Result = { ok: true; token: string } | { ok: false; message: string };
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+export async function handleCallback(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const clearState = "oauth_state=; Path=/admin; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
 
@@ -40,7 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     return reply({ ok: false, message: data.error_description || "GitHub did not give an access token." }, 401, clearState);
   }
   return reply({ ok: true, token: data.access_token }, 200, clearState);
-};
+}
 
 /** A tiny page that passes the result to the editor window that opened this popup, then it can close. */
 function reply(result: Result, status: number, setCookie: string): Response {

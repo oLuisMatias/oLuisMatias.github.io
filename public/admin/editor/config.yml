@@ -1,11 +1,11 @@
 # Sveltia CMS: the content editor at lmatias.com/admin/editor.
-# Each save becomes a commit on the main branch; Cloudflare Pages then rebuilds the site (about a minute).
+# Each save becomes a commit on the main branch; Cloudflare then rebuilds the site (about a minute).
 backend:
   name: github
   repo: oLuisMatias/oLuisMatias.github.io
   branch: main
-  # "Sign in with GitHub" is handled by the site itself: functions/admin/auth.ts and callback.ts.
-  # While testing on a *.pages.dev address, temporarily set base_url to that address.
+  # "Sign in with GitHub" is handled by the site itself: worker/admin-auth.ts and admin-callback.ts.
+  # While testing on a *.workers.dev address, temporarily set base_url to that address.
   base_url: https://lmatias.com
   auth_endpoint: admin/auth
 
