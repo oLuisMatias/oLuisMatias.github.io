@@ -1,30 +1,19 @@
-// Step 1 of "Sign in with GitHub" for the content editor (Sveltia CMS).
-// The editor opens this address in a popup; we send the browser on to GitHub's sign-in page.
-// Route: /admin/auth. It sits under /admin, so Cloudflare Access protects it like the editor itself.
+// "Sign in with GitHub" in the content editor (Sveltia CMS), without a GitHub login screen.
+//
+// The editor opens /admin/auth in a small window. If Cloudflare Access has confirmed that you are the owner
+// (an email code), the Worker hands the editor the GitHub token that is stored as a secret in Cloudflare.
+// The token never lives in the repository, and nobody else is ever given it.
 
 import type { Env } from "./env";
+import { verifyAccess } from "./access";
+import { popupReply } from "./popup";
 
 export async function handleAuth(request: Request, env: Env): Promise<Response> {
-  if (!env.GITHUB_CLIENT_ID) {
-    return new Response("GitHub sign-in isn't set up yet (GITHUB_CLIENT_ID is missing).", { status: 503 });
+  const access = await verifyAccess(request, env);
+  if (!access.ok) return popupReply({ ok: false, message: access.message }, access.status);
+
+  if (!env.GITHUB_TOKEN) {
+    return popupReply({ ok: false, message: "The GitHub token isn't set up yet (GITHUB_TOKEN is missing)." }, 503);
   }
-
-  const origin = new URL(request.url).origin;
-  // Random value that proves, in the callback, that this sign-in was started from this browser.
-  const state = crypto.randomUUID();
-
-  const authorize = new URL("https://github.com/login/oauth/authorize");
-  authorize.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
-  authorize.searchParams.set("redirect_uri", `${origin}/admin/callback`);
-  authorize.searchParams.set("scope", "repo,read:user");
-  authorize.searchParams.set("state", state);
-
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: authorize.toString(),
-      "Set-Cookie": `oauth_state=${state}; Path=/admin; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
-      "Cache-Control": "no-store",
-    },
-  });
+  return popupReply({ ok: true, token: env.GITHUB_TOKEN }, 200);
 }
