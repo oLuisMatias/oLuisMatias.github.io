@@ -5,8 +5,9 @@ backend:
   repo: oLuisMatias/oLuisMatias.github.io
   branch: main
   # "Sign in with GitHub" is handled by the site itself: worker/admin-auth.ts and admin-callback.ts.
-  # While testing on a *.workers.dev address, temporarily set base_url to that address.
-  base_url: https://lmatias.com
+  # Testing address. When lmatias.com is connected to Cloudflare, change this to https://lmatias.com
+  # (and change the GitHub OAuth app's callback URL to https://lmatias.com/admin/callback).
+  base_url: https://lmatias.luisdafmatias.workers.dev
   auth_endpoint: admin/auth
 
 site_url: https://lmatias.com
