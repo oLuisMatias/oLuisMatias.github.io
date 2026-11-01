@@ -15,9 +15,9 @@ run_worker_first = ["/admin/auth"]
 [vars]
 OWNER_EMAIL = "luisdafmatias@gmail.com"
 # The login lock (Cloudflare Access). Both values are shown in the Cloudflare dashboard and are not secret.
-# Until they are filled in, the editor's sign-in refuses everyone (it fails closed).
-ACCESS_TEAM_DOMAIN = ""   # for example "https://myteam.cloudflareaccess.com"
-ACCESS_AUD = ""           # the application's AUD tag; several tags can be listed with commas
+# If they are empty or wrong, the editor's sign-in refuses everyone (it fails closed).
+ACCESS_TEAM_DOMAIN = "https://small-meadow-974d.cloudflareaccess.com"
+ACCESS_AUD = "e98f655a94d8df55985662e35bfa51e77af7e9e307018e2e2938c3d159d1fcbc"   # several tags can be listed with commas
 
 # Secret (set in the Cloudflare dashboard, never in this file): GITHUB_TOKEN
 
