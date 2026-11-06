@@ -1,12 +1,21 @@
 title: Motorbike Light Holder
+visible: false
+featured: false
+order: 2
 topic: 3D Printing
-summary: ""
-cover: ""
-model: ""
-youtube: ""
+summary: ''
+date: ''
+cover: ''
+coverSpacing: []
+model: ''
+youtube: ''
 tools: []
 skills: []
-featured: false
-visible: false
-order: 2
-blocks: []
+main:
+  split: rows
+  children:
+    - type: text
+      text: ''
+    - type: facts
+    - type: media
+sections: []

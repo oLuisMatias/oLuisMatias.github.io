@@ -1,0 +1,81 @@
+---
+// The live preview of the Project Page Editor: the real Projects page, with its texts editable in place and the choices
+// (columns, date order) above the grid. Nothing here is saved; /admin/project-page owns the data.
+import Base from "../../layouts/Base.astro";
+import ProjectsPageBody from "../../components/ProjectsPageBody.astro";
+import { projectsPage, visible } from "../../lib/site";
+
+const projects = await visible("projects");
+---
+<Base title="Preview" noindex>
+  <div id="page-root"><ProjectsPageBody page={projectsPage} projects={projects} edit /></div>
+</Base>
+
+<script>
+  import { SORT_LABELS, sortProjects, type ProjectsPage } from "../../lib/projects-page";
+
+  const root = document.getElementById("page-root")!;
+  const send = (message: object) => parent.postMessage(message, location.origin);
+
+  function applyPage(page: ProjectsPage) {
+    for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+      if (el === document.activeElement) continue;
+      const value = String((page as unknown as Record<string, unknown>)[el.dataset.edit!] ?? "");
+      if (el.textContent !== value) el.textContent = value;
+    }
+    const grid = root.querySelector<HTMLElement>("[data-grid]");
+    if (grid) {
+      grid.style.setProperty("--columns", String(page.columns));
+      grid.dataset.columnsCount = String(page.columns);
+      const cards = sortProjects([...grid.children] as HTMLElement[], page.sort, (el) => el.dataset.date ?? "");
+      grid.append(...cards);
+    }
+    root.querySelectorAll<HTMLElement>("[data-columns]").forEach((pill) => pill.classList.toggle("is-on", Number(pill.dataset.columns) === page.columns));
+    root.querySelectorAll<HTMLElement>("[data-sort-default]").forEach((pill) => pill.classList.toggle("is-on", pill.dataset.sortDefault === page.sort));
+    root.querySelectorAll<HTMLElement>(".filter[data-sort]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sort === page.sort)));
+  }
+
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    if (e.data?.type === "render" && e.data.page) applyPage(e.data.page);
+  });
+
+  // ---- typing in place ----
+  for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+    el.contentEditable = "plaintext-only";
+    el.spellcheck = true;
+    el.addEventListener("input", () => send({ type: "edit", key: el.dataset.edit, value: (el.textContent ?? "").replace(/\s+/g, " ").trim() }));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+  }
+
+  // ---- the choices ----
+  root.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a")) e.preventDefault();
+    const columns = target.closest<HTMLElement>("[data-columns]");
+    if (columns) { send({ type: "columns", value: Number(columns.dataset.columns) }); return; }
+    const sort = target.closest<HTMLElement>("[data-sort-default]");
+    if (sort) send({ type: "sort", value: sort.dataset.sortDefault });
+  });
+  document.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest("a")) e.preventDefault(); }, true);
+
+  // Save, undo and redo also work while the page has the keyboard focus.
+  window.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    const typing = (e.target as HTMLElement | null)?.closest?.("textarea,input,[contenteditable]");
+    if (k === "s") { e.preventDefault(); send({ type: "shortcut", name: "save" }); }
+    else if (k === "z" && !typing) { e.preventDefault(); send({ type: "shortcut", name: e.shiftKey ? "redo" : "undo" }); }
+  });
+
+  void SORT_LABELS;
+  send({ type: "ready" });
+</script>
+
+<style is:global>
+  #page-root [data-edit] { cursor: text; border-radius: 6px; outline: 2px solid transparent; outline-offset: 4px; transition: outline-color 0.15s; }
+  #page-root [data-edit]:hover { outline-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  #page-root [data-edit]:focus { outline-color: var(--accent); }
+  #page-root .projects-grid .project-card { pointer-events: none; }
+  #page-root .toolbar .filter { cursor: default; }
+</style>

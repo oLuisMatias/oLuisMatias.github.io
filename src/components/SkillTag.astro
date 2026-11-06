@@ -2,6 +2,7 @@
 // A skill label with an icon: the tool's own icon when the skill names a tool,
 // otherwise a small line icon picked by keyword.
 import { tools } from "../lib/site";
+import { skillIconPath, toolOfSkill } from "../lib/skill-icons";
 import ToolIcon from "./ToolIcon.astro";
 
 interface Props {
@@ -9,30 +10,11 @@ interface Props {
   dashed?: boolean;
 }
 const { name, dashed = false } = Astro.props;
-const lower = name.toLowerCase();
-
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-const tool = tools.find((t) => t.icon && (norm(lower).startsWith(norm(t.name)) || norm(lower).startsWith(t.id)));
-
-// Line icons (24×24, stroke). First matching keyword wins.
-const icons: [RegExp, string][] = [
-  [/weld/, "M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5"],
-  [/laser/, "M13 2 4 14h7l-1 8 9-12h-7z"],
-  [/3d print|additive/, "M12 2 3 7v10l9 5 9-5V7zM3 7l9 5 9-5M12 12v10"],
-  [/cnc|machin|kinemat|motion/, "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"],
-  [/dfm|manufactur/, "M3 21V10l5 3v-3l5 3V6l8 4v11zM7 17h2M12 17h2M17 17h2"],
-  [/assembl/, "M12 3 2 8l10 5 10-5zM2 13l10 5 10-5"],
-  [/electr|wiring|circuit/, "M8 8h8v8H8zM10 4v4M14 4v4M10 16v4M14 16v4M4 10h4M4 14h4M16 10h4M16 14h4"],
-  [/web|code|program|develop/, "M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"],
-  [/static site|generat/, "M4 4h16v16H4zM4 9h16M9 9v11"],
-  [/\bui\b|design/, "M12 3v3M12 6 6 21M12 6l6 15M8.5 15h7"],
-  [/simulat|fea|cfd/, "M3 20h18M5 16l4-6 4 3 6-8"],
-];
-const path = tool ? null : (icons.find(([re]) => re.test(lower))?.[1] ?? "M8 8h8v8H8z");
+const tool = toolOfSkill(name, tools);
 ---
 <li class:list={["tag", { "tag--skill": dashed }]}>
   {tool
     ? <ToolIcon src={tool.icon} />
-    : <svg class="tag__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={path} /></svg>}
+    : <svg class="tag__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={skillIconPath(name)} /></svg>}
   {name}
 </li>

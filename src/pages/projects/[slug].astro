@@ -1,10 +1,13 @@
 ---
 import Icon from "../../components/Icon.astro";
 import Base from "../../layouts/Base.astro";
-import Blocks from "../../components/Blocks.astro";
-import ProjectFacts from "../../components/ProjectFacts.astro";
+import "../../styles/project.css";
 import ModelDialog from "../../components/ModelDialog.astro";
-import { visible, toolsFor, youtubeId, md, spacingStyle } from "../../lib/site";
+import VideoDialog from "../../components/VideoDialog.astro";
+import { visible, tools } from "../../lib/site";
+import { projectFromRaw } from "../../lib/project-model";
+import { leaves } from "../../lib/boxes";
+import { renderProjectBody } from "../../lib/render-project";
 
 export async function getStaticPaths() {
   const projects = await visible("projects");
@@ -16,63 +19,20 @@ export async function getStaticPaths() {
 
 const { project, prev, next } = Astro.props;
 const d = project.data;
-const tools = toolsFor(d.tools);
-const ytId = youtubeId(d.youtube);
-const usesModel = !!d.model || d.blocks.some((b) => b.type === "model");
-// The opening text block sits beside the 3D model or cover; the rest of the write-up follows below.
-const hasMedia = !!d.model || !!d.cover;
-const first = d.blocks[0];
-const intro = hasMedia && first?.type === "text" ? first.text : "";
-const rest = intro ? d.blocks.slice(1) : d.blocks;
-const hasFacts = tools.length > 0 || d.skills.length > 0;
+// The page is drawn by the same code as the editor's preview (src/lib/render-project.ts), so they always match.
+const page = projectFromRaw(d);
+const html = renderProjectBody(page, tools);
+const usesModel = !!page.model || [page.main, ...page.sections].some((root) => leaves(root).some(({ leaf }) => leaf.type === "model"));
+const hasVideo = !!page.youtube;
 ---
 <Base title={d.title} description={d.summary} image={d.cover || undefined}>
   {usesModel && <script is:inline slot="head" type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>}
 
   <article class="wrap">
-    <header class="page-head">
-      <a class="back" href="/projects"><Icon name="arrow-left" size={16} />All projects</a>
-      <div class="head-meta"><span class="pill">{d.topic}</span>{d.date && <span class="muted">{d.date}</span>}</div>
-      <h1>{d.title}</h1>
-      {d.summary && <p>{d.summary}</p>}
-      {ytId && <p style="margin-top:24px"><a class="btn btn--ghost btn--small" href="#video"><Icon name="player-play" size={16} />Watch the video</a></p>}
-    </header>
-
-    {hasMedia && (
-      <div class:list={["intro", { "intro--cover": !d.model }]}>
-        {intro && <div class="prose intro__text" set:html={md(intro)} />}
-        {d.model ? (
-          <figure class="card media model-frame" data-model-frame>
-            <model-viewer src={d.model} poster={d.cover || undefined} camera-controls disable-zoom disable-pan auto-rotate
-              interaction-prompt="none" shadow-intensity="0.6" alt={`3D model of ${d.title}`} class="model"></model-viewer>
-            <button type="button" class="icon-btn model-expand" data-model-expand={d.model} data-model-title={d.title} data-model-poster={d.cover}
-              aria-label="Open the 3D model in full view" title="Full view"><Icon name="arrows-maximize" /></button>
-            <span class="model-hint" aria-hidden="true"><Icon name="hand-move" size={20} />Drag to rotate</span>
-          </figure>
-        ) : (
-          <figure class="card media"><img src={d.cover} alt={d.title} style={spacingStyle(d.coverSpacing)} /></figure>
-        )}
-        {hasFacts && <div class="intro__facts"><ProjectFacts tools={tools} skills={d.skills} /></div>}
-      </div>
-    )}
-
-    {!hasMedia && hasFacts && <div class="facts-solo"><ProjectFacts tools={tools} skills={d.skills} /></div>}
-
-    <div class="content">
-      <Blocks blocks={rest} />
-    </div>
-
-    {ytId && (
-      <section id="video" class="section">
-        <div class="section__head"><h2>Video</h2></div>
-        <div class="card video">
-          <iframe src={`https://www.youtube-nocookie.com/embed/${ytId}`} title={`${d.title} video`} loading="lazy"
-            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
-        </div>
-      </section>
-    )}
+    <Fragment set:html={html} />
 
     {usesModel && <ModelDialog />}
+    {hasVideo && <VideoDialog />}
 
     <nav class="pager" aria-label="More projects">
       {prev ? <a class="card" href={`/projects/${prev.id}`}><span class="muted"><Icon name="arrow-left" size={15} />Previous</span>{prev.data.title}</a> : <span></span>}
@@ -80,44 +40,3 @@ const hasFacts = tools.length > 0 || d.skills.length > 0;
     </nav>
   </article>
 </Base>
-
-<style>
-  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; color: var(--muted); text-decoration: none; }
-  .back:hover { color: var(--ink); }
-  .head-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 28px 0 14px; font-size: 14px; }
-  .facts-solo { margin-top: 36px; }
-  /* 2 x 2 grid: description and Tools/Skills stacked on the left, the model spanning both rows on the right. */
-  .intro {
-    display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto 1fr;
-    grid-template-areas: "text media" "facts media"; gap: 20px 48px; align-items: start; margin-top: 40px;
-  }
-  .intro--cover { grid-template-columns: minmax(0, 1fr) 520px; }
-  .intro__text { grid-area: text; min-width: 0; line-height: 1.65; }
-  .intro .intro__text > * + * { margin-top: 0.8em; }
-  /* The model's viewport stretches over both rows, so its bottom edge lines up with the bottom of the Skills card. */
-  .intro .media { grid-area: media; margin: 0; align-self: stretch; }
-  .intro--cover .media { align-self: start; }
-  .intro .model-frame { display: flex; flex-direction: column; }
-  .intro .model-frame .model { flex: 1 1 auto; height: auto; min-height: 340px; aspect-ratio: auto; }
-  .intro__facts { grid-area: facts; align-self: end; min-width: 0; }
-  @media (max-width: 900px) {
-    .intro, .intro--cover { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "text" "media" "facts"; gap: 28px; }
-    .intro .media { align-self: start; }
-    .intro .model-frame { max-width: 420px; }
-    .intro .model-frame .model { flex: none; min-height: 0; aspect-ratio: 1 / 1; }
-  }
-  .media img { width: 100%; max-height: 520px; object-fit: contain; background: var(--placeholder); }
-  .media figcaption { display: flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; color: var(--muted); }
-  .model { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; background: var(--placeholder); }
-  .model-frame { position: relative; }
-  .model-expand { position: absolute; top: 12px; right: 12px; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(6px); }
-  .content { margin-top: 56px; }
-  .video { aspect-ratio: 16 / 9; }
-  .video iframe { width: 100%; height: 100%; border: 0; display: block; }
-  .pager { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 88px; }
-  .pager a { display: grid; gap: 4px; padding: 22px 24px; text-decoration: none; color: var(--ink); font-weight: 600; font-size: 19px; }
-  .pager a:hover { color: var(--accent-text); }
-  .pager span { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 400; }
-  .pager__next span { justify-self: end; }
-  .pager__next { text-align: right; }
-</style>

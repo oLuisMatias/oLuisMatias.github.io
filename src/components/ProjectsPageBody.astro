@@ -1,0 +1,95 @@
+---
+// The whole Projects page. Used by the public page (src/pages/projects/index.astro) and by the Project Page Editor's
+// preview (src/pages/admin/project-page-preview.astro), so the editor shows exactly what the site shows. With `edit`
+// on, the texts carry data-edit="..." names and a bar with the choices (columns, date order) is added above the grid.
+import ProjectCard from "./ProjectCard.astro";
+import { COLUMN_CHOICES, SORT_LABELS, sortProjects, type ProjectsPage, type Sort } from "../lib/projects-page";
+
+interface Project {
+  id: string;
+  data: { title: string; topic: string; summary: string; date?: string; cover?: string; coverSpacing?: string[]; tools?: string[] };
+}
+interface Props {
+  page: ProjectsPage;
+  projects: Project[];
+  edit?: boolean;
+}
+const { page, projects, edit = false } = Astro.props;
+
+const attr = (key: string) => (edit ? { "data-edit": key } : {});
+const ordered = sortProjects(projects, page.sort, (p) => p.data.date ?? "");
+const topics = [...new Set(projects.map((p) => p.data.topic))];
+const sorts = Object.keys(SORT_LABELS) as Sort[];
+---
+<header class="wrap page-head">
+  <p class="eyebrow" {...attr("eyebrow")}>{page.eyebrow}</p>
+  <h1 style="margin-top:10px" {...attr("title")}>{page.title}</h1>
+  <p {...attr("intro")}>{page.intro}</p>
+</header>
+
+<section class="wrap section" style="padding-top:32px">
+  {edit && (
+    <div class="choices" data-choices>
+      <div class="choices__group">
+        <span class="choices__label">Columns</span>
+        {COLUMN_CHOICES.map((n) => (
+          <button type="button" class:list={["choices__pill", { "is-on": n === page.columns }]} data-columns={n}>
+            <span class="choices__picture" style={`grid-template-columns: repeat(${n}, 1fr)`}>{Array.from({ length: n }, () => <i />)}</span>
+            {n}
+          </button>
+        ))}
+      </div>
+      <div class="choices__group">
+        <span class="choices__label">Opens with</span>
+        {sorts.map((s) => <button type="button" class:list={["choices__pill", { "is-on": s === page.sort }]} data-sort-default={s}>{SORT_LABELS[s]}</button>)}
+      </div>
+    </div>
+  )}
+  <div class="toolbar">
+    {topics.length > 1 && (
+      <div class="filters" role="group" aria-label="Filter by topic">
+        <button type="button" class="filter" data-topic="" aria-pressed="true">All</button>
+        {topics.map((t) => <button type="button" class="filter" data-topic={t} aria-pressed="false">{t}</button>)}
+      </div>
+    )}
+    <div class="sorter" role="group" aria-label="Order by date">
+      <span class="sorter__label">Date</span>
+      {sorts.map((s) => <button type="button" class="filter" data-sort={s} aria-pressed={String(s === page.sort)}>{SORT_LABELS[s]}</button>)}
+    </div>
+  </div>
+  <div class="projects-grid" id="project-grid" style={`--columns: ${page.columns}`} data-columns-count={page.columns} data-grid>
+    {ordered.map((p) => (
+      <div data-topic={p.data.topic} data-date={p.data.date ?? ""} data-id={p.id} style="display:grid">
+        <ProjectCard id={p.id} title={p.data.title} topic={p.data.topic}
+          summary={p.data.summary} cover={p.data.cover} coverSpacing={p.data.coverSpacing} tools={p.data.tools} />
+      </div>
+    ))}
+  </div>
+  {projects.length === 0 && <p class="muted">New projects are on the drawing board.</p>}
+</section>
+
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 28px; }
+  .filters, .sorter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .sorter__label { font-size: 13px; color: var(--muted); margin-right: 2px; }
+  .filter { min-height: 40px; padding: 0 16px; font: 500 14px var(--font-sans); color: var(--text); background: var(--surface); border: 0; border-radius: 999px; cursor: pointer; }
+  .filter:hover { color: var(--ink); background: var(--chip); }
+  .filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  /* The columns are set in the Project Page Editor; the rows follow from the number of projects. */
+  .projects-grid { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+  .projects-grid > :global(*) { min-width: 0; }
+  @media (max-width: 1000px) {
+    .projects-grid[data-columns-count="3"], .projects-grid[data-columns-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .projects-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+  .choices { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-bottom: 24px; padding: 12px 14px; border-radius: 16px; background: var(--surface); }
+  .choices__group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .choices__label { font-size: 13px; color: var(--muted); margin-right: 4px; }
+  .choices__pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 10px; border: 0; border-radius: 999px; background: var(--chip); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .choices__pill:hover { color: var(--ink); }
+  .choices__pill.is-on { background: var(--accent); color: var(--on-accent); }
+  .choices__picture { display: grid; gap: 2px; width: 26px; }
+  .choices__picture i { display: block; height: 7px; border-radius: 2px; background: currentColor; opacity: 0.75; }
+</style>

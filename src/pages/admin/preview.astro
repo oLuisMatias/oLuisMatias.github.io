@@ -1,0 +1,638 @@
+---
+// The live preview of the project editor: the real site layout and styles, with a project page drawn into it
+// from whatever the editor sends. Nothing here is saved; /admin/projects owns the data.
+// On this page you edit: split boxes, choose what goes in them, type text, swap and resize boxes. Every change is sent to
+// the editor as a message, which changes the project (so undo, redo and Save work as always).
+import Base from "../../layouts/Base.astro";
+import "../../styles/project.css";
+import { tools } from "../../lib/site";
+---
+<Base title="Preview" noindex>
+  <script is:inline slot="head" type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
+  <script type="application/json" id="tools-data" set:html={JSON.stringify(tools)} />
+  <div id="preview-root"></div>
+</Base>
+
+<script>
+  import { renderProject } from "../../lib/render-project";
+  import type { Project } from "../../lib/project-model";
+  import { getNode, isSplit, parsePath } from "../../lib/boxes";
+  import { iconSvg } from "../../lib/icons";
+
+  const root = document.getElementById("preview-root")!;
+  const tools = JSON.parse(document.getElementById("tools-data")!.textContent || "[]");
+  const send = (message: object) => parent.postMessage(message, location.origin);
+
+  let lastHtml = "";
+  let current: Project | null = null;
+  /** What is selected: a box ("m:0.1"), the header, or a whole section. */
+  let selected: { box?: string; header?: boolean; section?: number } = {};
+
+  function mark() {
+    root.querySelectorAll(".is-selected").forEach((el) => el.classList.remove("is-selected"));
+    const target =
+      selected.box !== undefined
+        ? root.querySelector(`[data-box="${selected.box}"]`)
+        : selected.header
+          ? root.querySelector(`[data-part="header"]`)
+          : selected.section !== undefined
+            ? root.querySelector(`[data-section="${selected.section}"]`)
+            : null;
+    target?.classList.add("is-selected");
+    return target as HTMLElement | null;
+  }
+
+  const rectOf = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    return { top: r.top, left: r.left, width: r.width, height: r.height, viewport: window.innerWidth };
+  };
+
+  function draw(project: Project) {
+    const html = renderProject(project, tools);
+    if (html === lastHtml) return;
+    lastHtml = html;
+    const y = window.scrollY;
+    root.innerHTML = html;
+    closePopover();
+    // Headings can be typed straight into the page.
+    root.querySelectorAll<HTMLElement>("h2.block-heading[data-block]").forEach((el) => {
+      el.contentEditable = "plaintext-only";
+      el.spellcheck = true;
+      el.addEventListener("input", () => send({ type: "editText", box: el.dataset.block, value: (el.textContent ?? "").replace(/\s+/g, " ").trim() }));
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+    });
+    // Title and summary can be typed straight into the page.
+    for (const [selector, field] of [["h1", "title"], ["header p:not([style])", "summary"]] as const) {
+      const el = root.querySelector<HTMLElement>(`[data-part="header"] ${selector}`);
+      if (!el) continue;
+      el.contentEditable = "plaintext-only";
+      el.spellcheck = true;
+      el.addEventListener("input", () => {
+        send({ type: "edit", field, value: (el.textContent ?? "").replace(/\s+/g, " ").trim() });
+      });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+      });
+    }
+    mark();
+    window.scrollTo(0, y);
+    hideHandle();
+    placeResizers();
+  }
+
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    const m = e.data;
+    if (m?.type === "render") {
+      current = m.project;
+      // When the change came from typing in this page, the page already shows it: don't redraw under the caret.
+      if (m.skipDraw) { lastHtml = ""; return; }
+      if (editing) return;
+      draw(m.project);
+    }
+    if (m?.type === "select") {
+      selected = { box: m.box ?? undefined, header: m.header ?? undefined, section: m.section ?? undefined };
+      mark()?.scrollIntoView({ behavior: m.wantRect ? "auto" : "smooth", block: "nearest" });
+      // The editor wants to know where the box is, so its panel can sit beside it. The page is redrawn a moment after
+      // the change that made the box, so wait for that.
+      if (m.wantRect) {
+        setTimeout(() => {
+          const el = mark();
+          if (!el) return;
+          const content = el.querySelector<HTMLElement>("[data-block]");
+          if (!editing && content && isTextBox(content)) startTextEdit(content);
+          else if (content?.matches("h2.block-heading")) { content.focus(); document.getSelection()?.selectAllChildren(content); }
+          send({ type: "select", ...selected, rect: rectOf(el) });
+        }, 260);
+      }
+    }
+  });
+
+  // ---- Clicks ----
+  let justDragged = false;
+  root.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a,button")) e.preventDefault();
+    if (justDragged) { justDragged = false; return; }
+    const act = target.closest<HTMLElement>("[data-act]");
+    if (act) { runAction(act); return; }
+    closePopover();
+    const box = target.closest<HTMLElement>("[data-box]");
+    const grip = target.closest<HTMLElement>("[data-section-grip]");
+    const header = target.closest<HTMLElement>('[data-part="header"]');
+    if (box) {
+      selected = { box: box.dataset.box };
+      const content = target.closest<HTMLElement>("[data-block]");
+      if (content && !editing && isTextBox(content)) startTextEdit(content);
+    } else if (grip) selected = { section: Number(grip.dataset.sectionGrip) };
+    else if (header) selected = { header: true };
+    else return;
+    const el = mark();
+    send({ type: "select", ...selected, rect: el ? rectOf(el) : undefined });
+  });
+  document.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest("a")) e.preventDefault(); }, true);
+
+  // ---- The menus of the page ----
+  const popover = document.createElement("div");
+  popover.id = "popover";
+  document.body.append(popover);
+  function closePopover() { popover.style.display = "none"; popover.replaceChildren(); }
+  function openPopover(anchor: HTMLElement, html: string, onPick: (value: string) => void) {
+    popover.innerHTML = html;
+    popover.style.display = "block";
+    const r = anchor.getBoundingClientRect();
+    const w = popover.offsetWidth;
+    popover.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - w - 8))}px`;
+    const below = r.bottom + 6;
+    popover.style.top = `${below + popover.offsetHeight > window.innerHeight ? Math.max(8, r.top - popover.offsetHeight - 6) : below}px`;
+    popover.onclick = (e) => {
+      const item = (e.target as HTMLElement).closest<HTMLElement>("[data-pick]");
+      if (!item) return;
+      e.stopPropagation();
+      closePopover();
+      onPick(item.dataset.pick!);
+    };
+  }
+  document.addEventListener("pointerdown", (e) => { if (!(e.target as HTMLElement).closest("#popover,#box-menu,[data-act]")) closePopover(); }, true);
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closePopover(); });
+
+  const KINDS: [string, string, string][] = [
+    ["text", "Text", "typography"], ["heading", "Heading", "heading"], ["image", "Image", "photo"], ["gallery", "Gallery", "layout-grid"],
+    ["model", "3D model", "cube-3d-sphere"], ["youtube", "Video", "brand-youtube"], ["table", "Table", "table"], ["button", "Button", "link"],
+    ["facts", "Tools and skills", "layout-columns"], ["media", "Cover or project 3D model", "photo"],
+  ];
+
+  function runAction(btn: HTMLElement) {
+    const act = btn.dataset.act!;
+    const box = btn.dataset.box;
+    const section = Number(btn.dataset.section);
+    if (act === "add-section") send({ type: "addSection" });
+    else if (act === "default-main") send({ type: "defaultMain" });
+    else if (act === "split-columns" || act === "split-rows") send({ type: "split", box, direction: act === "split-columns" ? "columns" : "rows" });
+    else if (act === "delete-box") send({ type: "deleteBox", box });
+    else if (act === "choose") {
+      openPopover(btn, `<div class="pop-title">What goes here?</div><div class="kind-grid">${KINDS.map(([k, label, icon]) => `<button type="button" data-pick="${k}">${iconSvg(icon, 20)}<span>${label}</span></button>`).join("")}</div>`, (kind) => {
+        send({ type: "setContent", box, kind });
+      });
+    } else if (act.startsWith("section-")) send({ type: "sectionAction", action: act.slice(8), section });
+  }
+
+  // ---- Text typed in place ----
+  let editing: HTMLElement | null = null;
+  const isTextBox = (el: HTMLElement) => el.dataset.type === "text";
+
+  /** The content of a box, found again in the project the editor last sent. */
+  function contentAt(id: string) {
+    if (!current) return undefined;
+    const [scope, path] = id.split(":");
+    const tree = scope === "m" ? current.main : current.sections[Number(scope)];
+    const p = parsePath(path ?? "");
+    const node = tree && p ? getNode(tree, p) : undefined;
+    return node && !isSplit(node) ? node : undefined;
+  }
+
+  function startTextEdit(el: HTMLElement) {
+    const id = el.dataset.block;
+    const leaf = id ? contentAt(id) : undefined;
+    if (!id || !leaf || leaf.type !== "text") return;
+    editing = el;
+    hideHandle();
+    const box = document.createElement("div");
+    box.className = "text-edit";
+    const bar = document.createElement("div");
+    bar.className = "text-edit__bar";
+    const area = document.createElement("textarea");
+    area.value = leaf.text;
+    area.placeholder = "Write here. Leave an empty line between paragraphs.";
+    const fit = () => { area.style.height = "auto"; area.style.height = `${Math.max(area.scrollHeight + 2, 90)}px`; };
+    const changed = () => { leaf.text = area.value; send({ type: "editText", box: id, value: area.value }); fit(); };
+    const wrap = (before: string, after = before, placeholder = "text") => {
+      const { selectionStart: a, selectionEnd: b, value } = area;
+      const chosen = value.slice(a, b) || placeholder;
+      area.value = value.slice(0, a) + before + chosen + after + value.slice(b);
+      area.setSelectionRange(a + before.length, a + before.length + chosen.length);
+      changed();
+    };
+    const buttons: [string, string, () => void][] = [
+      ["<b>B</b>", "Bold", () => wrap("**")],
+      ["<i>I</i>", "Italic", () => wrap("*")],
+      ["• List", "Bulleted list", () => {
+        const { selectionStart: a, selectionEnd: b, value } = area;
+        const start = value.lastIndexOf("\n", a - 1) + 1;
+        const lines = value.slice(start, b).split("\n").map((l) => (l.startsWith("- ") ? l.slice(2) : `- ${l}`));
+        area.value = value.slice(0, start) + lines.join("\n") + value.slice(b);
+        changed();
+      }],
+      ["Link", "Link", () => { const url = prompt("Link address (https://…)"); if (url) wrap("[", `](${url})`, "link text"); }],
+    ];
+    for (const [label, title, run] of buttons) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = label;
+      b.title = title;
+      b.addEventListener("mousedown", (e) => e.preventDefault());
+      b.addEventListener("click", (e) => { e.stopPropagation(); run(); });
+      bar.append(b);
+    }
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "danger";
+    clear.innerHTML = iconSvg("trash", 15);
+    clear.title = "Empty this box";
+    clear.addEventListener("mousedown", (e) => e.preventDefault());
+    clear.addEventListener("click", (e) => { e.stopPropagation(); finishTextEdit(false); send({ type: "setContent", box: id, kind: "empty" }); });
+    bar.append(clear);
+    box.append(bar, area);
+    el.replaceChildren(box);
+    area.addEventListener("input", changed);
+    area.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); area.blur(); } });
+    box.addEventListener("focusout", (e) => { if (!box.contains(e.relatedTarget as Node | null)) finishTextEdit(true); });
+    box.addEventListener("click", (e) => e.stopPropagation());
+    fit();
+    area.focus();
+  }
+
+  function finishTextEdit(redraw: boolean) {
+    if (!editing) return;
+    editing = null;
+    if (redraw && current) { lastHtml = ""; draw(current); }
+  }
+
+  // ---- Moving boxes and sections ----
+  // A box is dragged by its handle onto another box: the two swap places (onto an empty box, it moves there). A section is
+  // dragged by its bar. Everything snaps, so phone and tablet still re-flow.
+  type Grab = { kind: "box"; el: HTMLElement; id: string } | { kind: "section"; el: HTMLElement; index: number };
+  type Drop = { message: object; label: string };
+
+  const handle = document.createElement("button");
+  handle.type = "button";
+  handle.id = "drag-handle";
+  handle.title = "Drag onto another box to swap them";
+  handle.setAttribute("aria-label", "Drag onto another box to swap them");
+  handle.innerHTML = iconSvg("grip-vertical", 16);
+  // Next to it, a button with the box's menu: divide into columns or rows, delete. Nothing is drawn inside the box, so its
+  // size on screen is its real size.
+  const menu = document.createElement("button");
+  menu.type = "button";
+  menu.id = "box-menu";
+  menu.title = "Divide or delete this box";
+  menu.setAttribute("aria-label", "Divide or delete this box");
+  menu.innerHTML = iconSvg("dots", 16);
+  const line = document.createElement("div");
+  line.id = "drop-line";
+  const chip = document.createElement("div");
+  chip.id = "drop-chip";
+  document.body.append(handle, menu, line, chip);
+
+  let hovered: Extract<Grab, { kind: "box" }> | null = null;
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+  let drag: { grab: Grab; drop: Drop | null } | null = null;
+  let pointer = { x: 0, y: 0 };
+  let scrollFrame = 0;
+
+  const boxFor = (target: EventTarget | null): Extract<Grab, { kind: "box" }> | null => {
+    const el = (target as HTMLElement | null)?.closest?.<HTMLElement>(".box[data-box]");
+    return el && root.contains(el) ? { kind: "box", el, id: el.dataset.box! } : null;
+  };
+
+  function showHandle(g: Extract<Grab, { kind: "box" }>) {
+    clearTimeout(hideTimer);
+    hideTimer = undefined;
+    const r = g.el.getBoundingClientRect();
+    handle.style.display = "flex";
+    const left = r.left >= 44 ? r.left - 36 : r.left + 6;
+    const top = Math.max(r.top, 0) + 6;
+    handle.style.left = `${left}px`;
+    handle.style.top = `${top}px`;
+    menu.style.display = "flex";
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top + 34}px`;
+  }
+  function hideHandle() {
+    clearTimeout(hideTimer);
+    hideTimer = undefined;
+    handle.style.display = "none";
+    menu.style.display = "none";
+    hovered = null;
+  }
+
+  document.addEventListener("pointermove", (e) => {
+    if (drag || editing || resizing) return;
+    if (e.target === handle || e.target === menu || handle.contains(e.target as Node) || menu.contains(e.target as Node)) { clearTimeout(hideTimer); hideTimer = undefined; return; }
+    const g = boxFor(e.target);
+    if (g) {
+      if (g.el !== hovered?.el) { hovered = g; showHandle(g); } else { hovered = g; clearTimeout(hideTimer); hideTimer = undefined; }
+    } else if (hovered && !hideTimer) {
+      hideTimer = setTimeout(hideHandle, 400);
+    }
+  });
+  window.addEventListener("scroll", () => { if (!drag) hideHandle(); }, { passive: true });
+
+  const place = (left: number, top: number, width: number, height: number, zone: boolean) => {
+    line.className = zone ? "zone" : "";
+    Object.assign(line.style, { display: "block", left: `${left}px`, top: `${top}px`, width: `${width}px`, height: zone ? `${height}px` : "" });
+  };
+
+  /** The box under the pointer, or the nearest one. */
+  function boxAt(x: number, y: number, except: HTMLElement): HTMLElement | null {
+    const under = document.elementsFromPoint(x, y).map((el) => el.closest<HTMLElement>(".box[data-box]")).find((el) => el && el !== except);
+    if (under) return under;
+    let best: HTMLElement | null = null;
+    let bestDistance = Infinity;
+    for (const el of root.querySelectorAll<HTMLElement>(".box[data-box]")) {
+      if (el === except) continue;
+      const r = el.getBoundingClientRect();
+      const d = Math.max(r.left - x, 0, x - r.right) ** 2 + Math.max(r.top - y, 0, y - r.bottom) ** 2;
+      if (d < bestDistance) { best = el; bestDistance = d; }
+    }
+    return best;
+  }
+
+  function boxDrop(g: Extract<Grab, { kind: "box" }>): Drop | null {
+    const target = boxAt(pointer.x, pointer.y, g.el);
+    if (!target) { line.style.display = "none"; return null; }
+    const r = target.getBoundingClientRect();
+    place(r.left, r.top, r.width, r.height, true);
+    return { message: { type: "swap", from: g.id, to: target.dataset.box }, label: target.classList.contains("box--empty") ? "Move here" : "Swap places" };
+  }
+
+  function sectionDrop(g: Extract<Grab, { kind: "section" }>): Drop {
+    const all = [...root.querySelectorAll<HTMLElement>(".psection")];
+    const others = all.filter((el) => el !== g.el);
+    const ref = others.find((el) => { const r = el.getBoundingClientRect(); return pointer.y < r.top + r.height / 2; });
+    const insertAt = ref ? all.indexOf(ref) : all.length;
+    const area = root.querySelector<HTMLElement>(".sections")!.getBoundingClientRect();
+    if (ref) place(area.left, ref.getBoundingClientRect().top - 12, area.width, 4, false);
+    else if (others.length) place(area.left, others[others.length - 1].getBoundingClientRect().bottom + 12, area.width, 4, false);
+    else line.style.display = "none";
+    return { message: { type: "moveSection", from: g.index, insertAt }, label: "Move the section here" };
+  }
+
+  function updateDrop() {
+    if (!drag) return;
+    const drop = drag.grab.kind === "box" ? boxDrop(drag.grab) : sectionDrop(drag.grab);
+    drag.drop = drop;
+    if (!drop) { chip.style.display = "none"; return; }
+    chip.textContent = drop.label;
+    chip.style.display = "block";
+    chip.style.left = `${Math.max(8, Math.min(pointer.x + 16, window.innerWidth - chip.offsetWidth - 8))}px`;
+    chip.style.top = `${pointer.y + 18}px`;
+  }
+
+  function edgeScroll() {
+    if (!drag) return;
+    const dy = pointer.y < 70 ? -14 : pointer.y > window.innerHeight - 70 ? 14 : 0;
+    if (dy) { window.scrollBy(0, dy); updateDrop(); }
+    scrollFrame = requestAnimationFrame(edgeScroll);
+  }
+
+  function beginDrag(grab: Grab, e: PointerEvent, owner: HTMLElement) {
+    try { owner.setPointerCapture(e.pointerId); } catch { /* the drag still works without capture */ }
+    drag = { grab, drop: null };
+    pointer = { x: e.clientX, y: e.clientY };
+    document.body.classList.add("is-dragging");
+    grab.el.classList.add("is-lifted");
+    updateDrop();
+    scrollFrame = requestAnimationFrame(edgeScroll);
+  }
+
+  function endDrag(apply: boolean) {
+    if (!drag) return;
+    const { grab, drop } = drag;
+    drag = null;
+    cancelAnimationFrame(scrollFrame);
+    document.body.classList.remove("is-dragging");
+    grab.el.classList.remove("is-lifted");
+    line.style.display = "none";
+    chip.style.display = "none";
+    hideHandle();
+    if (apply && drop) {
+      justDragged = true;
+      setTimeout(() => (justDragged = false), 0);
+      send(drop.message);
+    }
+  }
+
+  handle.addEventListener("pointerdown", (e) => {
+    if (!hovered) return;
+    e.preventDefault();
+    beginDrag(hovered, e, handle);
+  });
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!hovered) return;
+    const id = hovered.id;
+    const item = (icon: string, pick: string, label: string) => `<button type="button" data-pick="${pick}">${iconSvg(icon, 18)}<span>${label}</span></button>`;
+    openPopover(menu, `<div class="pop-title">This box</div><div class="menu-list">${item("layout-columns", "columns", "Divide into columns")}${item("layout-rows", "rows", "Divide into rows")}${item("trash", "delete", "Delete this box")}</div>`, (pick) => {
+      if (pick === "delete") send({ type: "deleteBox", box: id });
+      else send({ type: "split", box: id, direction: pick });
+    });
+  });
+  // The bar above a section moves the whole section; a plain click on it selects the section.
+  let pending: { grab: Grab; x: number; y: number; owner: HTMLElement } | null = null;
+  root.addEventListener("pointerdown", (e) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const bar = (e.target as HTMLElement).closest<HTMLElement>("[data-section-grip]");
+    const section = bar?.closest<HTMLElement>(".psection");
+    if (!bar || !section) return;
+    pending = { grab: { kind: "section", el: section, index: Number(bar.dataset.sectionGrip) }, x: e.clientX, y: e.clientY, owner: bar };
+  });
+  const move = (e: PointerEvent) => {
+    if (pending && !drag && Math.hypot(e.clientX - pending.x, e.clientY - pending.y) > 5) {
+      e.preventDefault();
+      beginDrag(pending.grab, e, pending.owner);
+      pending = null;
+    }
+    if (!drag) return;
+    pointer = { x: e.clientX, y: e.clientY };
+    updateDrop();
+  };
+  handle.addEventListener("pointermove", move);
+  root.addEventListener("pointermove", move);
+  const finish = (apply: boolean) => () => { pending = null; endDrag(apply); };
+  for (const target of [handle, root]) {
+    target.addEventListener("pointerup", finish(true));
+    target.addEventListener("pointercancel", finish(false));
+  }
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") endDrag(false); });
+
+  // ---- Resizing columns ----
+  // Between the columns of a split there is a thin handle: drag it to give one column more room and its neighbour less.
+  let resizing = false;
+  const MIN_WIDTH = 90;
+
+  const columnsOf = (split: HTMLElement) => [...split.children].filter((el): el is HTMLElement => el instanceof HTMLElement && (el.classList.contains("box") || el.classList.contains("split")));
+
+  function placeResizers() {
+    root.querySelectorAll(".resizer").forEach((el) => el.remove());
+    root.querySelectorAll<HTMLElement>(".split--columns[data-split]").forEach((split) => {
+      const cols = columnsOf(split);
+      const base = split.getBoundingClientRect();
+      for (let i = 0; i < cols.length - 1; i++) {
+        const a = cols[i].getBoundingClientRect();
+        const b = cols[i + 1].getBoundingClientRect();
+        if (b.left <= a.left + 4) continue; // stacked (narrow screen): nothing to resize
+        const handleEl = document.createElement("div");
+        handleEl.className = "resizer";
+        handleEl.dataset.index = String(i);
+        handleEl.title = "Drag to change the widths";
+        handleEl.style.left = `${(a.right + b.left) / 2 - base.left - 7}px`;
+        split.append(handleEl);
+      }
+    });
+  }
+
+  root.addEventListener("pointerdown", (e) => {
+    const grip = (e.target as HTMLElement).closest<HTMLElement>(".resizer");
+    const split = grip?.closest<HTMLElement>(".split--columns[data-split]");
+    if (!grip || !split) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const i = Number(grip.dataset.index);
+    const cols = columnsOf(split);
+    const widths = cols.map((c) => c.getBoundingClientRect().width);
+    const startX = e.clientX;
+    const pair = widths[i] + widths[i + 1];
+    resizing = true;
+    hideHandle();
+    try { grip.setPointerCapture(e.pointerId); } catch { /* fine without capture */ }
+    document.body.classList.add("is-resizing");
+    const apply = (dx: number) => {
+      const left = Math.min(pair - MIN_WIDTH, Math.max(MIN_WIDTH, widths[i] + dx));
+      const next = [...widths];
+      next[i] = left;
+      next[i + 1] = pair - left;
+      split.style.gridTemplateColumns = next.map((w) => `minmax(0, ${w}fr)`).join(" ");
+      grip.style.left = `${cols[i].getBoundingClientRect().right - split.getBoundingClientRect().left + (parseFloat(getComputedStyle(split).columnGap) || 0) / 2 - 7}px`;
+      return next;
+    };
+
+    // Snap point: the width at which the two columns are exactly as tall as each other. The height of a column depends on its
+    // width (text wraps a line at a time, a model stays square), so try many widths and look for where the two heights cross.
+    // A crossing can also be a jump (a line wrapping), where the heights never really meet: only crossings that end up within
+    // 2 px of each other count, and of those the one nearest to where the divider is now wins.
+    const gap = (dx: number) => { apply(dx); return cols[i].getBoundingClientRect().height - cols[i + 1].getBoundingClientRect().height; };
+    const lowest = MIN_WIDTH - widths[i];
+    const highest = pair - MIN_WIDTH - widths[i];
+    const STEPS = 120;
+    const SAME = 2;
+    let snapDx: number | null = null;
+    let previous = { dx: lowest, d: gap(lowest) };
+    for (let k = 1; k <= STEPS; k++) {
+      const dx = lowest + ((highest - lowest) * k) / STEPS;
+      const d = gap(dx);
+      if ((previous.d < 0 && d >= 0) || (previous.d > 0 && d <= 0)) {
+        let lo = previous.dx, hi = dx, dLo = previous.d;
+        for (let n = 0; n < 16; n++) {
+          const mid = (lo + hi) / 2;
+          const dm = gap(mid);
+          if ((dLo < 0 && dm < 0) || (dLo > 0 && dm > 0)) { lo = mid; dLo = dm; } else hi = mid;
+        }
+        const best = Math.abs(gap(lo)) <= Math.abs(gap(hi)) ? lo : hi;
+        if (Math.abs(gap(best)) <= SAME && (snapDx === null || Math.abs(best) < Math.abs(snapDx))) snapDx = best;
+      }
+      previous = { dx, d };
+    }
+    apply(0);
+
+    let latest = widths;
+    let matched = false;
+    const SNAP = 16;
+    const onMove = (ev: PointerEvent) => {
+      let dx = ev.clientX - startX;
+      matched = snapDx !== null && Math.abs(dx - snapDx) < SNAP;
+      if (matched && snapDx !== null) dx = snapDx;
+      latest = apply(dx);
+      if (matched) {
+        chip.textContent = "Same height";
+        chip.style.display = "block";
+        chip.style.left = `${Math.max(8, Math.min(ev.clientX + 16, window.innerWidth - chip.offsetWidth - 8))}px`;
+        chip.style.top = `${ev.clientY + 18}px`;
+      } else chip.style.display = "none";
+    };
+    const onUp = () => {
+      grip.removeEventListener("pointermove", onMove);
+      grip.removeEventListener("pointerup", onUp);
+      grip.removeEventListener("pointercancel", onUp);
+      document.body.classList.remove("is-resizing");
+      chip.style.display = "none";
+      resizing = false;
+      justDragged = true;
+      setTimeout(() => (justDragged = false), 0);
+      const total = latest.reduce((a, b) => a + b, 0) || 1;
+      send({ type: "resize", split: split.dataset.split, sizes: latest.map((w) => Math.round((w / total) * 10000) / 100) });
+    };
+    grip.addEventListener("pointermove", onMove);
+    grip.addEventListener("pointerup", onUp);
+    grip.addEventListener("pointercancel", onUp);
+  });
+  new ResizeObserver(() => { if (!resizing) placeResizers(); }).observe(root);
+
+  // Save, undo and redo also work while the page has the keyboard focus.
+  window.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    const typing = (e.target as HTMLElement | null)?.closest?.("textarea,input,[contenteditable]");
+    if (k === "s") { e.preventDefault(); send({ type: "shortcut", name: "save" }); }
+    else if (k === "z" && !typing) { e.preventDefault(); send({ type: "shortcut", name: e.shiftKey ? "redo" : "undo" }); }
+  });
+
+  send({ type: "ready" });
+</script>
+
+<style is:global>
+  #preview-root [data-block], #preview-root [data-part] { cursor: pointer; }
+  #preview-root .box[data-box], #preview-root [data-part="header"], #preview-root .psection { transition: outline-color 0.15s; }
+  #preview-root .box[data-box] { outline: 1px dashed color-mix(in srgb, var(--muted) 45%, transparent); outline-offset: 10px; border-radius: 6px; min-height: 60px; }
+  #preview-root .box[data-box]:hover { outline-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  #preview-root .box.is-selected, #preview-root .box.is-selected:hover { outline: 2px solid var(--accent); }
+  #preview-root [data-part="header"].is-selected { outline: 2px solid var(--accent); outline-offset: 10px; border-radius: 8px; }
+  #preview-root [contenteditable]:focus { outline: 2px solid var(--accent); }
+  #preview-root .empty-block { display: grid; place-items: center; min-height: 120px; border-radius: var(--radius); background: var(--surface); color: var(--muted); font-size: 14px; border: 1px dashed var(--line); }
+
+  #preview-root .bar-icon { display: inline-flex; width: 28px; height: 26px; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+  #preview-root .bar-icon:hover { background: var(--line); color: var(--ink); }
+  #preview-root .psection.is-selected .bar-icon { color: #1a1006; }
+  #preview-root .cell-choose { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 110px; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--accent-text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #preview-root .cell-choose:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+  #preview-root .section-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 22px; padding: 6px 10px; border-radius: 10px; background: var(--chip); color: var(--text); font-size: 13px; font-weight: 600; cursor: grab; user-select: none; touch-action: none; }
+  #preview-root .section-bar--main { cursor: default; }
+  #preview-root .section-bar__grip { display: inline-flex; color: var(--muted); }
+  #preview-root .section-bar__tools { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+  #preview-root .psection.is-selected .section-bar { background: var(--accent); color: #1a1006; }
+  #preview-root .bar-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  #preview-root .bar-btn:hover { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+  #preview-root .add-section-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 40px; padding: 16px; border: 1.5px dashed var(--line); border-radius: var(--radius); background: transparent; color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  #preview-root .add-section-btn:hover { border-color: var(--accent); color: var(--ink); }
+
+  /* The handle between two columns. */
+  #preview-root .resizer { position: absolute; top: 0; bottom: 0; width: 14px; z-index: 5; cursor: col-resize; touch-action: none; }
+  #preview-root .resizer::after { content: ""; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; border-radius: 1px; background: transparent; transition: background 0.15s; }
+  #preview-root .resizer:hover::after, body.is-resizing #preview-root .resizer::after { background: var(--accent); }
+  body.is-resizing, body.is-resizing * { cursor: col-resize !important; user-select: none !important; }
+
+  #box-menu { position: fixed; z-index: 60; display: none; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: var(--chip); color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgb(0 0 0 / 0.35); }
+  #box-menu:hover { background: var(--line); }
+  #popover .menu-list { display: grid; gap: 6px; min-width: 220px; }
+  #drag-handle { position: fixed; z-index: 60; display: none; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: var(--accent); color: #1a1006; cursor: grab; box-shadow: 0 2px 10px rgb(0 0 0 / 0.35); touch-action: none; }
+  #drop-line { position: fixed; z-index: 59; display: none; pointer-events: none; height: 4px; border-radius: 2px; background: var(--accent); }
+  #drop-line.zone { border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, transparent); outline: 2px dashed var(--accent); outline-offset: -2px; }
+  #drop-chip { position: fixed; z-index: 61; display: none; pointer-events: none; padding: 5px 12px; border-radius: 999px; background: var(--accent); color: #1a1006; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  body.is-dragging, body.is-dragging * { cursor: grabbing !important; user-select: none !important; }
+  #preview-root .is-lifted { opacity: 0.4; }
+
+  #popover { position: fixed; z-index: 70; display: none; max-width: min(420px, calc(100vw - 16px)); padding: 12px; border-radius: 16px; background: var(--surface-2, var(--surface)); border: 1px solid var(--line); box-shadow: 0 12px 40px rgb(0 0 0 / 0.45); }
+  #popover .pop-title { margin: 0 4px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; color: var(--muted); }
+  #popover .kind-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; min-width: 300px; }
+  #popover button { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 10px 12px; border: 0; border-radius: 12px; background: var(--chip); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; text-align: left; }
+  #popover button:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); }
+
+  #preview-root .text-edit { display: grid; gap: 6px; }
+  #preview-root .text-edit__bar { display: flex; gap: 4px; }
+  #preview-root .text-edit__bar button { min-width: 32px; height: 28px; padding: 0 10px; border: 0; border-radius: 8px; background: var(--chip); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+  #preview-root .text-edit__bar button:hover { background: var(--line); }
+  #preview-root .text-edit__bar .danger { margin-left: auto; color: var(--err, #ff7b72); }
+  #preview-root .text-edit textarea { width: 100%; padding: 10px 12px; border: 2px solid var(--accent); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; line-height: 1.6; resize: none; overflow: hidden; }
+  #preview-root .text-edit textarea:focus { outline: none; }
+</style>

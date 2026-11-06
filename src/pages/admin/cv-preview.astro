@@ -1,0 +1,297 @@
+---
+// The live preview of the CV Page Editor: the cards and the skills of the real CV page, with their texts editable in
+// place, "Add card" slots between the cards, and boxes to add tools, links and skills. Nothing here is saved; /admin/cv
+// owns the data and receives every change as a message.
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
+import "../../styles/cv.css";
+import { site, tools, cvPage } from "../../lib/site";
+import { COLUMN_CHOICES } from "../../lib/cv-page";
+import { cardFromData } from "../../lib/cv";
+import { renderCards, renderSkills } from "../../lib/render-cv";
+
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
+const load = async (section: "work" | "education" | "experiences" | "certifications") =>
+  (await getCollection(section)).sort(byOrder).map((c) => cardFromData(section, c.data, c.id));
+const [work, education, experiences, certifications] = await Promise.all([load("work"), load("education"), load("experiences"), load("certifications")]);
+const toc = [
+  { id: "work", label: "Work", icon: "briefcase" },
+  { id: "education", label: "Education", icon: "school" },
+  { id: "skills", label: "Skills", icon: "tools" },
+  { id: "certifications", label: "Certifications", icon: "certificate" },
+  { id: "publications", label: "Publications", icon: "book" },
+  { id: "other", label: "Other experience", icon: "heart-handshake" },
+];
+const skills = { skills: site.skills, languages: site.languages };
+---
+<Base title="Preview" noindex>
+  <script type="application/json" id="tools" set:html={JSON.stringify(tools)} />
+  <header class="wrap page-head">
+    <p class="eyebrow">Curriculum vitae</p>
+    <h1 style="margin-top:10px">{site.name}</h1>
+    <p>{site.role} · based in {site.location}</p>
+  </header>
+
+  <div class="wrap cv">
+    <aside class="cv__side">
+      <nav aria-label="CV sections" class="card cv__toc">
+        <ol>
+          {toc.map((t) => <li><a href={`#${t.id}`}><Icon name={t.icon} size={17} />{t.label}</a></li>)}
+        </ol>
+        <span class="btn btn--primary"><Icon name="file-download" />Download PDF</span>
+      </nav>
+    </aside>
+  <div class="cv__main" id="cv-root">
+    <section id="work" class="cv__section">
+      <h2 class="cv__h">Work</h2>
+      <ol class="timeline" data-cards="work" set:html={renderCards("work", work, { tools, edit: true })} />
+    </section>
+    <section id="education" class="cv__section">
+      <h2 class="cv__h">Education</h2>
+      <ol class="timeline" data-cards="education" set:html={renderCards("education", education, { tools, edit: true })} />
+    </section>
+    <section id="skills" class="cv__section">
+      <h2 class="cv__h">Skills</h2>
+      <div class="card skills" data-skills set:html={renderSkills(skills, { tools, edit: true })} />
+    </section>
+    <section id="certifications" class="cv__section">
+      <h2 class="cv__h">Certifications</h2>
+      <div class="choices">
+        <span class="choices__label">Columns</span>
+        {COLUMN_CHOICES.map((n) => (
+          <button type="button" class:list={["choices__pill", { "is-on": n === cvPage.certColumns }]} data-cert-columns={n}>
+            <span class="choices__picture" style={`grid-template-columns: repeat(${n}, 1fr)`}>{Array.from({ length: n }, () => <i />)}</span>
+            {n}
+          </button>
+        ))}
+      </div>
+      <div class="certs" style={`--columns: ${cvPage.certColumns}`} data-columns={cvPage.certColumns} data-cards="certifications" set:html={renderCards("certifications", certifications, { tools, edit: true })} />
+    </section>
+    <section id="publications" class="cv__section">
+      <h2 class="cv__h">Publications</h2>
+      <p class="auto-note">Made automatically from the “Paper” lines of the Work and Education cards. Nothing to edit here.</p>
+    </section>
+    <section id="other" class="cv__section">
+      <h2 class="cv__h">Other experience</h2>
+      <ol class="timeline" data-cards="experiences" set:html={renderCards("experiences", experiences, { tools, edit: true })} />
+    </section>
+  </div>
+  </div>
+</Base>
+
+<script>
+  import { renderCards, renderSkills } from "../../lib/render-cv";
+  import { SECTIONS, type Card, type Section } from "../../lib/cv";
+  import type { Skills } from "../../lib/skills";
+
+  const root = document.getElementById("cv-root")!;
+  const tools = JSON.parse(document.getElementById("tools")!.textContent || "[]");
+  const send = (message: object) => parent.postMessage(message, location.origin);
+  const skillsBox = root.querySelector<HTMLElement>("[data-skills]")!;
+
+  let current: Record<Section, Card[]> | null = null;
+  let skills: Skills | null = null;
+  let certColumns = 2;
+  let urls: Record<string, string> = {};
+  let shape = "";
+
+  /** "work.2.papers.0.title" or "skills.g.1.items.0" -> the text in the cards or skills. */
+  function read(key: string): string {
+    const [first, ...rest] = key.split(".");
+    let node: any = first === "skills" ? skills : current?.[first as Section];
+    const path = first === "skills" ? rest.map((p) => (p === "g" ? "skills" : p === "l" ? "languages" : p)) : rest;
+    for (const part of path) node = node?.[/^\d+$/.test(part) ? Number(part) : part];
+    return typeof node === "string" ? node : "";
+  }
+
+  /** Everything that decides which parts the page has. When it changes, the boxes are drawn again; otherwise only the texts are updated. */
+  const shapeOf = () =>
+    JSON.stringify([
+      SECTIONS.map((s) => current![s].map((c) => [c.file, c.logo, c.link, c.visible, c.lines, c.pdf, c.verify, c.papers.map((p) => p.url), c.papers.length, c.tools])),
+      skills!.skills.map((g) => g.items.length),
+      skills!.languages.length,
+    ]);
+
+  function apply() {
+    if (!current || !skills) return;
+    const now = shapeOf();
+    if (now !== shape && !root.querySelector(".bullets-edit")) {
+      shape = now;
+      for (const s of SECTIONS) root.querySelector<HTMLElement>(`[data-cards="${s}"]`)!.innerHTML = renderCards(s, current[s], { tools, edit: true, urls });
+      skillsBox.innerHTML = renderSkills(skills, { tools, edit: true });
+      wireTexts();
+    }
+    const certs = root.querySelector<HTMLElement>('[data-cards="certifications"]')!;
+    certs.style.setProperty("--columns", String(certColumns));
+    certs.dataset.columns = String(certColumns);
+    root.querySelectorAll<HTMLElement>("[data-cert-columns]").forEach((pill) => pill.classList.toggle("is-on", Number(pill.dataset.certColumns) === certColumns));
+    for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+      if (el === document.activeElement) continue;
+      const value = read(el.dataset.edit!);
+      if (el.textContent !== value) el.textContent = value;
+    }
+  }
+
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    if (e.data?.type === "render" && e.data.cards && e.data.skills) {
+      current = e.data.cards;
+      skills = e.data.skills;
+      urls = e.data.urls ?? {};
+      certColumns = e.data.page?.certColumns ?? 2;
+      apply();
+    }
+  });
+
+  // ---- typing in place ----
+  function wireTexts() {
+    for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+      el.contentEditable = "plaintext-only";
+      el.spellcheck = true;
+      el.addEventListener("input", () => send({ type: "edit", key: el.dataset.edit, value: (el.textContent ?? "").replace(/\s+/g, " ").trim() }));
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+    }
+  }
+  wireTexts();
+
+  /** The bullet points: clicking the list shows them as text, one point per line. */
+  function editBullets(list: HTMLElement) {
+    const card = list.closest<HTMLElement>("[data-card]");
+    const section = list.closest<HTMLElement>("[data-cards]")?.dataset.cards as Section | undefined;
+    if (!card || !section || !current || list.querySelector("textarea")) return;
+    const index = Number(card.dataset.card);
+    const area = document.createElement("textarea");
+    area.className = "bullets-edit";
+    area.value = current[section][index].lines.join("\n");
+    area.placeholder = "One point per line";
+    const fit = () => { area.style.height = "auto"; area.style.height = `${Math.max(area.scrollHeight + 2, 80)}px`; };
+    area.addEventListener("input", () => {
+      fit();
+      send({ type: "bullets", section, index, value: area.value.split("\n").map((l) => l.trim()).filter(Boolean) });
+    });
+    area.addEventListener("blur", () => { shape = ""; apply(); });
+    list.replaceChildren(area);
+    fit();
+    area.focus();
+  }
+
+  // ---- the buttons ----
+  root.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a")) e.preventDefault();
+    const pill = target.closest<HTMLElement>("[data-cert-columns]");
+    if (pill) { send({ type: "cert-columns", value: Number(pill.dataset.certColumns) }); return; }
+    const bullets = target.closest<HTMLElement>("[data-bullets]");
+    const button = target.closest<HTMLElement>("[data-act]");
+    if (!button) { if (bullets) editBullets(bullets); return; }
+    const act = button.dataset.act!;
+    const num = (name: string) => Number(button.dataset[name]);
+
+    if (button.closest("[data-skills]")) {
+      if (act === "skill-add") send({ type: "skill-add", group: num("group") });
+      else if (act === "skill-remove") send({ type: "skill-remove", group: num("group"), item: num("item") });
+      else if (act === "group-add") send({ type: "group-add" });
+      else if (act === "group-remove") send({ type: "group-remove", group: num("group") });
+      else if (act === "language-add") send({ type: "language-add" });
+      else if (act === "language-remove") send({ type: "language-remove", lang: num("lang") });
+      return;
+    }
+
+    const section = button.closest<HTMLElement>("[data-cards]")?.dataset.cards as Section | undefined;
+    if (!section || !current) return;
+    if (act === "add") { send({ type: "add", section, at: num("at") }); return; }
+    const card = button.closest<HTMLElement>("[data-card]");
+    if (!card) return;
+    const index = Number(card.dataset.card);
+    const c = current[section][index];
+    if (act === "up" || act === "down") send({ type: "move", section, index, dir: act === "up" ? -1 : 1 });
+    else if (act === "toggle") send({ type: "toggle", section, index });
+    else if (act === "delete") send({ type: "remove", section, index });
+    else if (act === "logo") send({ type: "logo", section, index });
+    else if (act === "tool-add") send({ type: "tool-add", section, index });
+    else if (act === "tool-remove") send({ type: "tool-remove", section, index, tool: button.dataset.tool });
+    else if (act === "cert-link") send({ type: "cert-link", section, index, field: button.dataset.field });
+    else if (act === "link") {
+      const url = prompt("Link of the name (leave empty for no link)", c.link);
+      if (url !== null) send({ type: "link", section, index, value: url.trim() });
+    } else if (act === "paper-add") send({ type: "paper-add", section, index });
+    else if (act === "paper-remove") send({ type: "paper-remove", section, index, paper: num("paper") });
+    else if (act === "paper-link") {
+      const paper = num("paper");
+      const url = prompt("Link of this line (leave empty for no link)", c.papers[paper]?.url ?? "");
+      if (url !== null) send({ type: "paper-link", section, index, paper, value: url.trim() });
+    }
+  });
+  document.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest("a")) e.preventDefault(); }, true);
+
+  // Save, undo and redo also work while the page has the keyboard focus.
+  window.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    const typing = (e.target as HTMLElement | null)?.closest?.("textarea,input,[contenteditable]");
+    if (k === "s") { e.preventDefault(); send({ type: "shortcut", name: "save" }); }
+    else if (k === "z" && !typing) { e.preventDefault(); send({ type: "shortcut", name: e.shiftKey ? "redo" : "undo" }); }
+  });
+
+  send({ type: "ready" });
+</script>
+
+<style is:global>
+  #cv-root { padding-top: 36px; display: grid; gap: 64px; }
+  #cv-root .cv__h { font-size: 26px; margin-bottom: 18px; }
+  #cv-root .auto-note { padding: 18px 22px; border: 1.5px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-size: 15px; }
+  #cv-root [data-edit] { cursor: text; border-radius: 6px; outline: 2px solid transparent; outline-offset: 3px; transition: outline-color 0.15s; }
+  #cv-root [data-edit]:hover { outline-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  #cv-root [data-edit]:focus { outline-color: var(--accent); }
+  #cv-root [data-edit]:empty::before { content: attr(data-placeholder); color: var(--muted); font-weight: 400; opacity: 0.7; }
+  #cv-root [data-edit].entry__badge { display: inline-block; min-width: 3.2em; }
+  #cv-root .pill[data-edit] { display: inline-block; min-width: 3em; }
+  #cv-root .entry, #cv-root .cert { position: relative; }
+  #cv-root .is-hidden { opacity: 0.5; border: 1.5px dashed var(--line); }
+  /* The buttons of a card appear in its corner when the pointer is over it. */
+  #cv-root .card-tools { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-2, var(--surface)); box-shadow: 0 4px 16px rgb(0 0 0 / 0.3); opacity: 0; transition: opacity 0.15s; }
+  #cv-root .entry:hover > .card-tools, #cv-root .entry:focus-within > .card-tools,
+  #cv-root .cert:hover > .card-tools, #cv-root .cert:focus-within > .card-tools { opacity: 1; }
+  #cv-root .card-tool { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: transparent; color: var(--text); cursor: pointer; }
+  #cv-root .card-tool:hover { background: var(--chip); color: var(--ink); }
+  #cv-root .card-tool.is-on { color: var(--accent-text); }
+  #cv-root .logo-btn { padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius-sm); outline: 2px solid transparent; outline-offset: 3px; transition: outline-color 0.15s; flex: none; align-self: flex-start; }
+  #cv-root .logo-btn:hover { outline-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  #cv-root .entry__logo--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; padding: 0; background: color-mix(in srgb, var(--accent) 6%, transparent); border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); color: var(--accent-text); font-size: 14px; font-weight: 600; }
+  #cv-root .cert__badge--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 104px; height: 104px; box-sizing: border-box; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--accent-text); font-size: 13px; font-weight: 600; }
+  #cv-root .entry__list { cursor: text; border-radius: 6px; outline: 2px solid transparent; outline-offset: 6px; transition: outline-color 0.15s; }
+  #cv-root .entry__list:hover { outline-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  #cv-root .entry__placeholder { list-style: none; margin-left: -1.2em; color: var(--muted); }
+  #cv-root .bullets-edit { width: 100%; margin-left: -1.2em; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--accent); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; line-height: 1.6; resize: none; overflow: hidden; }
+  #cv-root .bullets-edit:focus { outline: none; }
+  #cv-root .entry__paper { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 0; }
+  #cv-root .paper-tools { display: inline-flex; margin-left: 8px; opacity: 0; transition: opacity 0.15s; }
+  #cv-root .entry__paper:hover .paper-tools, #cv-root .entry__paper:focus-within .paper-tools { opacity: 1; }
+  #cv-root .paper-tools .card-tool { width: 24px; height: 24px; }
+  #cv-root .add-line { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1.5px dashed var(--line); border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+  #cv-root .add-line:hover { color: var(--accent-text); border-color: var(--accent); }
+  /* Above, between and below the cards: a thin dashed bar that grows into a button when the pointer comes near. */
+  #cv-root .add-slot { display: grid; margin: -8px 0; grid-column: 1 / -1; }
+  #cv-root .add-slot button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 26px; border: 1.5px dashed var(--line); border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: height 0.15s, background 0.15s, color 0.15s, border-color 0.15s; }
+  #cv-root .add-slot button:hover, #cv-root .add-slot button:focus-visible { height: 44px; color: var(--accent-text); border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  /* Tools, skills, links: removable chips and boxes to add more. */
+  #cv-root .tools-box { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  #cv-root .tools-box .tags { margin: 0; }
+  #cv-root .chip-x { display: inline-flex; width: 18px; height: 18px; align-items: center; justify-content: center; margin: 0 -4px 0 6px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; }
+  #cv-root .chip-x:hover { background: var(--line); color: var(--ink); }
+  #cv-root .ilink--edit { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  #cv-root .cert__links { align-items: center; }
+  #cv-root .skills__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  #cv-root .skills__head h3 { margin-bottom: 0; }
+  #cv-root .skills .add-line { margin-top: 10px; }
+  #cv-root .add-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 150px; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--accent-text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  #cv-root .add-tile:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  #cv-root .choices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; padding: 12px 14px; border-radius: 16px; background: var(--surface); }
+  #cv-root .choices__label { font-size: 13px; color: var(--muted); margin-right: 4px; }
+  #cv-root .choices__pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 10px; border: 0; border-radius: 999px; background: var(--chip); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  #cv-root .choices__pill:hover { color: var(--ink); }
+  #cv-root .choices__pill.is-on { background: var(--accent); color: var(--on-accent); }
+  #cv-root .choices__picture { display: grid; gap: 2px; width: 26px; }
+  #cv-root .choices__picture i { display: block; height: 7px; border-radius: 2px; background: currentColor; opacity: 0.75; }
+</style>

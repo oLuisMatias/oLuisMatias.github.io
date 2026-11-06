@@ -1,0 +1,63 @@
+/* Styles of a project page. Shared by the public page and the editor's live preview, so both always look the same. */
+
+/* Tools and Skills card */
+  .facts { padding: 2px 18px; }
+  .facts > div { display: grid; grid-template-columns: 72px 1fr; gap: 10px 14px; align-items: center; padding: 9px 0; min-width: 0; }
+  .facts > div + div { border-top: 1px solid var(--line); }
+  .facts h2 { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  @media (max-width: 560px) { .facts > div { grid-template-columns: 1fr; gap: 8px; } }
+
+/* Content blocks */
+  .figure { margin: 0; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+  .figure img { display: block; width: 100%; background: var(--placeholder); object-fit: contain; }
+  .figure figcaption { padding: 10px 16px 12px; font-size: 13px; color: var(--muted); }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+  .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
+  .model { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; background: var(--placeholder); --poster-color: transparent; }
+  .figure.model-frame { max-width: 420px; margin-inline: auto; }
+  .model-frame { position: relative; }
+  .model-expand { position: absolute; top: 12px; right: 12px; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(6px); }
+  .block-heading { font-size: 26px; line-height: 1.25; letter-spacing: -0.01em; color: var(--ink); }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); background: var(--surface); }
+  .ptable { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .ptable th, .ptable td { padding: 11px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  .ptable th { color: var(--ink); font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .ptable tbody tr:last-child td { border-bottom: 0; }
+  .block-button .btn { display: inline-flex; align-items: center; gap: 8px; }
+  .video { aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; background: #000; }
+  .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* Project page */
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+  .head-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 28px 0 14px; font-size: 14px; }
+  /* Boxes: the main section and every section are trees of boxes, set in the Project Editor. A split divides a box into
+     columns (widths written inline by src/lib/boxes.ts) or rows (each as tall as its content). On narrow screens
+     everything is one column, in reading order. */
+  .split { display: grid; gap: 28px 48px; align-items: start; position: relative; }
+  .split--rows { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .box { min-width: 0; position: relative; }
+  .box > .block, .box > .main-facts, .box > .media { margin: 0; }
+  /* Text fills its box: the width of a box is yours to set by dividing and resizing, not capped at a reading width. */
+  .box .prose { max-width: none; }
+  .main-section { margin-top: 40px; }
+  .main-text { line-height: 1.65; }
+  .main-text > * + * { margin-top: 0.8em; }
+  .main-facts { min-width: 0; }
+  .media { margin: 0; }
+  .sections { margin-top: 56px; }
+  .psection { margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--line); }
+  .sections > .psection:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+  @media (max-width: 900px) {
+    .split--columns { grid-template-columns: minmax(0, 1fr) !important; gap: 28px; }
+    .box:empty { display: none; }
+    .model-frame { max-width: 420px; }
+  }
+  .media img { width: 100%; max-height: 520px; object-fit: contain; background: var(--placeholder); }
+  .media figcaption { display: flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; color: var(--muted); }
+  .pager { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 88px; }
+  .pager a { display: grid; gap: 4px; padding: 22px 24px; text-decoration: none; color: var(--ink); font-weight: 600; font-size: 19px; }
+  .pager a:hover { color: var(--accent-text); }
+  .pager span { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 400; }
+  .pager__next span { justify-self: end; }
+  .pager__next { text-align: right; }

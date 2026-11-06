@@ -3,12 +3,60 @@
 import Base from "../../layouts/Base.astro";
 import Icon from "../../components/Icon.astro";
 
-const tools = [
+interface Tool {
+  href?: string;
+  icon: string;
+  title: string;
+  text: string;
+}
+
+// A tool without an href is not built yet: its card shows "Coming soon" and doesn't link anywhere.
+const groups: { title: string; text: string; tools: Tool[] }[] = [
   {
-    href: "/admin/editor",
-    icon: "edit",
-    title: "Content editor",
-    text: "Add and change projects, 3D prints, CV entries and site settings. Saving publishes the change.",
+    title: "Page editors",
+    text: "One editor for each page of the website.",
+    tools: [
+      {
+        href: "/admin/home",
+        icon: "home",
+        title: "Home Page Editor",
+        text: "Edit the home page texts in place, and choose which projects are featured and in which template.",
+      },
+      {
+        href: "/admin/cv",
+        icon: "file-cv",
+        title: "CV Page Editor",
+        text: "Edit the CV page: work, education, skills, certifications and other experience. Texts, logos, tools, links, and cards added anywhere.",
+      },
+      {
+        href: "/admin/project-page",
+        icon: "tool",
+        title: "Project Page Editor",
+        text: "Edit the Projects page: its texts, how many columns, and the date order it opens with.",
+      },
+      {
+        icon: "cube-3d-sphere",
+        title: "3D Prints Editor",
+        text: "Add and edit the items on the 3D Prints page, with their photos and prices.",
+      },
+    ],
+  },
+  {
+    title: "Projects and applications",
+    text: "Work on one project, and the private job-application tools.",
+    tools: [
+      {
+        href: "/admin/projects",
+        icon: "layout-board",
+        title: "Edit Project",
+        text: "Edit one project page visually: divide it into boxes, write the text, add pictures, models and tables.",
+      },
+      {
+        icon: "file-description",
+        title: "CV Builder",
+        text: "Build CV versions and motivation letters, and export the PDFs. Private.",
+      },
+    ],
   },
 ];
 ---
@@ -19,23 +67,46 @@ const tools = [
     <p>Only you can open this page.</p>
   </header>
 
-  <section class="wrap tools">
-    {tools.map((t) => (
-      <a class="card tool" href={t.href}>
-        <span class="tool__icon"><Icon name={t.icon} size={22} /></span>
-        <h2>{t.title}</h2>
-        <p>{t.text}</p>
-      </a>
-    ))}
-  </section>
+  {groups.map((group, i) => (
+    <section class:list={["wrap group", { "group--after": i > 0 }]}>
+      <div class="group__head">
+        <h2>{group.title}</h2>
+        <p>{group.text}</p>
+      </div>
+      <div class="tools">
+        {group.tools.map((t) => {
+          const Tag = t.href ? "a" : "div";
+          return (
+            <Tag class:list={["card tool", { "tool--soon": !t.href }]} href={t.href}>
+              <span class="tool__head">
+                <span class="tool__icon"><Icon name={t.icon} size={22} /></span>
+                {!t.href && <span class="tool__soon">Coming soon</span>}
+              </span>
+              <h3>{t.title}</h3>
+              <p>{t.text}</p>
+            </Tag>
+          );
+        })}
+      </div>
+    </section>
+  ))}
 </Base>
 
 <style>
-  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-top: 36px; }
+  .group { padding-top: 36px; }
+  /* A line between the two groups. */
+  .group--after { margin-top: 36px; border-top: 1px solid var(--line); }
+  .group__head { margin-bottom: 18px; }
+  .group__head h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); text-transform: uppercase; }
+  .group__head p { margin-top: 4px; color: var(--text); font-size: 15px; }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
   .tool { display: grid; gap: 8px; align-content: start; padding: 26px; text-decoration: none; color: var(--ink); transition: transform 0.2s; }
-  .tool:hover { transform: translateY(-2px); color: var(--ink); }
-  .tool:hover h2 { color: var(--accent-text); }
+  a.tool:hover { transform: translateY(-2px); color: var(--ink); }
+  a.tool:hover h3 { color: var(--accent-text); }
+  .tool--soon { opacity: 0.6; cursor: default; }
+  .tool__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .tool__soon { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--text); }
   .tool__icon { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 12px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-text); }
-  .tool h2 { font-size: 20px; margin-top: 6px; }
+  .tool h3 { font-size: 20px; margin-top: 6px; }
   .tool p { color: var(--text); font-size: 15px; }
 </style>

@@ -1,0 +1,26 @@
+status: Mechanical Design Engineer · Skartek
+greeting: Hi, I'm Luis.
+headline: I design machines for a living, and build my own for fun.
+intro: Mechanical Design Engineer at Skartek, working in CAD, design for manufacturing and 3D printing. In my free time I design and build my own machines, and code websites and small software tools.
+featured:
+  eyebrow: Featured work
+  title: Things I've built
+  template: 1x2
+  slots:
+    - laser-engraver
+    - my-website
+prints:
+  eyebrow: Workshop
+  title: Latest 3D prints
+about:
+  eyebrow: About
+  title: Why I build things
+  text: |-
+    I am a Mechanical Design Engineer originally from Portugal, but currently living and working in Slovakia.
+
+    I studied Mechanical Engineering because I love figuring out how things work. Even outside of my daily job, in my free time, I love working on my own machine design projects and experimenting with 3D printing. I really enjoy taking a personal idea, designing it on the computer, and printing a real, working prototype at home.
+
+    Thanks for visiting my website! Feel free to look around or contact me if you want to talk about engineering and 3D printing.
+cta:
+  title: Let's talk engineering and 3D printing.
+  text: Open to opportunities in mechanical design, collaborations or just a chat.

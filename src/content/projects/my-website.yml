@@ -6,7 +6,11 @@ topic: Programming / AI
 summary: This portfolio, rebuilt from scratch as a fast, modern site that I update without touching code, with a private area for my job applications.
 date: November 2026
 cover: /images/projects/my-website.png
-coverSpacing: []
+coverSpacing:
+  - bottom
+  - left
+  - right
+  - top
 model: ''
 youtube: ''
 tools:
@@ -14,7 +18,6 @@ tools:
   - typescript
   - svelte
   - cloudflare
-  - sveltia
   - github
   - emailjs
   - claude
@@ -23,12 +26,22 @@ skills:
   - UI design
   - Serverless backend
   - 3D on the web
-blocks:
-  - type: text
-    text: |-
-      The first version of this site loaded its content from a Google Sheet in the browser. It worked, but long texts were awkward to edit inside spreadsheet cells, visitors sometimes saw old content, and search engines only saw "Loading…".
+main:
+  split: columns
+  sizes:
+    - 65
+    - 35
+  children:
+    - split: rows
+      children:
+        - type: text
+          text: |-
+            The first version of this site loaded its content from a Google Sheet in the browser. It worked, but long texts were awkward to edit inside spreadsheet cells, visitors sometimes saw old content, and search engines only saw "Loading…".
 
-      So I rebuilt it from scratch, with three goals: a cleaner design, content I can change without code, and private tools for job applications.
+            So I rebuilt it from scratch, with three goals: a cleaner design, content I can change without code, and private tools for job applications.
+        - type: facts
+    - type: media
+sections:
   - type: text
     text: |-
       **What I built**
@@ -39,8 +52,6 @@ blocks:
       - **Interactive 3D viewer:** models rotate on the page and open in a full-screen viewer to zoom and pan, so scrolling the page is never blocked.
       - **Contact and 3D print request forms:** sent with EmailJS straight to my inbox, with a hidden spam trap.
       - **Design:** a dark "Graphite" theme with a light mode, the Inter typeface, and Tabler icons optically aligned with the text.
-  - type: divider
-    note: ''
   - type: text
     text: |-
       **In progress**

@@ -1,0 +1,232 @@
+---
+// The live preview of the Home Page Editor: the real home page, with its texts editable in place. Nothing here is saved;
+// /admin/home owns the data and receives every change as a message.
+import Base from "../../layouts/Base.astro";
+import HomeBody from "../../components/HomeBody.astro";
+import { home, homeHighlights, visible } from "../../lib/site";
+
+const projects = await visible("projects");
+const highlights = await homeHighlights();
+const prints = (await visible("prints")).filter((p) => p.data.photos.length).slice(0, 6);
+const choices = projects.map((p) => ({ id: p.id, title: p.data.title, topic: p.data.topic, cover: p.data.cover ?? "" }));
+---
+<Base title="Preview" noindex>
+  <script type="application/json" id="choices" set:html={JSON.stringify(choices)} />
+  <div id="home-root"><HomeBody {home} {highlights} {projects} {prints} edit /></div>
+</Base>
+
+<script>
+  import { marked } from "marked";
+  import { iconSvg } from "../../lib/icons";
+  import { TEMPLATES, slotCount, type Home, type Template } from "../../lib/home";
+
+  const root = document.getElementById("home-root")!;
+  const choices: { id: string; title: string; topic: string; cover: string }[] = JSON.parse(document.getElementById("choices")!.textContent || "[]");
+  const send = (message: object) => parent.postMessage(message, location.origin);
+  const md = (text: string) => marked.parse(text, { async: false }) as string;
+
+  let current: Home | null = null;
+  let editingMarkdown: HTMLElement | null = null;
+
+  /** "highlights.2.value" -> the text in the home object. */
+  function read(home: Home, key: string): string {
+    let node: any = home;
+    for (const part of key.split(".")) node = node?.[/^\d+$/.test(part) ? Number(part) : part];
+    return typeof node === "string" ? node : "";
+  }
+
+  // ---- showing what the editor sends ----
+  function applyHome(home: Home) {
+    current = home;
+    for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+      if (el === document.activeElement || el === editingMarkdown || el.contains(document.activeElement)) continue;
+      const key = el.dataset.edit!;
+      const value = read(home, key);
+      if (key === "about.text") el.innerHTML = md(value);
+      else if (el.textContent !== value) el.textContent = value;
+    }
+    root.querySelectorAll<HTMLElement>("[data-template]").forEach((pill) => pill.classList.toggle("is-on", pill.dataset.template === home.featured.template));
+    drawSlots(home);
+  }
+
+  /** The featured boxes: every one holds a project card (copied from the page's templates) or asks for a project. */
+  function drawSlots(home: Home) {
+    const grid = root.querySelector<HTMLElement>("[data-grid]");
+    if (!grid) return;
+    const template = home.featured.template as Template;
+    grid.style.setProperty("--columns", String(TEMPLATES[template].columns));
+    const wanted = home.featured.slots.slice(0, slotCount(template)).map((id) => (choices.some((c) => c.id === id) ? id : ""));
+    // Only the boxes whose project changed are redrawn, so the other cards don't flash.
+    const slots = [...grid.children] as HTMLElement[];
+    const make = (id: string, i: number) => {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.dataset.slot = String(i);
+      slot.dataset.id = id;
+      const tpl = id ? root.querySelector<HTMLTemplateElement>(`template[data-card="${CSS.escape(id)}"]`) : null;
+      if (tpl) slot.append(tpl.content.cloneNode(true));
+      else {
+        const empty = document.createElement("button");
+        empty.type = "button";
+        empty.className = "slot__empty";
+        empty.textContent = "Choose a project";
+        slot.append(empty);
+      }
+      return slot;
+    };
+    wanted.forEach((id, i) => {
+      const old = slots[i];
+      if (!old) grid.append(make(id, i));
+      else if ((old.dataset.id ?? "") !== id) old.replaceWith(make(id, i));
+    });
+    for (const extra of slots.slice(wanted.length)) extra.remove();
+  }
+
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    const m = e.data;
+    if (m?.type === "render" && m.home) applyHome(m.home);
+  });
+
+  // ---- typing in place ----
+  for (const el of root.querySelectorAll<HTMLElement>("[data-edit]")) {
+    if (el.dataset.edit === "about.text") continue;
+    el.contentEditable = "plaintext-only";
+    el.spellcheck = true;
+    el.addEventListener("input", () => send({ type: "edit", key: el.dataset.edit, value: (el.textContent ?? "").replace(/\s+/g, " ").trim() }));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+    el.addEventListener("click", (e) => e.preventDefault());
+  }
+
+  // The About text is Markdown: clicking it shows the text itself, with a small toolbar.
+  function editMarkdown(el: HTMLElement) {
+    if (!current || editingMarkdown) return;
+    editingMarkdown = el;
+    const box = document.createElement("div");
+    box.className = "text-edit";
+    const bar = document.createElement("div");
+    bar.className = "text-edit__bar";
+    const area = document.createElement("textarea");
+    area.value = current.about.text;
+    const fit = () => { area.style.height = "auto"; area.style.height = `${Math.max(area.scrollHeight + 2, 120)}px`; };
+    const changed = () => { if (current) current.about.text = area.value; send({ type: "edit", key: "about.text", value: area.value }); fit(); };
+    const wrap = (before: string, after = before, placeholder = "text") => {
+      const { selectionStart: a, selectionEnd: b, value } = area;
+      const chosen = value.slice(a, b) || placeholder;
+      area.value = value.slice(0, a) + before + chosen + after + value.slice(b);
+      area.setSelectionRange(a + before.length, a + before.length + chosen.length);
+      changed();
+    };
+    const buttons: [string, string, () => void][] = [
+      ["<b>B</b>", "Bold", () => wrap("**")],
+      ["<i>I</i>", "Italic", () => wrap("*")],
+      ["• List", "Bulleted list", () => {
+        const { selectionStart: a, selectionEnd: b, value } = area;
+        const start = value.lastIndexOf("\n", a - 1) + 1;
+        const lines = value.slice(start, b).split("\n").map((l) => (l.startsWith("- ") ? l.slice(2) : `- ${l}`));
+        area.value = value.slice(0, start) + lines.join("\n") + value.slice(b);
+        changed();
+      }],
+      ["Link", "Link", () => { const url = prompt("Link address (https://…)"); if (url) wrap("[", `](${url})`, "link text"); }],
+    ];
+    for (const [label, title, run] of buttons) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = label;
+      b.title = title;
+      b.addEventListener("mousedown", (e) => e.preventDefault());
+      b.addEventListener("click", (e) => { e.stopPropagation(); run(); });
+      bar.append(b);
+    }
+    box.append(bar, area);
+    el.replaceChildren(box);
+    area.addEventListener("input", changed);
+    box.addEventListener("focusout", (e) => {
+      if (box.contains(e.relatedTarget as Node | null)) return;
+      editingMarkdown = null;
+      if (current) el.innerHTML = md(current.about.text);
+    });
+    box.addEventListener("click", (e) => e.stopPropagation());
+    fit();
+    area.focus();
+  }
+  root.querySelector<HTMLElement>('[data-edit="about.text"]')?.addEventListener("click", (e) => editMarkdown(e.currentTarget as HTMLElement));
+
+  // ---- the featured section: template and projects ----
+  const popover = document.createElement("div");
+  popover.id = "popover";
+  document.body.append(popover);
+  const closePopover = () => { popover.style.display = "none"; popover.replaceChildren(); };
+  document.addEventListener("pointerdown", (e) => { if (!(e.target as HTMLElement).closest("#popover,.slot")) closePopover(); }, true);
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closePopover(); });
+
+  function chooseProject(slot: HTMLElement) {
+    const index = Number(slot.dataset.slot);
+    const used = new Set(current?.featured.slots ?? []);
+    const item = (id: string, label: string, topic: string, cover: string) =>
+      `<button type="button" data-pick="${id}" class="${current?.featured.slots[index] === id ? "is-on" : ""}">${cover ? `<img src="${cover}" alt="" />` : `<span class="noimg"></span>`}<span class="name">${label}${topic ? `<small>${topic}</small>` : ""}${id && used.has(id) && current?.featured.slots[index] !== id ? `<small>already shown</small>` : ""}</span></button>`;
+    popover.innerHTML = `<div class="pop-title">Which project goes in this box?</div><div class="choice-list">${choices.map((c) => item(c.id, c.title, c.topic, c.cover)).join("")}${item("", "Empty", "", "")}</div>`;
+    popover.style.display = "block";
+    const r = slot.getBoundingClientRect();
+    popover.style.left = `${Math.max(8, Math.min(r.left + r.width / 2 - popover.offsetWidth / 2, window.innerWidth - popover.offsetWidth - 8))}px`;
+    const below = r.top + 40;
+    popover.style.top = `${Math.max(8, Math.min(below, window.innerHeight - popover.offsetHeight - 8))}px`;
+    popover.onclick = (ev) => {
+      const pick = (ev.target as HTMLElement).closest<HTMLElement>("[data-pick]");
+      if (!pick) return;
+      closePopover();
+      send({ type: "slot", index, id: pick.dataset.pick });
+    };
+  }
+
+  root.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a")) e.preventDefault();
+    const pill = target.closest<HTMLElement>("[data-template]");
+    if (pill) { closePopover(); send({ type: "template", value: pill.dataset.template }); return; }
+    const slot = target.closest<HTMLElement>(".slot");
+    if (slot) { e.preventDefault(); chooseProject(slot); }
+  });
+  document.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest("a")) e.preventDefault(); }, true);
+
+  // Save, undo and redo also work while the page has the keyboard focus.
+  window.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    const typing = (e.target as HTMLElement | null)?.closest?.("textarea,input,[contenteditable]");
+    if (k === "s") { e.preventDefault(); send({ type: "shortcut", name: "save" }); }
+    else if (k === "z" && !typing) { e.preventDefault(); send({ type: "shortcut", name: e.shiftKey ? "redo" : "undo" }); }
+  });
+
+  void iconSvg;
+  send({ type: "ready" });
+</script>
+
+<style is:global>
+  #home-root [data-edit] { cursor: text; border-radius: 6px; outline: 2px solid transparent; outline-offset: 4px; transition: outline-color 0.15s; }
+  #home-root [data-edit]:hover { outline-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  #home-root [data-edit]:focus { outline-color: var(--accent); }
+  #home-root .slot { cursor: pointer; border-radius: var(--radius); outline: 2px solid transparent; outline-offset: 4px; transition: outline-color 0.15s; }
+  #home-root .slot:hover { outline-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  #home-root .slot .project-card { pointer-events: none; }
+  /* The empty box is also drawn by the script when the template changes, so its look is set here too. */
+  #home-root .slot { display: grid; min-width: 0; }
+  #home-root .slot__empty { min-height: 220px; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--accent-text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  #home-root .slot__empty:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  #home-root .slot > .project-card { height: 100%; }
+  #popover { position: fixed; z-index: 70; display: none; width: min(380px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow-y: auto; padding: 12px; border-radius: 16px; background: var(--surface-2, var(--surface)); border: 1px solid var(--line); box-shadow: 0 12px 40px rgb(0 0 0 / 0.45); }
+  #popover .pop-title { margin: 0 4px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; color: var(--muted); }
+  #popover .choice-list { display: grid; gap: 6px; }
+  #popover button { display: flex; align-items: center; gap: 12px; padding: 8px; border: 0; border-radius: 12px; background: var(--chip); color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+  #popover button:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); }
+  #popover button.is-on { outline: 2px solid var(--accent); }
+  #popover img, #popover .noimg { width: 64px; height: 40px; border-radius: 8px; object-fit: contain; background: var(--placeholder); flex: none; }
+  #popover .name { display: grid; gap: 1px; font-weight: 600; color: var(--ink); }
+  #popover small { font-weight: 400; font-size: 12px; color: var(--muted); }
+  #home-root .text-edit { display: grid; gap: 6px; }
+  #home-root .text-edit__bar { display: flex; gap: 4px; }
+  #home-root .text-edit__bar button { min-width: 32px; height: 28px; padding: 0 10px; border: 0; border-radius: 8px; background: var(--chip); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+  #home-root .text-edit__bar button:hover { background: var(--line); }
+  #home-root .text-edit textarea { width: 100%; padding: 10px 12px; border: 2px solid var(--accent); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; line-height: 1.6; resize: none; overflow: hidden; }
+  #home-root .text-edit textarea:focus { outline: none; }
+</style>

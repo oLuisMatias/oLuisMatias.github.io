@@ -1,23 +1,43 @@
 import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
 
-// The Astro dev server doesn't open a folder's index.html for files in public/ (Cloudflare Pages does).
-// This makes /admin/editor/ work while testing locally.
-const folderIndexInDev = {
-  name: "folder-index-in-dev",
+// Development only: the project editor's API (/admin/api/*) runs here and saves to the files on this computer,
+// so the editor can be tried without GitHub or a login. On Cloudflare the Worker answers these requests instead.
+const editorApiInDev = {
+  name: "editor-api-in-dev",
   configureServer(server) {
-    server.middlewares.use((req, _res, next) => {
-      if (req.url === "/admin/editor" || req.url === "/admin/editor/") req.url = "/admin/editor/index.html";
-      next();
+    server.middlewares.use(async (req, res, next) => {
+      if (!req.url?.startsWith("/admin/api/")) return next();
+      try {
+        const { handleApi } = await server.ssrLoadModule("/worker/api.ts");
+        const { fsStore } = await server.ssrLoadModule("/worker/fs-store.ts");
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const headers = new Headers();
+        for (const [name, value] of Object.entries(req.headers)) if (typeof value === "string") headers.set(name, value);
+        const hasBody = req.method !== "GET" && req.method !== "HEAD";
+        const request = new Request(`http://${req.headers.host}${req.url}`, {
+          method: req.method,
+          headers,
+          body: hasBody ? Buffer.concat(chunks) : undefined,
+        });
+        const reply = await handleApi(request, fsStore(process.cwd()));
+        res.statusCode = reply.status;
+        reply.headers.forEach((value, name) => res.setHeader(name, value));
+        res.end(Buffer.from(await reply.arrayBuffer()));
+      } catch (error) {
+        res.statusCode = 500;
+        res.end(JSON.stringify({ error: String(error) }));
+      }
     });
   },
 };
 
-// Static site: Cloudflare Pages serves dist/ and runs functions/ for the private API.
+// Static site: Cloudflare serves dist/ and runs worker/ for the private API.
 export default defineConfig({
   site: "https://lmatias.com",
   trailingSlash: "ignore",
   build: { format: "directory" },
   integrations: [svelte()],
-  vite: { plugins: [folderIndexInDev] },
+  vite: { plugins: [editorApiInDev] },
 });

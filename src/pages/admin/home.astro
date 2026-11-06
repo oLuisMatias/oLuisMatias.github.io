@@ -1,0 +1,22 @@
+---
+// The Home Page Editor of the private area. On Cloudflare, everything under /admin is protected by Cloudflare Access.
+import "../../styles/global.css";
+import HomeEditor from "../../components/editor/HomeEditor.svelte";
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Home Page Editor</title>
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <script is:inline>
+    try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}
+  </script>
+</head>
+<body style="overflow:hidden">
+  <HomeEditor client:only="svelte" />
+</body>
+</html>

@@ -1,0 +1,23 @@
+---
+// The Project Editor of the private area. On Cloudflare, everything under /admin is protected by Cloudflare Access.
+import "../../styles/global.css";
+import ProjectEditor from "../../components/editor/ProjectEditor.svelte";
+import { tools } from "../../lib/site";
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Edit Project</title>
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <script is:inline>
+    try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}
+  </script>
+</head>
+<body style="overflow:hidden">
+  <ProjectEditor client:only="svelte" tools={tools} />
+</body>
+</html>

@@ -8,10 +8,10 @@ logo: /images/cv/work/inegi.png
 responsibilities:
   - Computer Vision - Using Python for 3D reconstruction of heart arteries. Region Growing method.
   - User interface with PyQt.
-tools:
-  - python
 papers:
   - title: "Dealing with CT Cardiac Imaging Using Python: An Approach for Future Hemodynamic Simulations"
     url: ""
+tools:
+  - python
 visible: true
 order: 4

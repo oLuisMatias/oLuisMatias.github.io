@@ -4,6 +4,9 @@ export interface Env {
   ASSETS: Fetcher;
   /** Secret: a GitHub token limited to this one repository ("Contents: Read and write"). */
   GITHUB_TOKEN?: string;
+  /** The repository and branch the editor saves to, for example "owner/name" and "main". */
+  GITHUB_REPO?: string;
+  GITHUB_BRANCH?: string;
   /** The login lock (Cloudflare Access): see wrangler.toml. */
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;

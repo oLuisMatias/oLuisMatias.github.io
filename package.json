@@ -9,7 +9,7 @@
     "preview": "astro preview",
     "dev:full": "astro build && wrangler dev",
     "db:migrate:local": "wrangler d1 migrations apply lmatias --local",
-    "test": "node --test worker/access.test.mjs"
+    "test": "node --test worker/access.test.mjs worker/api.test.mjs worker/project-model.test.mjs worker/home.test.mjs worker/projects-page.test.mjs worker/cv.test.mjs worker/skills.test.mjs worker/cv-page.test.mjs"
   },
   "dependencies": {
     "@astrojs/svelte": "^9.1.2",

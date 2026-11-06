@@ -8,7 +8,8 @@ const common = {
   visible: z.boolean().default(true),
   order: z.number().default(100),
 };
-const paper = z.object({ title: z.string(), url: z.string().optional().default("") });
+/** A line under a CV card: `kind` is the label in front of it ("Paper" unless the card says otherwise; empty = no label). */
+const paper = z.object({ kind: z.string().default("Paper"), title: z.string(), url: z.string().optional().default("") });
 /** Sides of an image that get empty space around it (5% of the frame width each). */
 const spacing = z.array(z.enum(["top", "right", "bottom", "left"])).default([]);
 
@@ -19,7 +20,6 @@ const block = z.discriminatedUnion("type", [
     src: z.string(),
     alt: z.string().optional().default(""),
     caption: z.string().optional().default(""),
-    position: z.enum(["left", "right", "center", "full"]).default("full"),
     spacing,
   }),
   z.object({
@@ -28,8 +28,24 @@ const block = z.discriminatedUnion("type", [
   }),
   z.object({ type: z.literal("model"), src: z.string(), caption: z.string().optional().default("") }),
   z.object({ type: z.literal("youtube"), url: z.string() }),
-  z.object({ type: z.literal("divider") }),
+  z.object({ type: z.literal("heading"), text: z.string().default("") }),
+  z.object({ type: z.literal("table"), header: z.boolean().default(true), rows: z.array(z.array(z.string())).default([]) }),
+  z.object({ type: z.literal("button"), label: z.string().default(""), url: z.string().default("") }),
 ]);
+
+/** A box holds one thing: a block, one of the project's own parts, or nothing yet. */
+const leaf = z.discriminatedUnion("type", [
+  ...block.options,
+  z.object({ type: z.literal("media") }),
+  z.object({ type: z.literal("facts") }),
+  z.object({ type: z.literal("empty") }),
+]);
+/** A tree of boxes: a box, or a split of boxes into columns or rows. src/lib/boxes.ts has the helpers. */
+const box: z.ZodType<unknown> = z.lazy(() =>
+  z.union([leaf, z.object({ split: z.enum(["columns", "rows"]), sizes: z.array(z.number()).optional(), children: z.array(box).min(1) })]),
+);
+/** Older files: a grid of columns x rows with cells. src/lib/legacy-project.ts converts them. */
+const legacyGrid = z.object({}).passthrough();
 
 const projects = defineCollection({
   loader: yml("projects"),
@@ -45,7 +61,12 @@ const projects = defineCollection({
     tools: z.array(z.string()).default([]),
     skills: z.array(z.string()).default([]),
     featured: z.boolean().default(false),
-    blocks: z.array(block).default([]),
+    // The page below the header: the main section and then the sections, each a tree of boxes.
+    intro: z.string().optional(),
+    main: z.union([box, legacyGrid]).optional(),
+    sections: z.array(z.union([box, legacyGrid])).optional(),
+    // Old files: one flat list of blocks. src/lib/project-model.ts converts it into sections when the page is drawn.
+    blocks: z.array(z.any()).optional(),
     ...common,
   }),
 });

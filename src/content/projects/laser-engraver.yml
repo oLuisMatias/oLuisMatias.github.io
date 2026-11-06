@@ -1,7 +1,14 @@
 title: Laser Engraver
+visible: true
+featured: true
+order: 1
 topic: Machine Design
 summary: A 4-motor Cartesian CNC laser engraver, built from V-slot aluminium and custom 3D printed parts, with a 22 W laser module.
+date: March 2025
 cover: /images/projects/machine-design_laser-engraver_1.png
+coverSpacing:
+  - left
+  - right
 model: /data/models/0_LASER_ENGRAVER_V2.glb
 youtube: https://youtu.be/A3xkuTeRHwo?si=fec5GNX7QUF6kkai
 tools:
@@ -13,17 +20,24 @@ skills:
   - CNC kinematics
   - 3D printing
   - Electronics wiring
-featured: true
-visible: true
-order: 1
-blocks:
-  - type: text
-    text: |-
-      I wanted to challenge myself by building a CNC machine from scratch, while also making something useful for my workshop, so I decided to create my own laser engraver.
+main:
+  split: columns
+  sizes:
+    - 60.78
+    - 39.22
+  children:
+    - split: rows
+      children:
+        - type: text
+          text: |-
+            I wanted to challenge myself by building a CNC machine from scratch, while also making something useful for my workshop, so I decided to create my own laser engraver.
 
-      With the powerful 22W Sculpfun S30 Ultra laser module attached, this machine can easily engrave and cut materials like wood, plywood, acrylic, leather, and even engrave on metal.
+            With the powerful 22W Sculpfun S30 Ultra laser module attached, this machine can easily engrave and cut materials like wood, plywood, acrylic, leather, and even engrave on metal.
 
-      Mechanically, it is a Cartesian CNC system. I used custom 3D printed parts for the assembly to keep the project within a reasonable budget.
+            Mechanically, it is a Cartesian CNC system. I used custom 3D printed parts for the assembly to keep the project within a reasonable budget.
+        - type: facts
+    - type: media
+sections:
   - type: text
     text: |-
       **Engineering Challenges & Solved Problems**
@@ -31,51 +45,69 @@ blocks:
        - __Rigidity vs. Cost:__ The primary engineering challenge was ensuring the 3D-printed plates could handle the mechanical stress and vibration of the stepper motors. This was solved by optimizing print settings (high infill density and perimeter walls) and utilizing the inherent stiffness of the V-slot aluminum to bear the primary structural loads.
 
       - __Gantry Alignment:__ Implementing a dual-motor Y-axis required precise mechanical alignment and electronic syncing to ensure both sides of the gantry move perfectly in tandem without binding.
-  - type: divider
-  - type: image
-    src: /images/projects/machine-design_laser-engraver_1.png
-    alt: ""
-    caption: ""
-    position: right
-  - type: text
-    text: |-
-      **Frame & Linear Motion:**
+  - split: columns
+    sizes:
+      - 54.73
+      - 45.27
+    children:
+      - type: text
+        text: |-
+          **Frame & Linear Motion:**
 
-      - __V-Slot Aluminum Profiles:__ Utilized for the main structural frame, providing a heavy-duty, smooth track for the motion carriage.
+          - __V-Slot Aluminum Profiles:__ Utilized for the main structural frame, providing a heavy-duty, smooth track for the motion carriage.
 
-      - __V-Wheels:__ Delrin V-wheels ride directly inside the profile slots, ensuring smooth, low-friction linear travel and minimal play.
+          - __V-Wheels:__ Delrin V-wheels ride directly inside the profile slots, ensuring smooth, low-friction linear travel and minimal play.
 
-      - __3D Printed Components:__ All structural joining plates, motor mounts, and wheel brackets were custom-designed and 3D printed. This drastically reduced the build budget while allowing for rapid iterative prototyping.
-  - type: divider
-  - type: image
-    src: /images/projects/machine-design_laser-engraver_2.png
-    alt: ""
-    caption: ""
-    position: right
-    spacing:
-      - top
-      - bottom
-  - type: text
-    text: |-
-      **Kinematics & Drive System (4-Motor Setup)**
+          - __3D Printed Components:__ All structural joining plates, motor mounts, and wheel brackets were custom-designed and 3D printed. This drastically reduced the build budget while allowing for rapid iterative prototyping.
+      - type: image
+        src: /images/projects/machine-design_laser-engraver_1.png
+        alt: ''
+        caption: ''
+        spacing:
+          - left
+          - right
+          - bottom
+          - top
+  - split: columns
+    sizes:
+      - 70.51
+      - 29.49
+    children:
+      - type: text
+        text: |-
+          **Kinematics & Drive System (4-Motor Setup)**
 
-      - __X-Axis:__ Driven by 1 stepper motor for fast lateral travel.
-      - __Y-Axis:__ Driven by 2 dual-synced stepper motors to prevent gantry racking (twisting) and ensure perfectly square movement over the engraving area.
-      - __Z-Axis:__ Driven by 1 stepper motor, giving the machine true 3D spatial movement.
-  - type: divider
-  - type: image
-    src: /images/projects/machine-design_laser-engraver_3.png
-    alt: ""
-    caption: ""
-    position: right
-  - type: text
-    text: |-
-      **Focus Optimization (Z-Axis Integration)**
+          - __X-Axis:__ Driven by 1 stepper motor for fast lateral travel.
+          - __Y-Axis:__ Driven by 2 dual-synced stepper motors to prevent gantry racking (twisting) and ensure perfectly square movement over the engraving area.
+          - __Z-Axis:__ Driven by 1 stepper motor, giving the machine true 3D spatial movement.
+      - type: image
+        src: /images/projects/machine-design_laser-engraver_2.png
+        alt: ''
+        caption: ''
+        spacing:
+          - top
+          - bottom
+  - split: columns
+    sizes:
+      - 73.82
+      - 26.18
+    children:
+      - split: rows
+        children:
+          - type: text
+            text: |-
+              **Focus Optimization (Z-Axis Integration)**
 
-      - Unlike traditional manual-focus laser setups, this build features a semi-automatic Z-axis. This allows for precise, software-controlled laser focus height adjustments instead of manual tuning. In the future, I plan to add a sensor to the machine to enable fully automatic focus adjustment based on the material thickness.
-  - type: divider
-  - type: text
-    text: |-
-      **Software & Control**
+              - Unlike traditional manual-focus laser setups, this build features a semi-automatic Z-axis. This allows for precise, software-controlled laser focus height adjustments instead of manual tuning. In the future, I plan to add a sensor to the machine to enable fully automatic focus adjustment based on the material thickness.
+          - type: text
+            text: |-
+              **Software & Control**
 
-      - For the software and control layout, I am using the MKS DLC32 Max mainboard. I use LightBurn to design my projects, generate the necessary G-code, and run the machine directly.
+              - For the software and control layout, I am using the MKS DLC32 Max mainboard. I use LightBurn to design my projects, generate the necessary G-code, and run the machine directly.
+      - type: image
+        src: /images/projects/machine-design_laser-engraver_3.png
+        alt: ''
+        caption: ''
+        spacing:
+          - bottom
+          - top

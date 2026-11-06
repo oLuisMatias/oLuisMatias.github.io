@@ -1,9 +1,10 @@
 ---
 import Icon from "../components/Icon.astro";
 import Base from "../layouts/Base.astro";
-import ToolTags from "../components/ToolTags.astro";
-import SkillTag from "../components/SkillTag.astro";
-import { site, visible, mdInline, cvHref } from "../lib/site";
+import "../styles/cv.css";
+import { site, visible, mdInline, cvHref, tools, cvPage } from "../lib/site";
+import { cardFromData } from "../lib/cv";
+import { renderCards, renderSkills } from "../lib/render-cv";
 
 const work = await visible("work");
 const certs = await visible("certifications");
@@ -13,9 +14,12 @@ const publications = [
   ...work.flatMap((w) => w.data.papers.map((p) => ({ ...p, where: `${w.data.company} · ${w.data.period}` }))),
   ...education.flatMap((e) => e.data.papers.map((p) => ({ ...p, where: `${e.data.institution} · ${e.data.period}` }))),
 ];
-const isLocal = (u: string) => u.startsWith("/");
-const LANG: Record<string, string> = { portuguese: "PT", english: "EN", spanish: "ES", french: "FR", german: "DE", italian: "IT", slovak: "SK", polish: "PL" };
-const langCode = (n: string) => LANG[n.toLowerCase()] ?? n.slice(0, 2).toUpperCase();
+const workCards = renderCards("work", work.map((w) => cardFromData("work", w.data)), { tools });
+const educationCards = renderCards("education", education.map((e) => cardFromData("education", e.data)), { tools });
+const experienceCards = renderCards("experiences", other.map((x) => cardFromData("experiences", x.data)), { tools });
+const certCols = Math.max(1, Math.min(cvPage.certColumns, certs.length));
+const certificationCards = renderCards("certifications", certs.map((c) => cardFromData("certifications", c.data)), { tools });
+const skillsBox = renderSkills({ skills: site.skills, languages: site.languages }, { tools });
 const sections = [
   { id: "work", label: "Work", icon: "briefcase" },
   { id: "education", label: "Education", icon: "school" },
@@ -45,78 +49,22 @@ const sections = [
     <div class="cv__main">
       <section id="work" class="cv__section">
         <h2 class="cv__h">Work</h2>
-        <ol class="timeline">
-          {work.map((w) => (
-            <li class="card entry">
-              <div class="entry__head">
-                <div>
-                  <h3>{w.data.title}</h3>
-                  <p class="entry__org">{w.data.link ? <a href={w.data.link} rel="noopener">{w.data.company}</a> : w.data.company}</p>
-                  <p class="muted entry__meta">{w.data.period} · {w.data.location}</p>
-                </div>
-                {w.data.logo && <img class="entry__logo" src={w.data.logo} alt={`${w.data.company} logo`} loading="lazy" />}
-              </div>
-              {w.data.responsibilities.length > 0 && (
-                <ul class="entry__list">{w.data.responsibilities.map((r) => <li set:html={mdInline(r)} />)}</ul>
-              )}
-              {w.data.papers.map((p) => <p class="entry__paper"><span class="entry__badge">Paper</span> {p.url ? <a href={p.url} rel="noopener">{p.title}</a> : p.title}</p>)}
-              <ToolTags tools={w.data.tools} />
-            </li>
-          ))}
-        </ol>
+        <ol class="timeline" set:html={workCards} />
       </section>
 
       <section id="education" class="cv__section">
         <h2 class="cv__h">Education</h2>
-        <ol class="timeline">
-          {education.map((e) => (
-            <li class="card entry">
-              <div class="entry__head">
-                <div>
-                  <h3>{e.data.degree}</h3>
-                  <p class="entry__org">{e.data.link ? <a href={e.data.link} rel="noopener">{e.data.institution}</a> : e.data.institution}</p>
-                  <p class="muted entry__meta">{e.data.period} · {e.data.location}</p>
-                </div>
-                {e.data.logo && <img class="entry__logo" src={e.data.logo} alt={`${e.data.institution} logo`} loading="lazy" />}
-              </div>
-              {e.data.details && <p class="entry__text">{e.data.details}</p>}
-              {e.data.papers.map((p) => <p class="entry__paper"><span class="entry__badge">Paper</span> {p.url ? <a href={p.url} rel="noopener">{p.title}</a> : p.title}</p>)}
-              <ToolTags tools={e.data.tools} />
-            </li>
-          ))}
-        </ol>
+        <ol class="timeline" set:html={educationCards} />
       </section>
 
       <section id="skills" class="cv__section">
         <h2 class="cv__h">Skills</h2>
-        <div class="card skills">
-          {site.skills.map((g) => (
-            <div><h3>{g.group}</h3><ul class="tags">{g.items.map((it) => <SkillTag name={it} />)}</ul></div>
-          ))}
-          <div><h3>Languages</h3><ul class="tags">{site.languages.map((l) => <li class="tag"><span class="tag__code">{langCode(l.name)}</span>{l.name} · {l.level}</li>)}</ul></div>
-        </div>
+        <div class="card skills" set:html={skillsBox} />
       </section>
 
       <section id="certifications" class="cv__section">
         <h2 class="cv__h">Certifications</h2>
-        <div class="certs">
-          {certs.map((c) => (
-            <article class="card cert">
-              {c.data.badge && <img src={c.data.badge} alt={`${c.data.title} badge`} loading="lazy" />}
-              <div>
-                <h3>{c.data.title}</h3>
-                <p class="muted">{c.data.issuer} · {c.data.date}</p>
-                {c.data.credentialId && <p class="muted cert__id">ID {c.data.credentialId}</p>}
-                <p class="cert__links">
-                  {c.data.pdf && <a class="ilink" href={c.data.pdf} data-viewer={`${c.data.title} · Certificate`}><Icon name="file-certificate" size={16} />Certificate</a>}
-                  {c.data.verify && (isLocal(c.data.verify)
-                    ? <a class="ilink" href={c.data.verify} data-viewer={`${c.data.title} · Verification`}><Icon name="rosette-discount-check" size={16} />Verification</a>
-                    : <a class="ilink" href={c.data.verify} target="_blank" rel="noopener" data-popup-window><Icon name="rosette-discount-check" size={16} />Verify online<Icon name="external-link" size={14} /></a>)}
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
+        <div class="certs" style={`--columns: ${certCols}`} data-columns={certCols} set:html={certificationCards} />
       </section>
 
       {publications.length > 0 && (
@@ -133,22 +81,7 @@ const sections = [
       {other.length > 0 && (
         <section id="other" class="cv__section">
           <h2 class="cv__h">Other experience</h2>
-          <ol class="timeline">
-            {other.map((x) => (
-              <li class="card entry">
-                <div class="entry__head">
-                  <div>
-                    <span class="pill">{x.data.type}</span>
-                    <h3 style="margin-top:10px">{x.data.title}</h3>
-                    <p class="entry__org">{x.data.link ? <a href={x.data.link} rel="noopener">{x.data.organization}</a> : x.data.organization}</p>
-                    <p class="muted entry__meta">{x.data.period} · {x.data.location}</p>
-                  </div>
-                  {x.data.logo && <img class="entry__logo" src={x.data.logo} alt={`${x.data.organization} logo`} loading="lazy" />}
-                </div>
-                {x.data.description.length > 0 && <ul class="entry__list">{x.data.description.map((d) => <li>{d}</li>)}</ul>}
-              </li>
-            ))}
-          </ol>
+          <ol class="timeline" set:html={experienceCards} />
         </section>
       )}
 
@@ -172,36 +105,8 @@ const sections = [
 </Base>
 
 <style>
-  .cv { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; padding-top: 36px; }
-  .cv__side { flex: 0 0 230px; position: sticky; top: 96px; }
-  .cv__main { flex: 999 1 560px; min-width: 0; display: grid; gap: 64px; }
-  .cv__toc { padding: 12px; display: grid; gap: 12px; }
-  .cv__toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-  .cv__toc ol a { display: flex; align-items: center; gap: 9px; padding: 9px 14px; color: var(--text); font-weight: 500; text-decoration: none; border-radius: 999px; }
-  .cv__toc ol a:hover { background: var(--chip); color: var(--ink); }
   .cv__h { font-size: 26px; margin-bottom: 18px; }
   .cv__section { scroll-margin-top: 96px; }
-  .skills { padding: 26px; display: grid; gap: 20px; }
-  .skills h3 { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 10px; letter-spacing: 0; }
-  .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
-  .entry { padding: 28px; display: grid; gap: 16px; }
-  .entry__head { display: flex; gap: 20px; justify-content: space-between; align-items: flex-start; }
-  .entry h3 { font-size: 20px; }
-  .entry__org { font-weight: 600; margin-top: 4px; }
-  .entry__org a { color: var(--ink); text-decoration: none; }
-  .entry__org a:hover { color: var(--accent-text); }
-  .entry__meta { font-size: 14px; margin-top: 4px; }
-  .entry__logo { width: 168px; aspect-ratio: 16 / 10; object-fit: contain; background: #fff; padding: 12px 16px; border-radius: var(--radius-sm); flex: none; }
-  .entry__list { margin: 0; padding-left: 1.2em; color: var(--text); display: grid; gap: 8px; }
-  .entry__text, .entry__paper { color: var(--text); }
-  .entry__badge { font-size: 12px; font-weight: 600; padding: 3px 9px; margin-right: 8px; border-radius: 999px; background: var(--chip); color: var(--muted); }
-  .certs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
-  .cert { padding: 24px; display: flex; gap: 20px; align-items: flex-start; }
-  .cert img { width: 104px; height: 104px; object-fit: contain; flex: none; }
-  .cert h3 { font-size: 17px; }
-  .cert__id { font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }
-  .cert__links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 15px; }
-  .ilink { display: inline-flex; align-items: center; gap: 5px; }
   .pubs { margin: 0; padding: 12px 28px 12px 48px; }
   .pubs li { padding: 12px 0; color: var(--ink); }
   .pubs__where { font-size: 14px; margin-top: 4px; }
@@ -216,14 +121,6 @@ const sections = [
   .viewer__body { flex: 1; min-height: 0; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: auto; }
   .viewer__body :global(img) { max-width: 100%; max-height: 100%; object-fit: contain; }
   .viewer__body :global(iframe) { align-self: stretch; width: 100%; height: auto; border: 0; background: #fff; }
-  @media (max-width: 860px) {
-    .cv__side { position: static; flex-basis: 100%; }
-    .cv__toc { background: none; padding: 0; }
-    .cv__toc ol { display: flex; flex-wrap: wrap; gap: 8px; }
-    .cv__toc ol a { padding: 8px 14px; background: var(--surface); font-size: 15px; }
-    .cv__toc .btn { justify-self: start; }
-  }
-  @media (max-width: 560px) { .entry { padding: 22px; } .entry__head { flex-direction: column-reverse; } }
 </style>
 
 <script>

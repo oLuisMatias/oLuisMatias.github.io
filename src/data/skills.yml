@@ -1,0 +1,30 @@
+skills:
+  - group: CAD
+    items:
+      - Solid Edge
+      - SolidWorks
+  - group: PLM / Tools
+    items:
+      - Teamcenter
+      - Excel VBA
+      - Python
+      - MATLAB
+  - group: Simulation
+    items:
+      - Ansys
+      - Abaqus
+  - group: Manufacturing
+    items:
+      - Design for manufacturing (DFM)
+      - CNC machining
+      - Welding
+      - Laser cutting
+      - 3D printing
+      - Assembly sequencing
+languages:
+  - name: Portuguese
+    level: Native
+  - name: English
+    level: C1
+  - name: Spanish
+    level: A1
