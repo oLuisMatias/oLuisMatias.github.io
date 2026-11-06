@@ -53,6 +53,16 @@ function memoryStore(files = {}) {
       if (data.get(p)?.sha !== sha) throw new StoreConflict("conflict");
       data.delete(p);
     },
+    commits: 0,
+    async commit(changes) {
+      this.commits++;
+      const shas = {};
+      for (const { path, bytes } of changes) {
+        if (bytes) data.set(path, (shas[path] = `v${n++}`, { bytes, sha: shas[path] }));
+        else data.delete(path);
+      }
+      return shas;
+    },
   };
 }
 
@@ -119,7 +129,7 @@ test("uploads go to the image or model folder and keep a safe name", async () =>
   for (const bad of ["evil.html", "x.svg", "script.js", ".png", "noext"]) assert.equal((await up(bad)).status, 400, bad);
   assert.deepEqual(await (await up("../../evil.png")).json(), { path: "/images/projects/evil.png" }); // slashes are flattened
   assert.equal((await up("empty.png", new Uint8Array())).status, 400);
-  assert.equal((await up("my-photo.png")).status, 409); // never replaces an existing file
+  assert.equal((await up("my-photo.png")).status, 200); // uploading the same name again replaces the file
   assert.equal(store.data.size, 3);
 });
 
@@ -265,4 +275,39 @@ test("all four CV sections are listed, and certificate files can be uploaded", a
   const skills = await (await handleApi(req("/admin/api/skills"), store)).json();
   assert.equal(skills.text, "skills: []");
   assert.equal((await handleApi(put("/admin/api/skills", { text: "skills: []\nlanguages: []\n", sha: skills.sha }), store)).status, 200);
+});
+
+test("names that exist on every object (__proto__, constructor) are not areas or page files", async () => {
+  const store = memoryStore();
+  const up = await handleApi(req("/admin/api/upload?name=x.png&area=__proto__", { method: "POST", headers: editorHeaders, body: new Uint8Array([1]) }), store);
+  assert.equal(store.data.size, 0, "nothing may be written to a path made from an inherited key");
+  assert.equal(up.status, 400);
+  const res = await handleApi(req("/admin/api/constructor"), store);
+  assert.equal(res.status, 404);
+});
+
+test("uploading a picture with a name that exists replaces it", async () => {
+  const store = memoryStore({ "public/images/projects/a.png": "old" });
+  const res = await handleApi(req("/admin/api/upload?name=a.png", { method: "POST", headers: editorHeaders, body: new Uint8Array([7]) }), store);
+  assert.equal(res.status, 200);
+  assert.deepEqual([...store.data.get("public/images/projects/a.png").bytes], [7]);
+});
+
+test("the CV cards are saved in ONE commit, with a version check for each", async () => {
+  const store = memoryStore({ "src/content/work/a.yml": "title: A", "src/content/work/b.yml": "title: B" });
+  const a = store.data.get("src/content/work/a.yml").sha;
+  const b = store.data.get("src/content/work/b.yml").sha;
+  const save = (body) => handleApi(req("/admin/api/cv/save", { method: "POST", headers: { ...editorHeaders, "Content-Type": "application/json" }, body: JSON.stringify(body) }), store);
+
+  const ok = await save({ files: [{ section: "work", name: "a.yml", text: "title: A2", sha: a }, { section: "work", name: "c.yml", text: "title: C", sha: null }], deletes: [{ section: "work", name: "b.yml", sha: b }] });
+  assert.equal(ok.status, 200);
+  assert.equal(store.commits, 1);
+  assert.deepEqual([...store.data.keys()].sort(), ["src/content/work/a.yml", "src/content/work/c.yml"]);
+  assert.deepEqual(Object.keys((await ok.json()).shas).sort(), ["work/a.yml", "work/c.yml"]);
+
+  const stale = await save({ files: [{ section: "work", name: "a.yml", text: "title: A3", sha: a }], deletes: [] });
+  assert.equal(stale.status, 409);
+  assert.equal(store.commits, 1, "a stale save must not commit anything");
+  assert.equal((await save({ files: [{ section: "__proto__", name: "a.yml", text: "x", sha: null }], deletes: [] })).status, 400);
+  assert.equal((await save({ files: [{ section: "work", name: "../x.yml", text: "x", sha: null }], deletes: [] })).status, 400);
 });

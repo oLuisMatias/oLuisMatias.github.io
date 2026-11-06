@@ -12,6 +12,13 @@ export interface Store {
   /** Create or replace a file. `sha` is the version being replaced; a mismatch throws StoreConflict. */
   write(path: string, bytes: Uint8Array, sha: string | undefined, message: string): Promise<{ sha: string }>;
   remove(path: string, sha: string, message: string): Promise<void>;
+  /** Several files in ONE commit: `bytes: null` deletes the file. Returns the new version tag of every file written. */
+  commit(changes: Change[], message: string): Promise<Record<string, string>>;
+}
+
+export interface Change {
+  path: string;
+  bytes: Uint8Array | null;
 }
 
 export class StoreConflict extends Error {}

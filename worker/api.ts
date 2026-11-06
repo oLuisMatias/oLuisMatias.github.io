@@ -2,7 +2,7 @@
 // Cloudflare Access ticket first, and the local dev server skips it. This file only handles the requests
 // and decides which files may be touched: project files, the page-text files listed in PAGE_FILES and uploaded
 // images/models, nothing else.
-import { StoreConflict, StoreFailure, type Store } from "./store";
+import { StoreConflict, StoreFailure, type Change, type Store } from "./store";
 
 const PROJECTS_DIR = "src/content/projects";
 /** The page-text files of the page editors, by the name used in the address (/admin/api/home, /admin/api/projects-page). */
@@ -35,6 +35,36 @@ const MAX_MODEL = 24 * 1024 * 1024; // Cloudflare assets stop at 25 MiB per file
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const problem = (status: number, message: string) => json({ error: message }, status);
+
+/** Own keys only: a user-supplied name like "__proto__" or "constructor" must not find anything. */
+const own = <T>(table: Record<string, T>, key: string): T | undefined => (Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined);
+
+/** The text of a save request, checked; or the reply to send when it is not acceptable. */
+async function readText(request: Request, tooLarge: string): Promise<{ text: string; sha: string | undefined } | Response> {
+  const body = (await request.json().catch(() => null)) as { text?: unknown; sha?: unknown } | null;
+  if (!body || typeof body.text !== "string" || !body.text.trim()) return problem(400, "Nothing to save.");
+  if (body.text.length > MAX_TEXT) return problem(413, tooLarge);
+  if (body.sha !== undefined && body.sha !== null && typeof body.sha !== "string") return problem(400, "Bad version tag.");
+  return { text: body.text, sha: body.sha ?? undefined };
+}
+
+async function saveText(request: Request, store: Store, file: string, tooLarge: string, message: string): Promise<Response> {
+  const read = await readText(request, tooLarge);
+  if (read instanceof Response) return read;
+  return json(await store.write(file, encode(read.text), read.sha, message));
+}
+
+async function deleteFile(request: Request, store: Store, file: string, message: string): Promise<Response> {
+  const body = (await request.json().catch(() => null)) as { sha?: unknown } | null;
+  if (!body || typeof body.sha !== "string" || !body.sha) return problem(400, "Missing version tag.");
+  await store.remove(file, body.sha, message);
+  return json({ ok: true });
+}
+
+/** The version tag of a file that is already there (so an upload with the same name replaces it), or undefined. */
+async function existingSha(store: Store, dir: string, name: string): Promise<string | undefined> {
+  return (await store.list(dir)).find((e) => e.name === name)?.sha;
+}
 
 const decode = (b: Uint8Array) => new TextDecoder().decode(b);
 const encode = (s: string) => new TextEncoder().encode(s);
@@ -70,21 +100,8 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
       if (!SLUG.test(slug)) return problem(400, "That project name isn't valid (use lowercase letters, numbers and dashes).");
       const file = `${PROJECTS_DIR}/${slug}.yml`;
 
-      if (method === "PUT") {
-        const body = (await request.json().catch(() => null)) as { text?: unknown; sha?: unknown } | null;
-        if (!body || typeof body.text !== "string" || !body.text.trim()) return problem(400, "Nothing to save.");
-        if (body.text.length > MAX_TEXT) return problem(413, "That project is too large.");
-        if (body.sha !== undefined && typeof body.sha !== "string") return problem(400, "Bad version tag.");
-        const out = await store.write(file, encode(body.text), body.sha, `Edit project ${slug} (project editor)`);
-        return json(out);
-      }
-
-      if (method === "DELETE") {
-        const body = (await request.json().catch(() => null)) as { sha?: unknown } | null;
-        if (!body || typeof body.sha !== "string" || !body.sha) return problem(400, "Missing version tag.");
-        await store.remove(file, body.sha, `Delete project ${slug} (project editor)`);
-        return json({ ok: true });
-      }
+      if (method === "PUT") return await saveText(request, store, file, "That project is too large.", `Edit project ${slug} (project editor)`);
+      if (method === "DELETE") return await deleteFile(request, store, file, `Delete project ${slug} (project editor)`);
     }
 
     if (path === "/admin/api/cv" && method === "GET") {
@@ -103,6 +120,8 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
       return json({ work, education, experiences, certifications });
     }
 
+    if (path === "/admin/api/cv/save" && method === "POST") return await saveCards(request, store);
+
     const card = path.match(/^\/admin\/api\/cv\/(work|education|experiences|certifications)\/([^/]+)$/);
     if (card) {
       const { dir } = CV_DIRS[card[1]];
@@ -110,42 +129,25 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
       if (!CV_FILE.test(name)) return problem(400, "That card name isn't valid (use lowercase letters, numbers and dashes).");
       const file = `${dir}/${name}`;
 
-      if (method === "PUT") {
-        const body = (await request.json().catch(() => null)) as { text?: unknown; sha?: unknown } | null;
-        if (!body || typeof body.text !== "string" || !body.text.trim()) return problem(400, "Nothing to save.");
-        if (body.text.length > MAX_TEXT) return problem(413, "That card is too large.");
-        if (body.sha !== undefined && body.sha !== null && typeof body.sha !== "string") return problem(400, "Bad version tag.");
-        const out = await store.write(file, encode(body.text), body.sha ?? undefined, `Edit CV card ${card[1]}/${name} (CV page editor)`);
-        return json(out);
-      }
-
-      if (method === "DELETE") {
-        const body = (await request.json().catch(() => null)) as { sha?: unknown } | null;
-        if (!body || typeof body.sha !== "string" || !body.sha) return problem(400, "Missing version tag.");
-        await store.remove(file, body.sha, `Delete CV card ${card[1]}/${name} (CV page editor)`);
-        return json({ ok: true });
-      }
+      if (method === "PUT") return await saveText(request, store, file, "That card is too large.", `Edit CV card ${card[1]}/${name} (CV page editor)`);
+      if (method === "DELETE") return await deleteFile(request, store, file, `Delete CV card ${card[1]}/${name} (CV page editor)`);
     }
 
     const pageFile = path.match(/^\/admin\/api\/([a-z-]+)$/);
-    const target = pageFile ? PAGE_FILES[pageFile[1]] : undefined;
+    const target = pageFile ? own(PAGE_FILES, pageFile[1]) : undefined;
     if (target && (method === "GET" || method === "PUT")) {
       if (method === "GET") {
         const file = await store.read(target.file);
         return json({ sha: file?.sha ?? null, text: file ? decode(file.bytes) : "" });
       }
-      const body = (await request.json().catch(() => null)) as { text?: unknown; sha?: unknown } | null;
-      if (!body || typeof body.text !== "string" || !body.text.trim()) return problem(400, "Nothing to save.");
-      if (body.text.length > MAX_TEXT) return problem(413, "That is too large.");
-      if (body.sha !== undefined && body.sha !== null && typeof body.sha !== "string") return problem(400, "Bad version tag.");
-      const out = await store.write(target.file, encode(body.text), body.sha ?? undefined, target.message);
-      return json(out);
+      return await saveText(request, store, target.file, "That is too large.", target.message);
     }
 
     // `?area=work` or `?area=education`: the logos of that CV section instead of the project files.
     const areaName = url.searchParams.get("area") ?? "";
     const documents = areaName === "documents";
-    const area = CV_DIRS[areaName];
+    const area = own(CV_DIRS, areaName);
+    if (areaName && !documents && !area) return problem(400, "Unknown picture folder.");
 
     if (path === "/admin/api/files" && method === "GET") {
       if (documents) {
@@ -171,7 +173,7 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
         const bytes = new Uint8Array(await request.arrayBuffer());
         if (bytes.length === 0) return problem(400, "The file is empty.");
         if (bytes.length > MAX_IMAGE) return problem(413, "Files can be up to 10 MB.");
-        await store.write(`${DOCUMENTS.dir}/${name}`, bytes, undefined, `Add ${name} (CV page editor)`);
+        await store.write(`${DOCUMENTS.dir}/${name}`, bytes, await existingSha(store, DOCUMENTS.dir, name), `Add ${name} (CV page editor)`);
         return json({ path: `${DOCUMENTS.publicDir}/${name}` });
       }
       if (!FILE_NAME.test(name)) return problem(400, "Use a .png, .jpg, .webp, .gif or .glb file.");
@@ -183,11 +185,11 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
         return problem(413, isModel ? "3D models can be up to 24 MB." : "Images can be up to 10 MB.");
       }
       if (area) {
-        await store.write(`${area.images}/${name}`, bytes, undefined, `Add ${name} (CV page editor)`);
+        await store.write(`${area.images}/${name}`, bytes, await existingSha(store, area.images, name), `Add ${name} (CV page editor)`);
         return json({ path: `${area.publicImages}/${name}` });
       }
       const dir = isModel ? MODELS_DIR : IMAGES_DIR;
-      await store.write(`${dir}/${name}`, bytes, undefined, `Add ${name} (project editor)`);
+      await store.write(`${dir}/${name}`, bytes, await existingSha(store, dir, name), `Add ${name} (project editor)`);
       return json({ path: isModel ? `/data/models/${name}` : `/images/projects/${name}` });
     }
 
@@ -197,4 +199,49 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
     if (e instanceof StoreFailure) return problem(502, e.message);
     return problem(500, "Something went wrong on the server.");
   }
+}
+
+/** The whole CV page's cards in ONE commit (one deploy): `files` are written, `deletes` removed. Each carries the version it was loaded at. */
+async function saveCards(request: Request, store: Store): Promise<Response> {
+  type Item = { section?: unknown; name?: unknown; text?: unknown; sha?: unknown };
+  const body = (await request.json().catch(() => null)) as { files?: Item[]; deletes?: Item[] } | null;
+  const files = body?.files ?? [];
+  const deletes = body?.deletes ?? [];
+  if (!Array.isArray(files) || !Array.isArray(deletes) || files.length + deletes.length === 0) return problem(400, "Nothing to save.");
+  if (files.length + deletes.length > 200) return problem(413, "Too many cards in one save.");
+
+  const changes: Change[] = [];
+  const expected = new Map<string, string | null>(); // path -> the version the editor started from
+  const keys = new Map<string, string>(); // path -> "section/file", the name the editor uses
+  for (const [list, isWrite] of [[files, true], [deletes, false]] as const) {
+    for (const item of list) {
+      const cv = typeof item?.section === "string" ? own(CV_DIRS, item.section) : undefined;
+      if (!cv || typeof item.name !== "string" || !CV_FILE.test(item.name)) return problem(400, "That card name isn't valid (use lowercase letters, numbers and dashes).");
+      const path = `${cv.dir}/${item.name}`;
+      if (expected.has(path)) return problem(400, "The same card was sent twice.");
+      if (item.sha !== undefined && item.sha !== null && typeof item.sha !== "string") return problem(400, "Bad version tag.");
+      if (!isWrite && !item.sha) return problem(400, "Missing version tag.");
+      expected.set(path, (item.sha as string | null | undefined) ?? null);
+      keys.set(path, `${item.section}/${item.name}`);
+      if (isWrite) {
+        if (typeof item.text !== "string" || !item.text.trim()) return problem(400, "Nothing to save.");
+        if (item.text.length > MAX_TEXT) return problem(413, "That card is too large.");
+        changes.push({ path, bytes: encode(item.text) });
+      } else {
+        changes.push({ path, bytes: null });
+      }
+    }
+  }
+
+  // A commit has no per-file check, so compare the versions here: an editor tab that is out of date must not overwrite newer cards.
+  const current = new Map<string, string>();
+  for (const dir of new Set(Object.values(CV_DIRS).map((d) => d.dir))) {
+    for (const e of await store.list(dir)) current.set(`${dir}/${e.name}`, e.sha);
+  }
+  for (const [path, sha] of expected) {
+    if ((current.get(path) ?? null) !== sha) throw new StoreConflict("Saving: a card changed in the meantime. Reload the page.");
+  }
+
+  const written = await store.commit(changes, "Edit CV cards (CV page editor)");
+  return json({ shas: Object.fromEntries(Object.entries(written).map(([path, sha]) => [keys.get(path), sha])) });
 }

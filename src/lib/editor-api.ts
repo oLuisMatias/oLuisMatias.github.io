@@ -74,6 +74,14 @@ export const saveCard = (section: string, name: string, text: string, sha: strin
     body: JSON.stringify({ text, sha }),
   });
 
+/** All the changed cards in ONE commit (one deploy). Returns the new version tag of every card written, by "section/file". */
+export const saveCards = (files: { section: string; name: string; text: string; sha: string | null }[], deletes: { section: string; name: string; sha: string }[]) =>
+  call<{ shas: Record<string, string> }>("/admin/api/cv/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ files, deletes }),
+  }).then((r) => r.shas);
+
 export const deleteCard = (section: string, name: string, sha: string) =>
   call<{ ok: true }>(`/admin/api/cv/${section}/${name}`, {
     method: "DELETE",

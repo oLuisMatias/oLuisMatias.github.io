@@ -8,6 +8,13 @@ const editorApiInDev = {
   configureServer(server) {
     server.middlewares.use(async (req, res, next) => {
       if (!req.url?.startsWith("/admin/api/")) return next();
+      // This API writes files without a login, so it only answers requests addressed to this computer. That also
+      // stops other sites from reaching it through a changed address (DNS rebinding) or from the network.
+      if (!["localhost", "127.0.0.1", "[::1]"].includes((req.headers.host ?? "").replace(/:\d+$/, ""))) {
+        res.statusCode = 403;
+        res.end(JSON.stringify({ error: "The editor API only answers on localhost." }));
+        return;
+      }
       try {
         const { handleApi } = await server.ssrLoadModule("/worker/api.ts");
         const { fsStore } = await server.ssrLoadModule("/worker/fs-store.ts");

@@ -7,7 +7,7 @@
   import { DEFAULT_KIND, SECTIONS, addCard, cardFiles, cardFromText, moveCard, removeCard, toggleTool, type Card, type Section } from "../../lib/cv";
   import { COLUMN_CHOICES, DEFAULT_CV_PAGE, parseCvPage, stringifyCvPage, type CvPage } from "../../lib/cv-page";
   import { DEFAULT_SKILLS, parseSkills, stringifySkills, type Skills } from "../../lib/skills";
-  import { deleteCard, listCards, listFiles, loadPage, saveCard, savePage, shrinkPhoto, uploadFile } from "../../lib/editor-api";
+  import { listCards, listFiles, loadPage, saveCards, savePage, shrinkPhoto, uploadFile } from "../../lib/editor-api";
   import type { Tool } from "../../lib/site-types";
   import FilePicker from "./FilePicker.svelte";
   import ToolPicker from "./ToolPicker.svelte";
@@ -81,22 +81,24 @@
     notice = null;
     try {
       const snap = $state.snapshot(doc) as Doc;
+      // Everything that changed goes in one commit, so the site is rebuilt once and a failure leaves nothing half saved.
       const keep = new Set<string>();
+      const files: { section: string; name: string; text: string; sha: string | null }[] = [];
       for (const section of SECTIONS) {
         for (const { file, text } of cardFiles(section, snap.cards[section])) {
           const key = `${section}/${file}`;
           keep.add(key);
           const old = baseline.get(key);
-          if (old?.text === text) continue;
-          const out = await saveCard(section, file, text, old?.sha ?? null);
-          baseline.set(key, { sha: out.sha, text });
+          if (old?.text !== text) files.push({ section, name: file, text, sha: old?.sha ?? null });
         }
       }
-      for (const [key, old] of [...baseline]) {
-        if (keep.has(key)) continue;
-        const [section, file] = key.split("/");
-        await deleteCard(section, file, old.sha);
-        baseline.delete(key);
+      const deletes = [...baseline]
+        .filter(([key]) => !keep.has(key))
+        .map(([key, old]) => ({ section: key.split("/")[0], name: key.split("/")[1], sha: old.sha }));
+      if (files.length || deletes.length) {
+        const shas = await saveCards(files, deletes);
+        for (const f of files) baseline.set(`${f.section}/${f.name}`, { sha: shas[`${f.section}/${f.name}`], text: f.text });
+        for (const d of deletes) baseline.delete(`${d.section}/${d.name}`);
       }
       const text = stringifySkills(snap.skills);
       if (text !== skillsText) {

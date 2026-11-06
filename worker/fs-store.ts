@@ -44,5 +44,18 @@ export function fsStore(root: string): Store {
       if (existing && sha !== hash(existing)) throw new StoreConflict("Deleting: the file changed in the meantime.");
       await rm(abs(p), { force: true });
     },
+    async commit(changes) {
+      const shas: Record<string, string> = {};
+      for (const { path, bytes } of changes) {
+        if (bytes) {
+          await mkdir(dirname(abs(path)), { recursive: true });
+          await writeFile(abs(path), bytes);
+          shas[path] = hash(bytes);
+        } else {
+          await rm(abs(path), { force: true });
+        }
+      }
+      return shas;
+    },
   };
 }

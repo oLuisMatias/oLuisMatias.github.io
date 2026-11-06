@@ -3,6 +3,7 @@
 // Access has already asked for an email code at the edge. This check is a second lock: even if Access
 // were ever switched off or set up wrong, the Worker still refuses anyone who has no valid ticket
 // for the owner's email. It fails closed: anything missing or odd means "no".
+import { base64UrlToBytes } from "./base64";
 
 export interface AccessEnv {
   /** For example https://myteam.cloudflareaccess.com */
@@ -93,12 +94,4 @@ async function getKeys(team: string, force: boolean): Promise<Jwk[]> {
   } catch {
     return keyCache?.team === team ? keyCache.keys : [];
   }
-}
-
-function base64UrlToBytes(input: string): Uint8Array {
-  const base64 = input.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(input.length / 4) * 4, "=");
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
 }

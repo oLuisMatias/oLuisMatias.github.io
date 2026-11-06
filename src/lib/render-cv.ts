@@ -5,7 +5,8 @@
 // With `edit` on, texts carry data-edit="section.index.field" names, every card gets its tool buttons, logos and empty
 // boxes become buttons, and "Add card" slots are drawn above, between and below the cards. An empty part is never
 // drawn on the public page.
-import { marked } from "marked";
+import { markdown } from "./markdown";
+import { safeUrl } from "./safe-url";
 import type { Card, Section } from "./cv";
 import type { Skills } from "./skills";
 import { langCode } from "./skills";
@@ -14,7 +15,7 @@ import { iconSvg } from "./icons";
 import { skillIconPath, toolOfSkill } from "./skill-icons";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const inline = (s: string) => marked.parseInline(s, { async: false }) as string;
+const inline = (s: string) => markdown.parseInline(s, { async: false }) as string;
 const isLocal = (u: string) => u.startsWith("/");
 
 export interface Options {
@@ -66,7 +67,7 @@ function toolsBox(ids: string[], o: Options): string {
 function renderPaper(card: Card, k: string, j: number, o: Options): string {
   const p = card.papers[j];
   if (!o.edit) {
-    const body = p.url ? `<a href="${esc(p.url)}" rel="noopener">${esc(p.title)}</a>` : esc(p.title);
+    const body = p.url ? `<a href="${esc(safeUrl(p.url))}" rel="noopener">${esc(p.title)}</a>` : esc(p.title);
     return `<p class="entry__paper">${p.kind ? `<span class="entry__badge">${esc(p.kind)}</span> ` : ""}${body}</p>`;
   }
   return `<p class="entry__paper" data-paper="${j}">${text(true, `${k}.papers.${j}.kind`, p.kind, "span", "entry__badge")} ${text(true, `${k}.papers.${j}.title`, p.title)}
@@ -99,7 +100,7 @@ const marks = (o: Options, section: Section, card: Card, index: number, base: st
 function renderEntry(section: Section, card: Card, index: number, o: Options): string {
   const k = `${section}.${index}`;
   const e = o.edit;
-  const org = e ? text(true, `${k}.org`, card.org) : card.link ? `<a href="${esc(card.link)}" rel="noopener">${esc(card.org)}</a>` : esc(card.org);
+  const org = e ? text(true, `${k}.org`, card.org) : card.link ? `<a href="${esc(safeUrl(card.link))}" rel="noopener">${esc(card.org)}</a>` : esc(card.org);
   const meta = e
     ? `${text(true, `${k}.period`, card.period)} · ${text(true, `${k}.location`, card.location)}`
     : esc([card.period, card.location].filter(Boolean).join(" · "));
@@ -140,10 +141,10 @@ function certLink(card: Card, field: "pdf" | "verify", o: Options): string {
       : `<button type="button" class="add-line" data-act="cert-link" data-field="${field}">${iconSvg("plus", 15)}${label} link</button>`;
   }
   if (!url) return "";
-  if (field === "pdf") return `<a class="ilink" href="${esc(url)}" data-viewer="${esc(title)} · Certificate">${iconSvg("file-certificate", 16)}Certificate</a>`;
+  if (field === "pdf") return `<a class="ilink" href="${esc(safeUrl(url))}" data-viewer="${esc(title)} · Certificate">${iconSvg("file-certificate", 16)}Certificate</a>`;
   return isLocal(url)
-    ? `<a class="ilink" href="${esc(url)}" data-viewer="${esc(title)} · Verification">${iconSvg("rosette-discount-check", 16)}Verification</a>`
-    : `<a class="ilink" href="${esc(url)}" target="_blank" rel="noopener" data-popup-window>${iconSvg("rosette-discount-check", 16)}Verify online${iconSvg("external-link", 14)}</a>`;
+    ? `<a class="ilink" href="${esc(safeUrl(url))}" data-viewer="${esc(title)} · Verification">${iconSvg("rosette-discount-check", 16)}Verification</a>`
+    : `<a class="ilink" href="${esc(safeUrl(url))}" target="_blank" rel="noopener" data-popup-window>${iconSvg("rosette-discount-check", 16)}Verify online${iconSvg("external-link", 14)}</a>`;
 }
 
 function renderCert(card: Card, index: number, o: Options): string {

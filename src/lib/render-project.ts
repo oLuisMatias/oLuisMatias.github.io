@@ -3,15 +3,16 @@
 //
 // With `edit` on, every box gets data attributes so the preview can select, divide, move and resize it, and
 // empty boxes are drawn as "choose what goes here". Without it, nothing empty is drawn and there are no editor parts.
-import { marked } from "marked";
+import { markdown } from "./markdown";
 import type { Content, Project } from "./project-model";
 import type { Tool } from "./site-types";
 import { columnsStyle, isSplit, leaves, pathKey, type Node, type Path } from "./boxes";
 import { iconSvg } from "./icons";
+import { safeUrl } from "./safe-url";
 import { skillIconPath, toolOfSkill } from "./skill-icons";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const md = (text = "") => marked.parse(text, { async: false }) as string;
+const md = (text = "") => markdown.parse(text, { async: false }) as string;
 const spacingStyle = (sides: string[] = []) => sides.map((s) => `padding-${s}: 5%`).join("; ");
 const youtubeId = (url = "") => url.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{6,})/)?.[1] ?? "";
 
@@ -90,7 +91,7 @@ function renderContent(c: Content, id: string, scope: string, { p, tools, edit }
     }
     case "button":
       if (!c.label.trim()) return edit ? `<div class="block" ${mark}>${empty("Button: type a label")}</div>` : "";
-      return `<p class="block block-button" ${mark}><a class="btn" href="${esc(edit ? "#" : c.url || "#")}"${edit || !c.url ? "" : ` target="_blank" rel="noopener"`}>${esc(c.label)}${iconSvg("external-link", 16)}</a></p>`;
+      return `<p class="block block-button" ${mark}><a class="btn" href="${esc(edit ? "#" : safeUrl(c.url || "#"))}"${edit || !c.url ? "" : ` target="_blank" rel="noopener"`}>${esc(c.label)}${iconSvg("external-link", 16)}</a></p>`;
     case "facts": {
       const html = facts(p, tools);
       if (!html) return edit ? `<div class="main-facts" data-part="facts">${empty("Tools and skills: add some")}</div>` : "";
