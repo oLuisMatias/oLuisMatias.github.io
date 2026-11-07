@@ -57,8 +57,10 @@ sections:
         alt: CADscout showing a 3MF print project with its side panel
         caption: ''
         spacing:
-          - top
           - bottom
+          - right
+          - top
+          - left
   - split: columns
     sizes:
       - 55
@@ -80,3 +82,5 @@ sections:
         spacing:
           - top
           - bottom
+          - right
+          - left
