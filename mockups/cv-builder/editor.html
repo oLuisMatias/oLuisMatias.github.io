@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup C · Editor</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .top input.name { background: var(--chip); border: 0; border-radius: 10px; color: var(--ink); font: inherit; font-weight: 600; padding: 7px 12px; width: 260px; }
+  .state { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .main { flex: 1; display: grid; grid-template-columns: 380px minmax(0, 1fr); min-height: 0; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; overflow: auto; } }
+  .panel { background: var(--surface); overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .tabs { display: flex; gap: 6px; }
+  .tabs button { border: 0; background: var(--chip); color: var(--text); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 13.5px; }
+  .tabs button.on { background: var(--ink); color: var(--bg); }
+  .pane { display: none; flex-direction: column; gap: 10px; } .pane.on { display: flex; }
+  .sec { background: var(--surface-2); border-radius: 14px; padding: 10px 12px; }
+  .sec > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: var(--ink); }
+  .sec > summary::-webkit-details-marker { display: none; }
+  .grip { color: var(--muted); cursor: grab; letter-spacing: -2px; }
+  .sw { margin-left: auto; width: 34px; height: 20px; border-radius: 999px; background: var(--accent); position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--on-accent); }
+  .sw.off { background: var(--chip); } .sw.off::after { right: auto; left: 3px; background: var(--muted); }
+  .items { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .item { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 10px; padding: 8px 10px; font-size: 13.5px; }
+  .item .src { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .item.off { opacity: .45; }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--muted); }
+  label.f input, label.f textarea, label.f select { background: var(--chip); border: 0; border-radius: 10px; color: var(--ink); font: inherit; padding: 8px 10px; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatches i { width: 30px; height: 30px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); cursor: pointer; }
+  .swatches i.on { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stage { background: #2a2d33; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .page-fit { width: calc(794px * .8); height: calc(1123px * .8); flex: none; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .page-fit .scale { transform: scale(.8); transform-origin: 0 0; width: 794px; height: 1123px; }
+  .hint { position: absolute; left: 0; right: 0; top: 0; }
+  .menu { position: relative; }
+  .menu .pop { position: absolute; right: 0; top: 110%; background: var(--surface-2); border-radius: 14px; padding: 6px; min-width: 230px; box-shadow: 0 10px 30px rgba(0,0,0,.5); display: none; z-index: 9; }
+  .menu:hover .pop { display: block; }
+  .pop a { display: block; padding: 8px 12px; border-radius: 10px; font-size: 14px; color: var(--ink); }
+  .pop a:hover { background: var(--chip); }
+  .pop small { display: block; color: var(--muted); font-size: 12px; }
+</style></head>
+<body>
+<div class="top">
+  <a class="back" href="timeline.html">← CV Builder</a>
+  <input class="name" value="Skartek – generic (v8)">
+  <span class="chip chip--draft">Draft · from v7</span>
+  <span class="state"><span class="dot" style="color:var(--accent)"></span>Unsaved changes</span>
+  <span class="grow"></span>
+  <button class="btn btn--ghost">Undo</button>
+  <div class="menu"><button class="btn">Export PDF ▾</button><div class="pop">
+    <a href="#">Public PDF <small>without phone number · for the website</small></a>
+    <a href="#">Private PDF <small>with phone number · for applications</small></a></div></div>
+  <button class="btn btn--accent">Save as v8</button>
+</div>
+
+<div class="main">
+  <aside class="panel">
+    <div class="tabs" id="tabs"><button class="on" data-p="content">Content</button><button data-p="look">Look</button><button data-p="versions">Versions</button></div>
+
+    <div class="pane on" id="content">
+      <div class="muted" style="font-size:13px">Pick what goes into <b style="color:var(--ink)">this</b> CV. The entries come from the CV page of the website; edit a text here and it changes only this version.</div>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Header &amp; contact<span class="sw"></span></summary>
+        <div class="items"><label class="f">Name<input value="Luis Matias"></label><label class="f">Phone <span>(private PDF only)</span><input placeholder="+351 …"></label></div></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Skills &amp; interests<span class="sw"></span></summary>
+        <div class="items"><label class="f">Skills / Tools<textarea rows="2">SolidWorks, Solid Edge, Teamcenter, 3D Printing, Excel, Ansys, Abaqus, Matlab, Python</textarea></label></div></details>
+      <details class="sec" open><summary><span class="grip">⋮⋮</span>Work · 4 of 4<span class="sw"></span></summary>
+        <div class="items">
+          <div class="item"><span class="grip">⋮⋮</span>Skartek · Mechanical Design Engineer<span class="src">edit</span></div>
+          <div class="item"><span class="grip">⋮⋮</span>Forvia · VIE Development Engineer<span class="src">edit</span></div>
+          <div class="item"><span class="grip">⋮⋮</span>Forvia · VIE Program Engineer<span class="src">edit</span></div>
+          <div class="item"><span class="grip">⋮⋮</span>INEGI · Research Fellow<span class="src">edit</span></div>
+          <button class="btn btn--small btn--ghost" style="align-self:flex-start">+ Add entry</button></div></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Studies · 2 of 2<span class="sw"></span></summary></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>My projects · 2 of 3<span class="sw"></span></summary>
+        <div class="items"><div class="item">CNC Milling Machine</div><div class="item">CNC Diode Laser Engraver</div><div class="item off">Motorbike light holder<span class="src">hidden</span></div></div></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Experiences · 2 of 2<span class="sw"></span></summary></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Certifications · 2 of 2<span class="sw"></span></summary></details>
+      <details class="sec"><summary><span class="grip">⋮⋮</span>Custom section<span class="sw off"></span></summary></details>
+    </div>
+
+    <div class="pane" id="look">
+      <label class="f">Template<select><option>1 · Word CV (your uploaded PDF)</option><option disabled>2 · … (later)</option></select></label>
+      <div><div class="muted" style="font-size:12.5px;margin-bottom:6px">Paper colour <i>(test only, to tell versions apart)</i></div>
+        <div class="swatches" id="sw"><i style="background:#fff" data-bg="white" class="on"></i><i style="background:#fbf3df" data-bg="cream"></i><i style="background:#e6f0fb" data-bg="blue"></i><i style="background:#e8f5e9" data-bg="green"></i><i style="background:#fde8ee" data-bg="rose"></i><i style="background:#ececec" data-bg="grey"></i></div></div>
+      <label class="f">Font size<select><option>11 pt (as the Word CV)</option><option>10.5 pt</option><option>10 pt</option></select></label>
+      <label class="f">Pages<select><option>Automatic (now 2)</option><option>Force 1 page</option></select></label>
+    </div>
+
+    <div class="pane" id="versions">
+      <div class="muted" style="font-size:13px">This CV started from <b style="color:var(--ink)">v7</b>. Saving creates <b style="color:var(--ink)">v8</b>; v7 stays untouched.</div>
+      <div class="item"><span class="dot" style="color:var(--accent)"></span> v7 Skartek – generic <span class="chip chip--live" style="margin-left:auto">In use</span></div>
+      <div class="item"><span class="dot" style="color:var(--muted)"></span> v6 Faurecia application</div>
+      <div class="item"><span class="dot" style="color:var(--muted)"></span> v5 Master thesis focus</div>
+      <a class="btn btn--small btn--ghost" style="align-self:flex-start" href="timeline.html">All versions →</a>
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"> Use on the website as soon as I save</label>
+    </div>
+  </aside>
+
+  <section class="stage" id="stage">
+    <div class="page-fit thumb"><div class="scale"><div data-paper="1" data-bg="white"></div></div></div>
+    <div class="page-fit thumb"><div class="scale"><div data-paper="2" data-bg="white"></div></div></div>
+  </section>
+</div>
+
+<script src="cv-data.js"></script>
+<script>
+  drawPapers();
+  document.querySelectorAll("#tabs button").forEach((b) => b.onclick = () => {
+    document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".pane").forEach((p) => p.classList.toggle("on", p.id === b.dataset.p));
+  });
+  document.querySelectorAll("#sw i").forEach((i) => i.onclick = () => {
+    document.querySelectorAll("#sw i").forEach((x) => x.classList.toggle("on", x === i));
+    document.querySelectorAll(".paper").forEach((p) => { p.className = p.className.replace(/bg-\w+/, "bg-" + i.dataset.bg); });
+  });
+  document.querySelectorAll(".sw").forEach((s) => s.onclick = (e) => { e.preventDefault(); e.stopPropagation(); s.classList.toggle("off"); });
+</script>
+</body></html>

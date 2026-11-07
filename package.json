@@ -9,13 +9,16 @@
     "preview": "astro preview",
     "dev:full": "astro build && wrangler dev",
     "db:migrate:local": "wrangler d1 migrations apply lmatias --local",
-    "test": "node --test worker/access.test.mjs worker/api.test.mjs worker/project-model.test.mjs worker/home.test.mjs worker/projects-page.test.mjs worker/cv.test.mjs worker/skills.test.mjs worker/cv-page.test.mjs worker/safe-url.test.mjs"
+    "test": "node --test worker/access.test.mjs worker/api.test.mjs worker/project-model.test.mjs worker/home.test.mjs worker/projects-page.test.mjs worker/cv.test.mjs worker/skills.test.mjs worker/cv-page.test.mjs worker/safe-url.test.mjs worker/cv-versions.test.mjs worker/cv-document.test.mjs"
   },
   "dependencies": {
     "@astrojs/svelte": "^9.1.2",
+    "@expo-google-fonts/caladea": "^0.4.2",
     "@tabler/icons": "^3.50.0",
     "astro": "^7.4.4",
     "marked": "^18.1.2",
+    "pdfjs-dist": "^6.5.438",
+    "pdfmake": "^0.3.13",
     "svelte": "^5.57.3",
     "typescript": "^6.0.3"
   },

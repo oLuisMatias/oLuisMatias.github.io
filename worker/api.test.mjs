@@ -311,3 +311,30 @@ test("the CV cards are saved in ONE commit, with a version check for each", asyn
   assert.equal((await save({ files: [{ section: "__proto__", name: "a.yml", text: "x", sha: null }], deletes: [] })).status, 400);
   assert.equal((await save({ files: [{ section: "work", name: "../x.yml", text: "x", sha: null }], deletes: [] })).status, 400);
 });
+
+test("saved CV PDFs: only .pdf files go to their folder, replacing is allowed, and a version's PDF can be deleted", async () => {
+  const store = memoryStore();
+  const up = (name, bytes = new Uint8Array([1])) => handleApi(req(`/admin/api/upload?name=${name}&area=cvs`, { method: "POST", headers: editorHeaders, body: bytes }), store);
+  const ok = await up("V1-My CV.PDF");
+  assert.equal(ok.status, 200);
+  assert.equal((await ok.json()).path, "/data/cvs/v1-my-cv.pdf");
+  assert.ok(store.data.has("public/data/cvs/v1-my-cv.pdf"));
+  assert.equal((await up("v1-my-cv.pdf", new Uint8Array([2]))).status, 200, "same name replaces");
+  assert.equal((await up("x.png")).status, 400);
+  assert.equal((await up("empty.pdf", new Uint8Array())).status, 400);
+  const del = (name) => handleApi(req(`/admin/api/cv-pdf/${name}`, { method: "DELETE", headers: editorHeaders }), store);
+  assert.equal((await del("v1-my-cv.pdf")).status, 200);
+  assert.equal(store.data.size, 0);
+  assert.equal((await del("v1-my-cv.pdf")).status, 200, "deleting a missing file is fine");
+  assert.equal((await del("..%2Fsecret.pdf")).status, 400);
+  assert.equal((await handleApi(req("/admin/api/cv-pdf/a.pdf", { method: "DELETE" }), store)).status, 403, "not from the editor");
+});
+
+test("the saved CVs list file can be read and saved like the other page files", async () => {
+  const store = memoryStore();
+  const first = await (await handleApi(req("/admin/api/cv-versions"), store)).json();
+  assert.deepEqual(first, { sha: null, text: "" });
+  const saved = await handleApi(put("/admin/api/cv-versions", { text: "live: null\nversions: []\n", sha: null }), store);
+  assert.equal(saved.status, 200);
+  assert.ok(store.data.has("src/data/cv-versions.yml"));
+});

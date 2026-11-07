@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CV icons · options</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .wrap { max-width: 1180px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+  th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12.5px; padding: 0 10px 4px; }
+  td { background: var(--surface); padding: 12px 10px; vertical-align: middle; }
+  td:first-child { border-radius: 16px 0 0 16px; width: 190px; } td:last-child { border-radius: 0 16px 16px 0; }
+  .pack b { color: var(--ink); display: block; font-size: 15px; }
+  .pack span { font-size: 12.5px; color: var(--muted); }
+  .cell { display: flex; justify-content: center; }
+  .cell .big { width: 30px; height: 30px; background: #fff; border-radius: 8px; padding: 5px; box-sizing: content-box; }
+  .cell .big img { width: 30px; height: 30px; display: block; }
+  .none { color: var(--muted); font-size: 12px; text-align: center; }
+  .real { background: #fff; border-radius: 14px; padding: 12px 16px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; color: #7f7f7f; font: 9.5pt Caladea, Cambria, Georgia, serif; }
+  .real span { display: inline-flex; align-items: center; gap: 5px; }
+  .real img { width: 15px; height: 15px; opacity: .6; }
+  td.realcell { border-radius: 0 16px 16px 0; }
+</style></head>
+<body>
+<div class="top"><a class="back" href="index.html">← Mockups</a><span class="title">CV icons</span></div>
+<div class="wrap">
+  <h1 style="margin-bottom:6px">Icon packs for the CV</h1>
+  <p class="muted" style="margin:0 0 18px">Same 8 icons in each pack: email, phone, birth date, licence, location, languages, website, LinkedIn. The last column shows them at the real CV size, in the CV's grey. Packs without a LinkedIn icon use the one from Simple Icons.</p>
+  <table id="t"></table>
+  <div class="note"><b>Current: Tabler (outline).</b> To use another pack I'd install it (or copy just these 8 SVG files into the project) and change one list in <code>icons.ts</code>; the preview and the PDF both read from it. Filled packs (Font Awesome, Phosphor fill) look heavier on paper; thin outline packs look lighter.</div>
+</div>
+<script>
+  const J = "https://cdn.jsdelivr.net/npm/";
+  const LI = J + "simple-icons@13.17.0/icons/linkedin.svg";
+  const labels = ["Email", "Phone", "Birth date", "Licence", "Location", "Languages", "Website", "LinkedIn"];
+  const packs = [
+    { name: "Tabler · outline", note: "Current. Thin 2px strokes, rounded.", base: J + "@tabler/icons@3.26.0/icons/outline/", f: ["mail", "phone", "cake", "car", "map-pin", "language", "world", "brand-linkedin"] },
+    { name: "Lucide", note: "Like Feather: clean, slightly rounder.", base: J + "lucide-static@0.468.0/icons/", f: ["mail", "phone", "cake", "car", "map-pin", "languages", "globe", "linkedin"] },
+    { name: "Phosphor · regular", note: "Friendly, balanced weight.", base: J + "@phosphor-icons/core@2.1.1/assets/regular/", f: ["envelope", "phone", "cake", "car", "map-pin", "translate", "globe", "linkedin-logo"] },
+    { name: "Phosphor · fill", note: "Same set, solid shapes.", base: J + "@phosphor-icons/core@2.1.1/assets/fill/", f: ["envelope-fill", "phone-fill", "cake-fill", "car-fill", "map-pin-fill", "translate-fill", "globe-fill", "linkedin-logo-fill"] },
+    { name: "Heroicons · outline", note: "From Tailwind. No cake/car: gift and truck stand in.", base: J + "heroicons@2.2.0/24/outline/", f: ["envelope", "phone", "gift", "truck", "map-pin", "language", "globe-alt", null] },
+    { name: "Bootstrap Icons", note: "Simple, slightly tighter.", base: J + "bootstrap-icons@1.11.3/icons/", f: ["envelope", "telephone", "cake", "car-front", "geo-alt", "translate", "globe", "linkedin"] },
+    { name: "Font Awesome · solid", note: "The classic: bold, filled.", base: J + "@fortawesome/fontawesome-free@6.7.2/svgs/solid/", f: ["envelope", "phone", "cake-candles", "car", "location-dot", "language", "globe", "../brands/linkedin"] },
+    { name: "Material Symbols · outlined", note: "Google's. No LinkedIn.", base: J + "@material-symbols/svg-400@0.28.2/outlined/", f: ["mail", "call", "cake", "directions_car", "location_on", "translate", "language", null] },
+  ];
+  const src = (p, i) => (p.f[i] ? p.base + p.f[i] + ".svg" : LI);
+  document.getElementById("t").innerHTML =
+    `<tr><th>Pack</th>${labels.map((l) => `<th style="text-align:center">${l}</th>`).join("")}<th>At CV size</th></tr>` +
+    packs.map((p) => `<tr><td class="pack"><b>${p.name}</b><span>${p.note}</span></td>` +
+      labels.map((_, i) => `<td><div class="cell"><div class="big"><img src="${src(p, i)}" alt="${labels[i]}"></div></div></td>`).join("") +
+      `<td class="realcell"><div class="real">${[0, 3, 4, 5, 6, 7].map((i) => `<span><img src="${src(p, i)}" alt="">${["luisdafmatias@gmail.com", "", "", "Category B", "Slovakia", "English (C1)", "lmatias.com", "/luisdafmatias"][i]}</span>`).join("")}</div></td></tr>`).join("");
+</script>
+</body></html>

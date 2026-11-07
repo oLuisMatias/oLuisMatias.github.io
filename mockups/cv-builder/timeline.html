@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup B · History (timeline)</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0, 860px); gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .tl { position: relative; padding-left: 34px; }
+  .tl::before { content: ""; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+  .row { position: relative; display: flex; gap: 16px; align-items: center; padding: 14px 16px; margin-bottom: 12px; cursor: pointer; border-radius: 18px; background: var(--surface); }
+  .row::before { content: ""; position: absolute; left: -29px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--chip); box-shadow: 0 0 0 4px var(--bg); }
+  .row.live::before { background: var(--accent); }
+  .row.sel { box-shadow: 0 0 0 2px var(--ink); }
+  .row .thumb { width: 52px; height: 74px; border-radius: 4px; box-shadow: none; }
+  .row .thumb .scale { transform: scale(.0655); }
+  .row h3 { font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row .meta { font-size: 13px; color: var(--muted); }
+  .row .live-since { font-size: 12px; color: var(--accent-text); }
+  .side { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 14px; }
+  .side .thumb { margin: 0 auto; }
+  .side h2 { font-size: 18px; }
+  .diff { font-size: 13.5px; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; }
+  .diff b { color: var(--ink); }
+  .side .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .newv { margin: 0 0 14px 34px; }
+  dialog { border: 0; padding: 0; border-radius: 22px; background: var(--surface); color: var(--text); width: min(960px, 94vw); max-height: 92vh; }
+  dialog::backdrop { background: rgba(0,0,0,.65); }
+  .dlg { display: flex; flex-direction: column; max-height: 92vh; }
+  .dlg header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 16px 20px; }
+  .dlg header h2 { font-size: 18px; }
+  .dlg .viewer { height: min(80vh, 1000px); } .dlg .viewer iframe { width: 100%; height: 100%; border: 0; }
+  .dlg .pages { overflow: auto; background: #2a2d33; padding: 20px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .dlg .page-fit { width: calc(794px * .55); height: calc(1123px * .55); box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+  .dlg .page-fit .scale { transform: scale(.55); }
+  .gap { font-size: 12.5px; color: var(--muted); margin: -4px 0 12px 16px; }
+</style></head>
+<body>
+<div class="top"><a class="back" href="index.html">← Mockups</a><span class="title">CV Builder</span></div>
+
+<div class="wrap">
+  <div class="layout">
+    <div>
+      <h1 style="margin-bottom:6px">History</h1>
+      <p class="muted" style="margin:0 0 20px">Newest first. The orange dot is the CV that is on the website now, with the date it went live.</p>
+      <a class="btn btn--accent newv" href="editor.html">+ New version</a>
+      <div class="tl" id="tl"></div>
+    </div>
+  </div>
+  <dialog id="dlg"></dialog>
+  <div class="note"><b>Changed:</b> this is now the page you get when you click CV Builder. <b>New version</b> sits above the latest one. <b>Clicking a CV</b> opens it in a popup (a PDF viewer, like the certificates on the CV page) with its actions; only <b>Duplicate &amp; edit</b> goes to the editor.</div>
+</div>
+
+<script src="cv-data.js"></script>
+<script>
+  const tl = document.getElementById("tl");
+  function render() {
+    tl.innerHTML = VERSIONS.map((v) => `
+      <div class="row ${v.live ? "live" : ""}" data-id="${v.id}">
+        <div class="thumb"><div class="scale"><div data-paper="1" data-bg="${v.bg}"></div></div></div>
+        <div style="flex:1;min-width:0"><h3><span class="muted">v${v.id}</span> ${v.name}
+          ${v.live ? '<span class="chip chip--live"><span class="dot"></span>In use</span>' : ""}<span class="chip">${v.tag}</span></h3>
+          <div class="meta">${v.date}${v.from ? ` · from v${v.from}` : ""} · ${v.changes}</div>
+          ${v.live ? '<div class="live-since">On the website since 6 Nov 2026</div>' : v.id === 6 ? '<div class="live-since" style="color:var(--muted)">Was on the website 21 Sep – 6 Nov 2026</div>' : ""}</div>
+      </div>`).join("");
+    drawPapers();
+    tl.querySelectorAll(".row").forEach((r) => r.onclick = () => openPopup(VERSIONS.find((x) => x.id === +r.dataset.id)));
+  }
+  render();
+
+  // The same viewer as the certificates on the CV page: a popup with the PDF inside (toolbar and thumbnails hidden).
+  // In this mockup every version shows the same sample PDF (the real one will be the PDF saved with that version).
+  function openPopup(v) {
+    const d = document.getElementById("dlg");
+    d.innerHTML = `<div class="dlg"><header>
+        <h2><span class="muted">v${v.id}</span> ${v.name}</h2>
+        ${v.live ? '<span class="chip chip--live"><span class="dot"></span>In use on website</span>' : ""}<span class="chip">${v.tag}</span>
+        <span class="muted" style="font-size:13px">${v.date}${v.from ? " · from v" + v.from : ""}</span><span style="flex:1"></span>
+        <a class="btn btn--small" href="sample.pdf" download>Download PDF</a><a class="btn btn--small" href="editor.html">Duplicate &amp; edit</a>
+        ${v.live ? "" : '<button class="btn btn--small btn--accent">Use on website</button>'}
+        <button class="btn btn--small btn--ghost" id="close" aria-label="Close">✕</button></header>
+      <div class="viewer"><iframe src="sample.pdf#toolbar=0&navpanes=0&view=FitH" title="CV ${v.name}"></iframe></div></div>`;
+    d.showModal();
+    d.querySelector("#close").onclick = () => d.close();
+    d.onclick = (e) => { if (e.target === d) d.close(); };
+  }
+</script>
+</body></html>

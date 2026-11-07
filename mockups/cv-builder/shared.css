@@ -1,0 +1,68 @@
+/* Shared look of the CV Builder mockups: the Graphite admin style + the paper of the CV (template 1, copied from the Word CV). */
+:root {
+  --bg: #0e0f11; --surface: #16181b; --surface-2: #1d2024; --chip: #23262b; --line: #2a2e34;
+  --ink: #eceef0; --text: #b4bac2; --muted: #8d949d;
+  --accent: #ff8a3d; --accent-hover: #ffa366; --accent-text: #ff9a55; --on-accent: #1a0e05;
+  --ok: #3ddc84; --err: #ff7a70;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font); font-size: 15px; line-height: 1.5; color: var(--text); background: var(--bg); }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3 { color: var(--ink); margin: 0; line-height: 1.2; }
+button { font: inherit; cursor: pointer; }
+
+/* ---- bars, buttons, chips ---- */
+.top { display: flex; align-items: center; gap: 12px; padding: 14px 24px; background: var(--surface); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+.top .back { color: var(--muted); font-size: 14px; }
+.top .title { color: var(--ink); font-weight: 600; font-size: 17px; }
+.top .grow { flex: 1; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; font-size: 14px; background: var(--chip); color: var(--ink); }
+.btn:hover { background: var(--line); }
+.btn--accent { background: var(--accent); color: var(--on-accent); }
+.btn--accent:hover { background: var(--accent-hover); }
+.btn--small { padding: 6px 12px; font-size: 13px; }
+.btn--ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; background: var(--chip); color: var(--text); }
+.chip--live { background: var(--accent); color: var(--on-accent); }
+.chip--draft { background: transparent; box-shadow: inset 0 0 0 1px var(--muted); color: var(--muted); }
+.chip--ok { color: var(--ok); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; }
+.card { background: var(--surface); border-radius: 20px; padding: 20px; }
+.muted { color: var(--muted); }
+.note { max-width: 1160px; margin: 20px auto 0; padding: 14px 18px; border-radius: 14px; background: var(--surface-2); font-size: 13.5px; color: var(--muted); }
+.note b { color: var(--ink); }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 24px; }
+
+/* ---- the CV paper: A4 at 96 dpi (794 x 1123), template 1 ---- */
+.paper { --paper: #ffffff; width: 794px; height: 1123px; background: var(--paper); color: #000; position: relative; overflow: hidden;
+  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: 14.7px; line-height: 1.22; padding: 48px; }
+.paper h1 { color: #000; font-size: 22.7px; font-weight: 800; letter-spacing: .02em; text-align: center; margin: 0 0 6px; text-transform: uppercase; }
+.paper .contact { color: #808080; font-size: 13px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px 14px; margin-bottom: 14px; }
+.paper .contact span:nth-child(3n+2) { text-align: center; }
+.paper .contact span:nth-child(3n) { text-align: right; }
+.paper .line { margin: 5px 0; }
+.paper .line b { font-weight: 700; }
+.paper h2 { color: #000; font-size: 17px; font-weight: 800; letter-spacing: .03em; margin: 22px 0 8px; text-transform: uppercase; }
+.paper .entry { margin-bottom: 14px; }
+.paper .entry .head { display: flex; justify-content: space-between; gap: 12px; }
+.paper .entry .head b { font-weight: 700; }
+.paper .entry ul { margin: 3px 0 0; padding-left: 14px; }
+.paper .entry li { margin: 0 0 3px; }
+.paper .sub { font-size: 12.6px; margin: 3px 0 0 14px; }
+.paper .sub .grey { color: #666; }
+.paper a, .paper .link { color: #467886; text-decoration: underline; }
+.paper .certs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; padding-left: 90px; }
+.paper .pageno { position: absolute; bottom: 20px; right: 40px; font-size: 11px; color: #999; }
+
+/* A small copy of a page: <div class="thumb"><div class="scale"><div class="paper">…</div></div></div> */
+.thumb { width: 210px; height: 297px; overflow: hidden; border-radius: 6px; box-shadow: 0 6px 22px rgba(0,0,0,.45); position: relative; flex: none; }
+.thumb .scale { transform: scale(.2645); transform-origin: 0 0; width: 794px; height: 1123px; }
+.thumb--big { width: 262px; height: 370px; }
+.thumb--big .scale { transform: scale(.33); }
+
+/* the paper colours used to tell the test versions apart */
+.bg-white { --paper: #ffffff; } .bg-cream { --paper: #fbf3df; } .bg-blue { --paper: #e6f0fb; }
+.bg-green { --paper: #e8f5e9; } .bg-rose { --paper: #fde8ee; } .bg-grey { --paper: #ececec; }
+.paper .muted2 { color: #555; font-size: 13px; }

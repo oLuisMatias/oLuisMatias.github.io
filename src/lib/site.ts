@@ -9,10 +9,12 @@ import homeYml from "../data/home.yml?raw";
 import projectsPageYml from "../data/projects-page.yml?raw";
 import skillsYml from "../data/skills.yml?raw";
 import cvPageYml from "../data/cv-page.yml?raw";
+import cvVersionsYml from "../data/cv-versions.yml?raw";
 import { parseHome } from "./home";
 import { parseProjectsPage } from "./projects-page";
 import { parseSkills } from "./skills";
 import { parseCvPage } from "./cv-page";
+import { parseVersions, websitePdf } from "./cv-versions";
 import { highlightsFrom } from "./highlights";
 
 export type Site = {
@@ -68,8 +70,8 @@ export function youtubeId(url = "") {
 /** Short reference codes like P-001, used as blueprint-style labels. */
 export const code = (prefix: string, n: number) => `${prefix}-${String(n).padStart(3, "0")}`;
 
-/** "Download CV" link: the PDF set in Site settings. */
-export const cvHref = site.cvPdf;
+/** "Download CV" link: the PDF of the CV that is in use (chosen in the CV Builder), or the one set in Site settings. */
+export const cvHref = websitePdf(parseVersions(cvVersionsYml)) || site.cvPdf;
 
 /** Inline padding for the image sides chosen in the admin ("Space around image"). */
 export function spacingStyle(sides: string[] = []) {

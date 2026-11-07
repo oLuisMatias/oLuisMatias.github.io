@@ -11,6 +11,7 @@ const PAGE_FILES: Record<string, { file: string; message: string }> = {
   "projects-page": { file: "src/data/projects-page.yml", message: "Edit projects page (project page editor)" },
   "cv-page": { file: "src/data/cv-page.yml", message: "Edit CV page layout (CV page editor)" },
   skills: { file: "src/data/skills.yml", message: "Edit skills and languages (CV page editor)" },
+  "cv-versions": { file: "src/data/cv-versions.yml", message: "Edit saved CVs (CV builder)" },
 };
 const IMAGES_DIR = "public/images/projects";
 const MODELS_DIR = "public/data/models";
@@ -24,6 +25,11 @@ const CV_DIRS: Record<string, { dir: string; images: string; publicImages: strin
 /** Certificates and verification files of the certifications: PDFs and pictures. */
 const DOCUMENTS = { dir: "public/data/documents", publicDir: "/data/documents" };
 const DOCUMENT_NAME = /^[a-z0-9][a-z0-9._-]{0,80}\.(pdf|png|jpe?g|webp)$/;
+/** The content of the saved CVs: one file per version (CV builder). */
+const CV_DOCS_DIR = "src/data/cv-docs";
+/** The PDFs of the saved CVs (CV builder). */
+const CV_PDFS = { dir: "public/data/cvs", publicDir: "/data/cvs" };
+const CV_PDF_NAME = /^[a-z0-9][a-z0-9._-]{0,80}\.pdf$/;
 const CV_FILE = /^[a-z0-9][a-z0-9-]{0,70}\.yml$/;
 
 const SLUG = /^[a-z0-9][a-z0-9-]{0,60}$/;
@@ -146,8 +152,9 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
     // `?area=work` or `?area=education`: the logos of that CV section instead of the project files.
     const areaName = url.searchParams.get("area") ?? "";
     const documents = areaName === "documents";
+    const cvPdfs = areaName === "cvs";
     const area = own(CV_DIRS, areaName);
-    if (areaName && !documents && !area) return problem(400, "Unknown picture folder.");
+    if (areaName && !documents && !cvPdfs && !area) return problem(400, "Unknown picture folder.");
 
     if (path === "/admin/api/files" && method === "GET") {
       if (documents) {
@@ -168,6 +175,14 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
 
     if (path === "/admin/api/upload" && method === "POST") {
       const name = (url.searchParams.get("name") ?? "").toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^[-.]+/, "");
+      if (cvPdfs) {
+        if (!CV_PDF_NAME.test(name)) return problem(400, "Use a .pdf file.");
+        const bytes = new Uint8Array(await request.arrayBuffer());
+        if (bytes.length === 0) return problem(400, "The file is empty.");
+        if (bytes.length > MAX_IMAGE) return problem(413, "Files can be up to 10 MB.");
+        await store.write(`${CV_PDFS.dir}/${name}`, bytes, await existingSha(store, CV_PDFS.dir, name), `Add ${name} (CV builder)`);
+        return json({ path: `${CV_PDFS.publicDir}/${name}` });
+      }
       if (documents) {
         if (!DOCUMENT_NAME.test(name)) return problem(400, "Use a .pdf, .png, .jpg or .webp file.");
         const bytes = new Uint8Array(await request.arrayBuffer());
@@ -191,6 +206,28 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
       const dir = isModel ? MODELS_DIR : IMAGES_DIR;
       await store.write(`${dir}/${name}`, bytes, await existingSha(store, dir, name), `Add ${name} (project editor)`);
       return json({ path: isModel ? `/data/models/${name}` : `/images/projects/${name}` });
+    }
+
+    // The content of a saved CV (CV builder): one file per version, named by its number.
+    const cvDoc = path.match(/^\/admin\/api\/cv-docs\/(\d{1,5})$/);
+    if (cvDoc && (method === "GET" || method === "PUT")) {
+      const file = `${CV_DOCS_DIR}/v${Number(cvDoc[1])}.yml`;
+      if (method === "GET") {
+        const found = await store.read(file);
+        return found ? json({ sha: found.sha, text: decode(found.bytes) }) : problem(404, "That CV has no saved content.");
+      }
+      return await saveText(request, store, file, "That CV is too large.", `Save CV v${Number(cvDoc[1])} (CV builder)`);
+    }
+
+    // A saved CV's PDF is deleted together with its version.
+    const cvPdf = path.match(/^\/admin\/api\/cv-pdf\/([^/]+)$/);
+    if (cvPdf && method === "DELETE") {
+      const name = cvPdf[1];
+      if (!CV_PDF_NAME.test(name)) return problem(400, "That file name isn't valid.");
+      const sha = await existingSha(store, CV_PDFS.dir, name);
+      if (!sha) return json({ ok: true });
+      await store.remove(`${CV_PDFS.dir}/${name}`, sha, `Delete ${name} (CV builder)`);
+      return json({ ok: true });
     }
 
     return problem(404, "Unknown request.");

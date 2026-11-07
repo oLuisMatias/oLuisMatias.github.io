@@ -40,9 +40,9 @@ export const deleteProject = (slug: string, sha: string) =>
   });
 
 /** The text files of the page editors: "home", "projects-page" and "skills". */
-export const loadPage = (name: "home" | "projects-page" | "skills" | "cv-page") => call<{ sha: string | null; text: string }>(`/admin/api/${name}`);
+export const loadPage = (name: "home" | "projects-page" | "skills" | "cv-page" | "cv-versions") => call<{ sha: string | null; text: string }>(`/admin/api/${name}`);
 
-export const savePage = (name: "home" | "projects-page" | "skills" | "cv-page", text: string, sha: string | null) =>
+export const savePage = (name: "home" | "projects-page" | "skills" | "cv-page" | "cv-versions", text: string, sha: string | null) =>
   call<{ sha: string }>(`/admin/api/${name}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -73,6 +73,24 @@ export const saveCard = (section: string, name: string, text: string, sha: strin
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, sha }),
   });
+
+/** The content of a saved CV (the text of its document file), or null when that version has none (a PDF-only version). */
+export const loadCvDoc = (id: number) =>
+  call<{ sha: string; text: string }>(`/admin/api/cv-docs/${id}`).catch((e) => {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  });
+
+/** Save a CV's content. `sha` is the version being replaced (editing a draft); without it the file must be new. */
+export const saveCvDoc = (id: number, text: string, sha?: string) =>
+  call<{ sha: string }>(`/admin/api/cv-docs/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, sha }),
+  });
+
+/** A saved CV's PDF leaves with its version. */
+export const deleteCvPdf = (fileName: string) => call<{ ok: true }>(`/admin/api/cv-pdf/${encodeURIComponent(fileName)}`, { method: "DELETE" });
 
 /** All the changed cards in ONE commit (one deploy). Returns the new version tag of every card written, by "section/file". */
 export const saveCards = (files: { section: string; name: string; text: string; sha: string | null }[], deletes: { section: string; name: string; sha: string }[]) =>

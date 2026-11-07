@@ -1,0 +1,57 @@
+live: 4
+liveTemplate: sideHidden
+versions:
+  - id: 1
+    date: 2026-06-04
+    tag: Imported
+    note: The CV that was on the website before the builder.
+    from: null
+    pdf: /data/documents/CV_Luis_Matias_NoPhone.pdf
+    pdfs: {}
+    doc: false
+    locked: true
+    liveFrom: 2026-11-01
+    liveTo: 2026-11-07
+  - id: 2
+    date: 2025-06-09
+    tag: Imported
+    note: ''
+    from: null
+    pdf: /data/cvs/v2.pdf
+    pdfs: {}
+    doc: false
+    locked: true
+    liveFrom: ''
+    liveTo: ''
+  - id: 3
+    date: 2026-11-07
+    tag: Generic
+    note: ''
+    from: 1
+    pdf: /data/cvs/v3.pdf
+    pdfs:
+      hidden: /data/cvs/v3-hidden.pdf
+      side: /data/cvs/v3-side.pdf
+      sideHidden: /data/cvs/v3-side-hidden.pdf
+      nophoto: /data/cvs/v3-nophoto.pdf
+      nophotoHidden: /data/cvs/v3-nophoto-hidden.pdf
+    doc: true
+    locked: false
+    liveFrom: ''
+    liveTo: ''
+  - id: 4
+    date: 2026-11-07
+    tag: Application
+    note: ''
+    from: 3
+    pdf: /data/cvs/v4.pdf
+    pdfs:
+      hidden: /data/cvs/v4-hidden.pdf
+      side: /data/cvs/v4-side.pdf
+      sideHidden: /data/cvs/v4-side-hidden.pdf
+      nophoto: /data/cvs/v4-nophoto.pdf
+      nophotoHidden: /data/cvs/v4-nophoto-hidden.pdf
+    doc: true
+    locked: true
+    liveFrom: 2026-11-07
+    liveTo: ''

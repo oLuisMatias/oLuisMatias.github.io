@@ -1,0 +1,132 @@
+header:
+  name: Luis Matias
+  photo: /images/Luis_Matias_Photo.png
+  email: luisdafmatias@gmail.com
+  phone: ''
+  birth: 20/06/1994
+  licence: Category B
+  location: Slovakia
+  origin: from Portugal
+  languages: Portuguese (Native), English (C1)
+  website: lmatias.com
+  linkedin: /luisdafmatias
+skills: SolidWorks, Solid Edge, Teamcenter, 3D Printing, Excel, Ansys, Abaqus, Matlab, Python
+interests: CAD, Mechanical Design, DFM, DFA, CNC Machines, 3D Printing, Automation, Programming, Product Development, Additive Manufacturing, Manufacturing Engineer
+sections:
+  - key: work
+    title: Work
+    show: true
+    entries:
+      - show: true
+        title: Mechanical Design Engineer
+        org: SKARTEK
+        location: Vlčkovce, Slovakia
+        period: Aug 2025 – Present
+        lines:
+          - Designing conceptual mechanical solutions to secure customer buy-in and formalize service contracts.
+          - 'DFM & Process Optimization: Applying Design for Manufacturing principles across CNC machining, welding, laser cutting and 3D Printing to optimize part geometry and ensure structural durability.'
+          - 'Collision Mitigation & System Adaptation: Re-engineering active machine assemblies to resolve mechanical interference and integrate customer-driven modifications, ensuring zero-collision performance and enhanced operational safety.'
+          - 'PLM & CAD Integration: Utilizing Solid Edge for precision modeling and Teamcenter for robust version control, BOM management, and cross-departmental collaboration.'
+      - show: true
+        title: VIE Development Engineer/Manufacturing Engineer
+        org: Forvia
+        location: Trnava, Slovakia
+        period: May 2023 – Dec 2024
+        lines:
+          - 'Working in Instrument Panel programs: Citroën C3 and Opel Frontera.'
+          - Define and articulate the Engineering Levels required for production, serving as a key liaison between R&D and the plant team to ensure seamless collaboration.
+          - Validate mockups for both interim and permanent solutions, ensuring functionality and compliance with design standards.
+          - Prepare production documents including Visual BOM and 3D models in PLM system.
+          - Assist manufacturing in defining the sequence of assembly operations during the initial stages of the conveyor production process, ensuring efficiency and accuracy.
+          - Independently develop 3D printing solutions for mockups, workstation and conveyor modifications, and production support tools, enhancing functionality and efficiency.
+          - Develop Excel VBA scripts to streamline stock tracking and ensure accurate inventory.
+      - show: true
+        title: VIE Program Engineer
+        org: Forvia
+        location: Gorzów Wielkopolski, Poland
+        period: Aug 2022 – May 2023
+        lines:
+          - 'Working in Door Panel programs: Jeep Avenger, Fiat 600 and Alfa Romeo Junior.'
+          - Support quality department in capabilities studies.
+          - Support suppliers in Gage R&R studies to ensure RPS system definition.
+          - Support in the Meisterbock build.
+      - show: true
+        title: Research Fellow
+        org: INEGI
+        location: Porto, Portugal
+        period: Dec 2021 – July 2022
+        intro: 'Project: “Dealing with CT Cardiac Imaging Using Python: An Approach for Future Hemodynamic Simulations”'
+        lines:
+          - Computer Vision - Using Python for 3D reconstruction of heart arteries. Region Growing method.
+          - User interface with PyQt.
+        papers:
+          - label: Paper
+            title: 'Dealing with CT Cardiac Imaging Using Python: An Approach for Future Hemodynamic Simulations'
+            detail: Conference Paper. M2D2022 - 9th International Conference on Mechanics and Materials in Design (pp. 1109-1114)
+  - key: studies
+    title: Studies
+    show: true
+    entries:
+      - show: true
+        title: M.Sc. Mechanical Engineer
+        org: University of Porto
+        location: Porto, Portugal
+        period: July 2022
+        intro: 'Thesis: “Semi-Automatic Method of Stent Development in Coronary Arteries with Stenosis - Hemodynamic Simulations”'
+        lines:
+          - Semi-automatic method to create arteries with stents using SolidWorks and Creo based on CT images.
+          - Hemodynamics simulations in ANSYS Fluent with stent applied in the arteries.
+        papers:
+          - label: Paper
+            title: 'Semi-Automatic Method of Stent Development for Hemodynamic Simulations in Patient Coronary Arteries with Disease'
+            detail: 'Theoretical Analyses, Computations and Experiments of Multiscale Materials - Advanced Structured Materials, Springer. DOI: 10.1007/978-3-031-04548-6_16'
+  - key: projects
+    title: My projects
+    show: true
+    entries:
+      - show: true
+        title: CNC Milling Machine
+        period: On Going...
+        lines:
+          - Under development in design phase.
+          - Designing in SolidWorks.
+      - show: true
+        title: CNC Diode Laser/Engraver
+        period: Jan 2025 – March 2025
+        moreUrl: https://lmatias.com/projects/laser-engraver
+        lines:
+          - Finished project and working machine.
+          - Designed in SolidWorks.
+          - Pinion and Belt driven system with NEMA 17 stepper motors. V-Slot profile frame.
+          - 3 Axis with semi-automatic focus.
+  - key: experiences
+    title: Experiences
+    show: true
+    entries:
+      - show: true
+        title: Volunteering | Elephant Caretaker
+        org: Elephant Nature Park
+        location: Chiang Mai, Thailand
+        period: 2017 (1 Week)
+        lines:
+          - Taking care of abandoned and abused elephants and dogs.
+      - show: true
+        title: Internship | Professor Assistant
+        org: RMUTR
+        location: Phutthamonthon, Thailand
+        period: 2017 (3 Months)
+        lines:
+          - Support students in their school projects.
+          - Teach Mathematics and Solid Mechanics to the students.
+  - key: certifications
+    title: Certifications
+    show: true
+    entries:
+      - show: true
+        title: SolidWorks CAD Design Professional (CSWP)
+        period: May 2025
+        badge: /images/cv/certifications/Badge_SolidWorks_CSWP_CAD_Design_Professional.png
+      - show: true
+        title: Solid Edge Professional Level
+        period: April 2026
+        badge: /images/cv/certifications/Badge_Solid_Edge_Professional_Level.png
