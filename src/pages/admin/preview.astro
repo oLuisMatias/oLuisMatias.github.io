@@ -8,13 +8,14 @@ import "../../styles/project.css";
 import { tools } from "../../lib/site";
 ---
 <Base title="Preview" noindex>
-  <script is:inline slot="head" type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
   <script type="application/json" id="tools-data" set:html={JSON.stringify(tools)} />
   <div id="preview-root"></div>
 </Base>
 
 <script>
   import { renderProject } from "../../lib/render-project";
+  import { loadModelViewer } from "../../scripts/model-viewer";
+  loadModelViewer(true);
   import type { Project } from "../../lib/project-model";
   import { getNode, isSplit, parsePath } from "../../lib/boxes";
   import { iconSvg } from "../../lib/icons";

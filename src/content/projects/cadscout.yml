@@ -5,7 +5,7 @@ order: 4
 topic: Programming / AI
 summary: A free CAD and 3D print file viewer for Windows. Open a model, look around, see what is in it, without needing a CAD program.
 date: October 2026
-cover: /images/projects/box-art-1080x1080.png
+cover: /images/projects/box-art-1080x1080.webp
 coverSpacing:
   - bottom
   - left
@@ -15,6 +15,7 @@ model: ''
 youtube: ''
 tools:
   - github
+  - claude
 skills:
   - C++ desktop development
   - 3D file formats (STEP, 3MF, STL)
@@ -52,7 +53,7 @@ sections:
           - **3D printing projects:** for 3MF files, including Bambu Studio and Orca Slicer projects, a side panel shows the printer, profile, filaments, plates, objects and the slicing result.
           - **Everywhere in Windows:** right-click a model in Explorer and choose "View with CADscout". Available in English, Portuguese, German, Spanish and Slovak.
       - type: image
-        src: /images/projects/cadscout_2.png
+        src: /images/projects/cadscout_2.webp
         alt: CADscout showing a 3MF print project with its side panel
         caption: ''
         spacing:
@@ -73,7 +74,7 @@ sections:
 
           Two editions come from the same code: **CADscout Lite**, a small window for a quick look (released), and **CADscout Full**, which is under development. It is written in C++ with Qt 6 for the interface and Open CASCADE for reading and repairing CAD geometry, and packaged for the Microsoft Store as an MSIX.
       - type: image
-        src: /images/projects/cadscout_3.png
+        src: /images/projects/cadscout_3.webp
         alt: The file menu and a loaded STEP model
         caption: ''
         spacing:

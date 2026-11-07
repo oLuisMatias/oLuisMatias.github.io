@@ -5,7 +5,7 @@ order: 1
 topic: Machine Design
 summary: A 4-motor Cartesian CNC laser engraver, built from V-slot aluminium and custom 3D printed parts, with a 22 W laser module.
 date: March 2025
-cover: /images/projects/machine-design_laser-engraver_1.png
+cover: /images/projects/machine-design_laser-engraver_1.webp
 coverSpacing:
   - left
   - right
@@ -60,7 +60,7 @@ sections:
 
           - __3D Printed Components:__ All structural joining plates, motor mounts, and wheel brackets were custom-designed and 3D printed. This drastically reduced the build budget while allowing for rapid iterative prototyping.
       - type: image
-        src: /images/projects/machine-design_laser-engraver_1.png
+        src: /images/projects/machine-design_laser-engraver_1.webp
         alt: ''
         caption: ''
         spacing:
@@ -81,7 +81,7 @@ sections:
           - __Y-Axis:__ Driven by 2 dual-synced stepper motors to prevent gantry racking (twisting) and ensure perfectly square movement over the engraving area.
           - __Z-Axis:__ Driven by 1 stepper motor, giving the machine true 3D spatial movement.
       - type: image
-        src: /images/projects/machine-design_laser-engraver_2.png
+        src: /images/projects/machine-design_laser-engraver_2.webp
         alt: ''
         caption: ''
         spacing:
@@ -105,7 +105,7 @@ sections:
 
               - For the software and control layout, I am using the MKS DLC32 Max mainboard. I use LightBurn to design my projects, generate the necessary G-code, and run the machine directly.
       - type: image
-        src: /images/projects/machine-design_laser-engraver_3.png
+        src: /images/projects/machine-design_laser-engraver_3.webp
         alt: ''
         caption: ''
         spacing:

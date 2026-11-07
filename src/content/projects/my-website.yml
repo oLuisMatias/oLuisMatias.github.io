@@ -5,7 +5,7 @@ order: 3
 topic: Programming / AI
 summary: This portfolio, rebuilt from scratch as a fast, modern site that I update without touching code, with a private area for my job applications.
 date: November 2026
-cover: /images/projects/my-website.png
+cover: /images/projects/my-website.webp
 coverSpacing:
   - bottom
   - left
