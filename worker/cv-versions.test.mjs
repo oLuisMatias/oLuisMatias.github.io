@@ -128,3 +128,16 @@ test("six PDFs per CV: names, lookups, what goes with a deleted version, and wha
   const other = v.makeLive(s, 2, "2025-06-01", "hidden");
   assert.deepEqual([other.live, other.liveTemplate, other.versions[1].liveFrom], [2, "hidden", ""], "the same CV can change template without a new live date");
 });
+
+test("unlocking: a finished CV with saved content can be opened again and edited in place; a PDF-only one can't", () => {
+  const nl = String.fromCharCode(10);
+  let s = v.parseVersions(["live: 2", "versions:", "  - { id: 1, pdf: /a.pdf }", "  - { id: 2, doc: true, locked: true, pdf: /b.pdf, note: first }"].join(nl));
+  assert.deepEqual(s.versions.map((x) => x.locked), [true, true]);
+  assert.equal(v.updateDraft(s, 2, { note: "changed" }).versions[1].note, "first", "locked: not changed");
+  s = v.unlockVersion(s, 2);
+  assert.equal(s.versions[1].locked, false);
+  assert.equal(s.live, 2, "it stays the CV in use");
+  assert.equal(v.updateDraft(s, 2, { note: "changed" }).versions[1].note, "changed", "unlocked: edited in place");
+  assert.equal(v.unlockVersion(s, 1).versions[0].locked, true, "an uploaded PDF has nothing to edit");
+  assert.equal(v.lockVersion(s, 2).versions[1].locked, true);
+});

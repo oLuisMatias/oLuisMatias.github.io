@@ -5,7 +5,7 @@
   import { DEFAULT_FONT_SIZE, DEFAULT_LINE_SPACING, DEFAULT_SPACING, FONT_SIZE_RANGE, LINE_SPACING_RANGE, MAX_SPACING, SPACING_LABELS, VARIANT_HINTS, VARIANT_KEYS, VARIANT_LABELS, blankEntry, blankPaper, defaultLook, lookKeyOf, moveItem, parseDoc, spacingValue, stringifyDoc, type CvDoc, type DocEntry, type VariantKey } from "../../lib/cv-document";
   import { buildCvPdf } from "../../lib/pdf-cv-document";
   import { TAGS, addVersion, lockVersion, newestFirst, nextId, numberOf, parseVersions, pdfFileName, stringifyVersions, updateDraft, EMPTY_VERSIONS, type CvVersions } from "../../lib/cv-versions";
-  import { loadCvDoc, loadPage, saveCvDoc, savePage, uploadFile } from "../../lib/editor-api";
+  import { loadCvDoc, loadPage, saveCvVersion } from "../../lib/editor-api";
   import Ic from "./Ic.svelte";
   import PdfPages from "./PdfPages.svelte";
 
@@ -232,18 +232,19 @@
   function openSaver() {
     const v = editId ? versions.versions.find((x) => x.id === editId) : undefined;
     form = v
-      ? { date: v.date || today(), tag: v.tag, note: v.note, from: v.from ? String(v.from) : "", lock: false }
+      ? { date: v.date || today(), tag: v.tag, note: v.note, from: v.from ? String(v.from) : "", lock: v.id === versions.live } // the CV on the website is locked again when saved
       : { date: today(), tag: "Application", note: "", from: baseId ? String(baseId) : "", lock: false };
     formError = "";
     saver?.showModal();
   }
 
-  /** Makes the six PDFs of this CV and keeps them: "normal" is the main one, the others go in `pdfs`. */
-  async function uploadPdfs(id: number) {
+  /** Makes the six PDFs of this CV: "normal" is the main one, the others go in `pdfs`. They are saved together with the version. */
+  async function makePdfs(id: number) {
     const doc = snapshot();
-    const paths = await Promise.all(VARIANT_KEYS.map(async (k) => [k, (await uploadFile(pdfFileName(id, k), await buildCvPdf(doc, k), "cvs")).path] as const));
-    const { normal, ...others } = Object.fromEntries(paths) as Record<VariantKey, string>;
-    return { pdf: normal, pdfs: others };
+    const made = await Promise.all(VARIANT_KEYS.map(async (k) => ({ k, name: pdfFileName(id, k), blob: await buildCvPdf(doc, k) })));
+    const path = (name: string) => `/data/cvs/${name}`;
+    const { normal, ...others } = Object.fromEntries(made.map((m) => [m.k, path(m.name)])) as Record<VariantKey, string>;
+    return { files: made.map((m) => ({ name: m.name, blob: m.blob })), pdf: normal, pdfs: others };
   }
 
   async function saveVersion() {
@@ -254,21 +255,13 @@
       const from = Number(form.from) > 0 ? Number(form.from) : null;
       const details = { date: form.date, tag: form.tag, note: form.note.trim(), from };
       let state: CvVersions;
-      let id: number;
-      if (editId) {
-        // a draft: its content and its PDF are replaced, its number stays
-        id = editId;
-        editSha = (await saveCvDoc(id, stringifyDoc(snapshot()), editSha)).sha;
-        const { pdf, pdfs } = await uploadPdfs(id);
-        state = updateDraft(versions, id, { ...details, pdf, pdfs });
-      } else {
-        id = nextId(versions);
-        await saveCvDoc(id, stringifyDoc(snapshot()));
-        const { pdf, pdfs } = await uploadPdfs(id); // the four PDFs are made with the version
-        state = addVersion(versions, { ...details, pdf, pdfs, doc: true }).state;
-      }
+      const id = editId ?? nextId(versions);
+      const { files, pdf, pdfs } = await makePdfs(id); // the six PDFs are made with the version
+      if (editId) state = updateDraft(versions, id, { ...details, pdf, pdfs }); // a draft: its content and PDFs are replaced, its number stays
+      else state = addVersion(versions, { ...details, pdf, pdfs, doc: true }).state;
       if (form.lock) state = lockVersion(state, id);
-      await savePage("cv-versions", stringifyVersions(state), versionsSha);
+      // the list, the content and the six PDFs go in ONE commit
+      await saveCvVersion({ versions: { text: stringifyVersions(state), sha: versionsSha }, doc: { id, text: stringifyDoc(snapshot()), sha: editId ? editSha : undefined }, pdfs: files });
       savedJson = JSON.stringify(snapshot());
       location.href = "/admin/cv-builder";
     } catch (e) {
@@ -467,7 +460,7 @@
   <form onsubmit={(e) => { e.preventDefault(); saveVersion(); }}>
     {#if editId}
       <h2>Save v{editNumber}</h2>
-      <p class="hint">Its content and PDF are replaced. It stays a draft you can edit again, unless you lock it below.</p>
+      <p class="hint">Its content and PDFs are replaced.{versions.live === editId ? " It is on the website, so the public CV page changes after the rebuild." : " It stays a draft you can edit again, unless you lock it below."}</p>
     {:else}
       <h2>Save as a new version</h2>
       <p class="hint">It joins the history as v{newNumber}, as a draft you can still edit. Nothing changes on the website until you choose “Use on website”.</p>

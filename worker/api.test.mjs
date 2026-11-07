@@ -338,3 +338,48 @@ test("the saved CVs list file can be read and saved like the other page files", 
   assert.equal(saved.status, 200);
   assert.ok(store.data.has("src/data/cv-versions.yml"));
 });
+
+test("saving a CV version is ONE commit: the list, the content and its PDFs together, with version checks", async () => {
+  const store = memoryStore({ "src/data/cv-versions.yml": "live: null\nversions: []\n", "src/data/cv-docs/v1.yml": "header: {}\n" });
+  const pdf = (text = "%PDF-1.7 test") => Buffer.from(text).toString("base64");
+  const post = (obj, headers = { ...editorHeaders, "Content-Type": "application/json" }) =>
+    handleApi(req("/admin/api/cv-version", { method: "POST", headers, body: JSON.stringify(obj) }), store);
+  const versionsSha = () => store.data.get("src/data/cv-versions.yml").sha;
+  const docSha = () => store.data.get("src/data/cv-docs/v1.yml").sha;
+
+  // a new version: list + content + two PDFs, one commit
+  const ok = await post({ versions: { text: "live: null\nversions: [1]\n", sha: versionsSha() }, doc: { id: 2, text: "header: {}\n" }, pdfs: [{ name: "v2.pdf", base64: pdf() }, { name: "v2-side-hidden.pdf", base64: pdf() }] });
+  assert.equal(ok.status, 200);
+  assert.equal(store.commits, 1, "everything in one commit");
+  for (const f of ["src/data/cv-docs/v2.yml", "public/data/cvs/v2.pdf", "public/data/cvs/v2-side-hidden.pdf"]) assert.ok(store.data.has(f), f);
+  assert.equal(new TextDecoder().decode(store.data.get("src/data/cv-versions.yml").bytes), "live: null\nversions: [1]\n");
+  const reply = await ok.json();
+  assert.ok(reply.versionsSha && reply.docSha);
+
+  // an editor tab that is out of date: refused, nothing written
+  const stale = await post({ versions: { text: "x: 1\n", sha: "old" } });
+  assert.equal(stale.status, 409);
+  assert.equal(store.commits, 1);
+  const staleDoc = await post({ versions: { text: "x: 1\n", sha: versionsSha() }, doc: { id: 1, text: "header: {a: 1}\n", sha: "old" } });
+  assert.equal(staleDoc.status, 409, "editing a draft that changed meanwhile");
+  assert.equal(new TextDecoder().decode(store.data.get("src/data/cv-docs/v1.yml").bytes), "header: {}\n");
+  const editing = await post({ versions: { text: "x: 2\n", sha: versionsSha() }, doc: { id: 1, text: "header: {a: 1}\n", sha: docSha() } });
+  assert.equal(editing.status, 200, "editing with the right version tag");
+
+  // only the CV's own file names, only real PDFs
+  for (const bad of [{ name: "../../x.pdf", base64: pdf() }, { name: "v2.html", base64: pdf() }, { name: "v2-evil.pdf", base64: pdf() }, { name: "v2.pdf", base64: Buffer.from("not a pdf").toString("base64") }, { name: "v2.pdf", base64: "" }]) {
+    const res = await post({ versions: { text: "x: 3\n", sha: versionsSha() }, pdfs: [bad] });
+    assert.ok([400, 413].includes(res.status), `${bad.name} -> ${res.status}`);
+  }
+  assert.equal((await post({ versions: { text: "  ", sha: versionsSha() } })).status, 400);
+
+  // deleting a version: its content and PDFs leave together with the list entry; missing files are ignored
+  const before = store.commits;
+  const del = await post({ versions: { text: "live: null\nversions: []\n", sha: versionsSha() }, deleteDocId: 2, deletePdfs: ["v2.pdf", "v2-side-hidden.pdf", "v2-nophoto.pdf"] });
+  assert.equal(del.status, 200);
+  assert.equal(store.commits, before + 1, "one commit");
+  for (const f of ["src/data/cv-docs/v2.yml", "public/data/cvs/v2.pdf", "public/data/cvs/v2-side-hidden.pdf"]) assert.ok(!store.data.has(f), `${f} is gone`);
+
+  // not from the editor
+  assert.equal((await post({ versions: { text: "x: 4\n", sha: versionsSha() } }, {})).status, 403);
+});

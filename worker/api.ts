@@ -2,6 +2,7 @@
 // Cloudflare Access ticket first, and the local dev server skips it. This file only handles the requests
 // and decides which files may be touched: project files, the page-text files listed in PAGE_FILES and uploaded
 // images/models, nothing else.
+import { base64ToBytes } from "./base64";
 import { StoreConflict, StoreFailure, type Change, type Store } from "./store";
 
 const PROJECTS_DIR = "src/content/projects";
@@ -230,6 +231,8 @@ export async function handleApi(request: Request, store: Store): Promise<Respons
       return json({ ok: true });
     }
 
+    if (path === "/admin/api/cv-version" && method === "POST") return await saveCvVersion(request, store);
+
     return problem(404, "Unknown request.");
   } catch (e) {
     if (e instanceof StoreConflict) return problem(409, e.message);
@@ -281,4 +284,78 @@ async function saveCards(request: Request, store: Store): Promise<Response> {
 
   const written = await store.commit(changes, "Edit CV cards (CV page editor)");
   return json({ shas: Object.fromEntries(Object.entries(written).map(([path, sha]) => [keys.get(path), sha])) });
+}
+
+const VERSIONS_FILE = "src/data/cv-versions.yml";
+/** A CV's PDF file names: v7.pdf, v7-hidden.pdf, v7-side.pdf, v7-side-hidden.pdf, v7-nophoto.pdf, v7-nophoto-hidden.pdf. */
+const CV_PDF_FILE = /^v\d{1,5}(-(hidden|side|side-hidden|nophoto|nophoto-hidden))?\.pdf$/;
+
+/**
+ * Saving or deleting a CV version, as ONE commit (one site rebuild instead of one per file): the list of versions, and with it the
+ * CV's content, its PDFs, and the files of a deleted version. Each file that is replaced is checked against the version the editor
+ * started from, so an editor tab that is out of date can't overwrite newer work.
+ */
+async function saveCvVersion(request: Request, store: Store): Promise<Response> {
+  type Body = {
+    versions?: { text?: unknown; sha?: unknown };
+    doc?: { id?: unknown; text?: unknown; sha?: unknown };
+    deleteDocId?: unknown;
+    pdfs?: { name?: unknown; base64?: unknown }[];
+    deletePdfs?: unknown[];
+  };
+  const body = (await request.json().catch(() => null)) as Body | null;
+  if (!body || typeof body.versions?.text !== "string" || !body.versions.text.trim()) return problem(400, "Nothing to save.");
+  if (body.versions.text.length > MAX_TEXT) return problem(413, "The list of CVs is too large.");
+  if (body.versions.sha !== undefined && body.versions.sha !== null && typeof body.versions.sha !== "string") return problem(400, "Bad version tag.");
+
+  const pdfs = body.pdfs ?? [];
+  const deletePdfs = body.deletePdfs ?? [];
+  if (!Array.isArray(pdfs) || !Array.isArray(deletePdfs) || pdfs.length > 12 || deletePdfs.length > 12) return problem(400, "Too many files in one save.");
+
+  const [docFiles, pdfFiles, dataFiles] = await Promise.all([store.list(CV_DOCS_DIR), store.list(CV_PDFS.dir), store.list("src/data")]);
+  const changes: Change[] = [];
+
+  // the list of versions: the editor must have started from the current one
+  const currentVersions = dataFiles.find((e) => e.name === "cv-versions.yml")?.sha ?? null;
+  if ((body.versions.sha ?? null) !== currentVersions) throw new StoreConflict("Saving: the list of CVs changed in the meantime. Reload the page.");
+  changes.push({ path: VERSIONS_FILE, bytes: encode(body.versions.text) });
+
+  // the CV's content
+  if (body.doc !== undefined) {
+    const id = Number(body.doc.id);
+    if (!Number.isInteger(id) || id < 1 || id > 99999 || typeof body.doc.text !== "string" || !body.doc.text.trim()) return problem(400, "Nothing to save.");
+    if (body.doc.text.length > MAX_TEXT) return problem(413, "That CV is too large.");
+    if (body.doc.sha !== undefined && body.doc.sha !== null && typeof body.doc.sha !== "string") return problem(400, "Bad version tag.");
+    const file = `v${id}.yml`;
+    const current = docFiles.find((e) => e.name === file)?.sha;
+    if (typeof body.doc.sha === "string" && current !== body.doc.sha) throw new StoreConflict("Saving: this CV changed in the meantime. Reload the page.");
+    changes.push({ path: `${CV_DOCS_DIR}/${file}`, bytes: encode(body.doc.text) });
+  }
+  if (body.deleteDocId !== undefined) {
+    const file = `v${Number(body.deleteDocId)}.yml`;
+    if (docFiles.some((e) => e.name === file)) changes.push({ path: `${CV_DOCS_DIR}/${file}`, bytes: null });
+  }
+
+  // its PDFs
+  const seen = new Set<string>();
+  for (const f of pdfs) {
+    if (typeof f?.name !== "string" || !CV_PDF_FILE.test(f.name) || typeof f.base64 !== "string" || seen.has(f.name)) return problem(400, "That PDF isn't valid.");
+    seen.add(f.name);
+    let bytes: Uint8Array;
+    try {
+      bytes = base64ToBytes(f.base64);
+    } catch {
+      return problem(400, "That PDF isn't valid.");
+    }
+    if (bytes.length === 0 || bytes.length > MAX_IMAGE) return problem(413, "Files can be up to 10 MB.");
+    if (String.fromCharCode(...bytes.subarray(0, 4)) !== "%PDF") return problem(400, "That file isn't a PDF.");
+    changes.push({ path: `${CV_PDFS.dir}/${f.name}`, bytes });
+  }
+  for (const name of deletePdfs) {
+    if (typeof name !== "string" || !CV_PDF_FILE.test(name)) return problem(400, "That file name isn't valid.");
+    if (!seen.has(name) && pdfFiles.some((e) => e.name === name)) changes.push({ path: `${CV_PDFS.dir}/${name}`, bytes: null });
+  }
+
+  const shas = await store.commit(changes, "Save CV (CV builder)");
+  return json({ versionsSha: shas[VERSIONS_FILE], docSha: body.doc ? shas[`${CV_DOCS_DIR}/v${Number(body.doc.id)}.yml`] : undefined });
 }

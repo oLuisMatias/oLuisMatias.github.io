@@ -107,8 +107,10 @@ function renderEntry(section: Section, card: Card, index: number, o: Options): s
   const pill = section === "experiences" ? (e || card.kind ? text(e, `${k}.kind`, card.kind, "span", "pill") : "") : "";
 
   let body = "";
-  if (section === "education") body += e ? text(true, `${k}.details`, card.details, "p", "entry__text") : card.details ? `<p class="entry__text">${esc(card.details)}</p>` : "";
-  else body += bullets(card, e);
+  if (section === "education") {
+    body += e ? text(true, `${k}.details`, card.details, "p", "entry__text") : card.details ? `<p class="entry__text">${inline(card.details)}</p>` : "";
+    if (!e && card.lines.length) body += bullets(card, false); // the CV in use has bullet points under a degree
+  } else body += bullets(card, e);
   if (section !== "experiences") {
     body += card.papers.map((_, j) => renderPaper(card, k, j, o)).join("");
     if (e) body += `<button type="button" class="add-line" data-act="paper-add">${iconSvg("plus", 15)}Add a line (Paper, Patent, Thesis…)</button>`;

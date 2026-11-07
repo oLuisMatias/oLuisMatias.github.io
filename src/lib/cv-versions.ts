@@ -112,6 +112,11 @@ export function lockVersion(s: CvVersions, id: number): CvVersions {
   return { ...s, versions: s.versions.map((v) => (v.id === id ? { ...v, locked: true } : v)) };
 }
 
+/** Open a locked CV for editing again (a CV with saved content; an uploaded PDF has nothing to edit). It may already have been sent: editing changes it in place. */
+export function unlockVersion(s: CvVersions, id: number): CvVersions {
+  return { ...s, versions: s.versions.map((v) => (v.id === id && v.doc ? { ...v, locked: false } : v)) };
+}
+
 /** Change a draft's details (its content and PDF are saved separately). A locked version is left as it is. */
 export function updateDraft(s: CvVersions, id: number, change: Partial<Pick<CvVersion, "date" | "tag" | "note" | "from" | "pdf" | "pdfs">>): CvVersions {
   return { ...s, versions: s.versions.map((v) => (v.id === id && !v.locked ? { ...v, ...change } : v)) };

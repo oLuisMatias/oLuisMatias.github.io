@@ -2,8 +2,8 @@
   // The CV Builder: the history of every saved CV, newest first. Click a CV to see its PDF in a popup, put it on the website
   // or delete it. "New version" opens the editor; "Upload an old PDF" adds a CV that exists only as a PDF.
   import { onMount } from "svelte";
-  import { TAGS, EMPTY_VERSIONS, addVersion, lockVersion, makeLive, newestFirst, nextId, numberOf, ownPdfs, parseVersions, pdfFileName, pdfOf, removeVersion, stringifyVersions, websitePdf, type CvVersions, type Numbered } from "../../lib/cv-versions";
-  import { deleteCvPdf, loadCvDoc, loadPage, savePage, uploadFile } from "../../lib/editor-api";
+  import { TAGS, EMPTY_VERSIONS, addVersion, lockVersion, unlockVersion, makeLive, newestFirst, nextId, numberOf, ownPdfs, parseVersions, pdfFileName, pdfOf, removeVersion, stringifyVersions, websitePdf, type CvVersions, type Numbered } from "../../lib/cv-versions";
+  import { loadCvDoc, loadPage, savePage, saveCvVersion } from "../../lib/editor-api";
   import { NO_PHONE_KEYS, VARIANT_HINTS, VARIANT_KEYS, VARIANT_LABELS, isNoPhone, parseDoc, type VariantKey } from "../../lib/cv-document";
   import { buildCvPdf } from "../../lib/pdf-cv-document";
   import Ic from "./Ic.svelte";
@@ -32,11 +32,14 @@
   });
 
   /** Save the list. The page only shows the new list once GitHub (or the disk) has it. */
-  async function persist(next: CvVersions, done: string): Promise<boolean> {
+  /** Save the list. With files to write or delete, they go in the same commit (one site rebuild). */
+  async function persist(next: CvVersions, done: string, files?: { pdfs?: { name: string; blob: Blob }[]; deletePdfs?: string[]; deleteDocId?: number }): Promise<boolean> {
     busy = true;
     notice = null;
     try {
-      const out = await savePage("cv-versions", stringifyVersions(next), sha);
+      const out = files
+        ? { sha: (await saveCvVersion({ versions: { text: stringifyVersions(next), sha }, ...files })).versionsSha }
+        : await savePage("cv-versions", stringifyVersions(next), sha);
       sha = out.sha;
       data = next;
       notice = { kind: "ok", text: done };
@@ -51,7 +54,7 @@
 
   // ---- the PDF popup ----
   let viewing = $state<Numbered | null>(null);
-  let confirm = $state<"live" | "delete" | "lock" | null>(null);
+  let confirm = $state<"live" | "delete" | "lock" | "unlock" | null>(null);
   let viewer: HTMLDialogElement | undefined = $state();
 
   /**
@@ -93,6 +96,14 @@
     viewer?.close();
   }
 
+  /** Open a finished CV for editing again. */
+  async function unlock(v: Numbered) {
+    if (await persist(unlockVersion(data, v.id), `v${v.n} is unlocked: you can edit it. Lock it again when you're done.`)) {
+      viewing = { ...v, locked: false };
+      confirm = null;
+    }
+  }
+
   /** A draft is finished (it's being sent out): lock it, so it can only be copied from now on. */
   async function lock(v: Numbered) {
     if (await persist(lockVersion(data, v.id), `v${v.n} is locked. Use “Duplicate & edit” for changes.`)) {
@@ -116,9 +127,9 @@
   }
 
   async function remove(v: Numbered) {
-    if (!(await persist(removeVersion(data, v.id), `v${v.n} was deleted.`))) return;
-    for (const file of ownPdfs(v)) await deleteCvPdf(file.split("/").pop() ?? "").catch(() => {});
-    closeViewer();
+    // the list, the content and the PDFs of the version leave in one commit
+    const gone = { deletePdfs: ownPdfs(v).map((f) => f.split("/").pop() ?? ""), deleteDocId: v.doc ? v.id : undefined };
+    if (await persist(removeVersion(data, v.id), `v${v.n} was deleted.`, gone)) closeViewer();
   }
 
   /** A built CV without its PDFs (an old one, or one whose upload failed): make all six from its saved content and keep them with it. */
@@ -129,11 +140,11 @@
       const saved = await loadCvDoc(v.id);
       if (!saved) throw new Error("This version has no saved content to make a PDF from.");
       const cv = parseDoc(saved.text);
-      const paths = await Promise.all(VARIANT_KEYS.map(async (k) => [k, (await uploadFile(pdfFileName(v.id, k), await buildCvPdf(cv, k), "cvs")).path] as const));
-      const { normal, ...others } = Object.fromEntries(paths) as Record<VariantKey, string>;
+      const built = await Promise.all(VARIANT_KEYS.map(async (k) => ({ k, name: pdfFileName(v.id, k), blob: await buildCvPdf(cv, k) })));
+      const { normal, ...others } = Object.fromEntries(built.map((m) => [m.k, `/data/cvs/${m.name}`])) as Record<VariantKey, string>;
       const made = { pdf: normal, pdfs: others };
       busy = false;
-      if (await persist({ ...data, versions: data.versions.map((x) => (x.id === v.id ? { ...x, ...made } : x)) }, `The PDFs of v${v.n} were made. They show after the next rebuild (about a minute).`)) {
+      if (await persist({ ...data, versions: data.versions.map((x) => (x.id === v.id ? { ...x, ...made } : x)) }, `The PDFs of v${v.n} were made. They show after the next rebuild (about a minute).`, { pdfs: built.map((m) => ({ name: m.name, blob: m.blob })) })) {
         viewing = { ...v, ...made };
         await show(viewing, viewVariant);
       }
@@ -166,11 +177,10 @@
     busy = true;
     try {
       const fileName = pdfFileName(nextId(data));
-      const { path } = await uploadFile(fileName, file, "cvs");
       const from = Number(form.from);
-      const { state, id } = addVersion(data, { date: form.date, tag: form.tag, note: form.note.trim(), from: from > 0 ? from : null, pdf: path, doc: false, locked: true });
+      const { state, id } = addVersion(data, { date: form.date, tag: form.tag, note: form.note.trim(), from: from > 0 ? from : null, pdf: `/data/cvs/${fileName}`, doc: false, locked: true });
       busy = false;
-      if (await persist(state, `v${numberOf(state, id)} was saved. Its PDF shows on the site after the next rebuild (about a minute).`)) creator?.close();
+      if (await persist(state, `v${numberOf(state, id)} was saved. Its PDF shows on the site after the next rebuild (about a minute).`, { pdfs: [{ name: fileName, blob: file }] })) creator?.close();
     } catch (e) {
       formError = e instanceof Error ? e.message : "Saving failed.";
     } finally {
@@ -208,7 +218,7 @@
               <span class="doc"><Ic name="file-description" size={26} /></span>
               <span class="text">
                 <span class="name"><span class="num">v{v.n}</span> – {when(v.date)}
-                  {#if v.id === data.live}<span class="chip live"><span class="dot"></span>In use{#if data.liveTemplate} · {VARIANT_LABELS[data.liveTemplate]}{/if}</span>{/if}<span class="chip">{v.tag}</span>{#if !v.locked}<span class="chip draft">Draft</span>{:else if v.doc}<span class="chip locked">Locked</span>{/if}</span>
+                  {#if v.id === data.live}<span class="chip live"><span class="dot"></span>In use{#if data.liveTemplate}{" · "}{VARIANT_LABELS[data.liveTemplate]}{/if}</span>{/if}<span class="chip">{v.tag}</span>{#if !v.locked}<span class="chip draft">Draft</span>{:else if v.doc}<span class="chip locked">Locked</span>{/if}</span>
                 {#if v.from}<span class="meta">From v{numberOf(data, v.from)}</span>{/if}
                 {#if v.note}<span class="meta note">{v.note}</span>{/if}
                 {#if v.id === data.live}
@@ -286,6 +296,10 @@
         <span class="ask">Lock v{v.n}? It can't be edited after this.</span>
         <button class="btn btn--small btn--primary" type="button" disabled={busy} onclick={() => lock(v)}>Yes, lock it</button>
         <button class="btn btn--small" type="button" onclick={() => (confirm = null)}>Cancel</button>
+      {:else if confirm === "unlock"}
+        <span class="ask">Unlock v{v.n}?{v.id === data.live ? " It is on the website: your changes will show there." : ""} It may already have been sent.</span>
+        <button class="btn btn--small btn--primary" type="button" disabled={busy} onclick={() => unlock(v)}>Yes, unlock it</button>
+        <button class="btn btn--small" type="button" onclick={() => (confirm = null)}>Cancel</button>
       {:else if confirm === "delete"}
         <span class="ask">Delete this CV and its PDF?</span>
         <button class="btn btn--small danger" type="button" disabled={busy} onclick={() => remove(v)}>Yes, delete</button>
@@ -296,6 +310,9 @@
         {/if}
         {#if v.doc && VARIANT_KEYS.some((k) => !pdfOf(v, k))}
           <button class="btn btn--small" type="button" disabled={busy} title="Some of this CV's four PDFs don't exist yet" onclick={() => makePdf(v)}>{busy ? "Making…" : "Make the PDFs"}</button>
+        {/if}
+        {#if v.locked && v.doc}
+          <button class="btn btn--small" type="button" onclick={() => (confirm = "unlock")} title="Open this finished CV for editing again">Unlock</button>
         {/if}
         {#if !v.locked}
           <a class="btn btn--small btn--primary" href={`/admin/cv-edit?edit=${v.id}`}>Edit</a>

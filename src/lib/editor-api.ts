@@ -81,16 +81,38 @@ export const loadCvDoc = (id: number) =>
     throw e;
   });
 
-/** Save a CV's content. `sha` is the version being replaced (editing a draft); without it the file must be new. */
-export const saveCvDoc = (id: number, text: string, sha?: string) =>
-  call<{ sha: string }>(`/admin/api/cv-docs/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, sha }),
+
+const toBase64 = (blob: Blob) =>
+  new Promise<string>((ok, fail) => {
+    const reader = new FileReader();
+    reader.onload = () => ok(String(reader.result).split("base64,")[1] ?? "");
+    reader.onerror = () => fail(reader.error);
+    reader.readAsDataURL(blob);
   });
 
-/** A saved CV's PDF leaves with its version. */
-export const deleteCvPdf = (fileName: string) => call<{ ok: true }>(`/admin/api/cv-pdf/${encodeURIComponent(fileName)}`, { method: "DELETE" });
+export interface CvVersionSave {
+  /** The new list of versions, and the version tag it was loaded at. */
+  versions: { text: string; sha: string | null };
+  /** The CV's content to write (`sha`: the version being replaced when editing a draft). */
+  doc?: { id: number; text: string; sha?: string };
+  /** The content file of a deleted version. */
+  deleteDocId?: number;
+  /** PDF files to write, by file name ("v7.pdf"...). */
+  pdfs?: { name: string; blob: Blob }[];
+  /** PDF files to delete, by file name. */
+  deletePdfs?: string[];
+}
+
+/** Saves or deletes a CV version: the list, the content and the PDFs together, as ONE commit (one site rebuild). */
+export async function saveCvVersion(save: CvVersionSave) {
+  const pdfs = await Promise.all((save.pdfs ?? []).map(async (f) => ({ name: f.name, base64: await toBase64(f.blob) })));
+  return await call<{ versionsSha: string; docSha?: string }>("/admin/api/cv-version", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ versions: save.versions, doc: save.doc, deleteDocId: save.deleteDocId, pdfs, deletePdfs: save.deletePdfs }),
+  });
+}
+
 
 /** All the changed cards in ONE commit (one deploy). Returns the new version tag of every card written, by "section/file". */
 export const saveCards = (files: { section: string; name: string; text: string; sha: string | null }[], deletes: { section: string; name: string; sha: string }[]) =>

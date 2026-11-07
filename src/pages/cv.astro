@@ -5,20 +5,41 @@ import "../styles/cv.css";
 import { site, visible, mdInline, cvHref, tools, cvPage } from "../lib/site";
 import { cardFromData } from "../lib/cv";
 import { renderCards, renderSkills } from "../lib/render-cv";
+import { cardsFromDoc } from "../lib/cv-live";
+import { parseDoc } from "../lib/cv-document";
+import { liveVersion, parseVersions } from "../lib/cv-versions";
+import versionsYml from "../data/cv-versions.yml?raw";
 
 const work = await visible("work");
 const certs = await visible("certifications");
 const education = await visible("education");
 const other = await visible("experiences");
-const publications = [
+// The page's own cards (src/content/...): what the page shows when the CV in use is only a PDF, and the logos, links and tool
+// chips for the entries of a built CV.
+const own = {
+  work: work.map((w) => cardFromData("work", w.data)),
+  education: education.map((e) => cardFromData("education", e.data)),
+  experiences: other.map((x) => cardFromData("experiences", x.data)),
+  certifications: certs.map((c) => cardFromData("certifications", c.data)),
+};
+const ownPublications = [
   ...work.flatMap((w) => w.data.papers.map((p) => ({ ...p, where: `${w.data.company} · ${w.data.period}` }))),
   ...education.flatMap((e) => e.data.papers.map((p) => ({ ...p, where: `${e.data.institution} · ${e.data.period}` }))),
 ];
-const workCards = renderCards("work", work.map((w) => cardFromData("work", w.data)), { tools });
-const educationCards = renderCards("education", education.map((e) => cardFromData("education", e.data)), { tools });
-const experienceCards = renderCards("experiences", other.map((x) => cardFromData("experiences", x.data)), { tools });
-const certCols = Math.max(1, Math.min(cvPage.certColumns, certs.length));
-const certificationCards = renderCards("certifications", certs.map((c) => cardFromData("certifications", c.data)), { tools });
+
+// The CV in use (chosen in the CV Builder): when it is a built CV, the page shows its content, in its order, without what it hides.
+// Putting another CV in use changes the file src/data/cv-versions.yml, which rebuilds the site, so the page follows by itself.
+const docs = import.meta.glob("../data/cv-docs/*.yml", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const inUse = liveVersion(parseVersions(versionsYml));
+const docText = inUse?.doc ? docs[`../data/cv-docs/v${inUse.id}.yml`] : undefined;
+const live = docText ? cardsFromDoc(parseDoc(docText), own) : null;
+const cards = live ?? own;
+const publications = live ? live.publications : ownPublications;
+const workCards = renderCards("work", cards.work, { tools });
+const educationCards = renderCards("education", cards.education, { tools });
+const experienceCards = renderCards("experiences", cards.experiences, { tools });
+const certCols = Math.max(1, Math.min(cvPage.certColumns, cards.certifications.length));
+const certificationCards = renderCards("certifications", cards.certifications, { tools });
 const skillsBox = renderSkills({ skills: site.skills, languages: site.languages }, { tools });
 const sections = [
   { id: "work", label: "Work", icon: "briefcase" },
@@ -26,7 +47,7 @@ const sections = [
   { id: "skills", label: "Skills", icon: "tools" },
   { id: "certifications", label: "Certifications", icon: "certificate" },
   ...(publications.length ? [{ id: "publications", label: "Publications", icon: "book" }] : []),
-  ...(other.length ? [{ id: "other", label: "Other experience", icon: "heart-handshake" }] : []),
+  ...(cards.experiences.length ? [{ id: "other", label: "Other experience", icon: "heart-handshake" }] : []),
 ];
 ---
 <Base title="CV" description={`CV of ${site.name}, ${site.role}.`}>
@@ -78,7 +99,7 @@ const sections = [
         </section>
       )}
 
-      {other.length > 0 && (
+      {cards.experiences.length > 0 && (
         <section id="other" class="cv__section">
           <h2 class="cv__h">Other experience</h2>
           <ol class="timeline" set:html={experienceCards} />
