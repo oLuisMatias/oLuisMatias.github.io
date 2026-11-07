@@ -1,0 +1,81 @@
+title: CADscout
+visible: true
+featured: false
+order: 4
+topic: Programming / AI
+summary: A free CAD and 3D print file viewer for Windows. Open a model, look around, see what is in it, without needing a CAD program.
+date: October 2026
+cover: /images/projects/box-art-1080x1080.png
+coverSpacing:
+  - bottom
+  - left
+  - right
+  - top
+model: ''
+youtube: ''
+tools:
+  - github
+skills:
+  - C++ desktop development
+  - 3D file formats (STEP, 3MF, STL)
+  - CAD data handling
+  - Windows packaging
+main:
+  split: columns
+  sizes:
+    - 71.9
+    - 28.1
+  children:
+    - split: rows
+      children:
+        - type: text
+          text: |-
+            I often need to check a model that someone sent me, or one of my own exports, and opening a full CAD program for a quick look is slow. So I built CADscout: a small, fast viewer that opens CAD and 3D print files and shows what is inside.
+
+            It is free and open source, and CADscout Lite is available in the Microsoft Store.
+        - type: facts
+    - type: media
+sections:
+  - split: columns
+    sizes:
+      - 55
+      - 45
+    children:
+      - type: text
+        text: |-
+          **What it does**
+
+          - **Look around:** orbit, pan and zoom with CAD-style mouse controls, fit and isometric views, perspective on or off, edges on or off, light and dark theme.
+          - **Fast:** STEP files are repaired on all processor cores, and models that took a while to load are cached, so opening them again is almost instant.
+          - **Parts:** click a part to see its name and size; right-click to hide it, show only it or make it transparent.
+          - **Follows your work:** the file reloads by itself when it is saved again, keeping the camera and the hidden or transparent parts.
+          - **3D printing projects:** for 3MF files, including Bambu Studio and Orca Slicer projects, a side panel shows the printer, profile, filaments, plates, objects and the slicing result.
+          - **Everywhere in Windows:** right-click a model in Explorer and choose "View with CADscout". Available in English, Portuguese, German, Spanish and Slovak.
+      - type: image
+        src: /images/projects/cadscout_2.png
+        alt: CADscout showing a 3MF print project with its side panel
+        caption: ''
+        spacing:
+          - top
+          - bottom
+  - split: columns
+    sizes:
+      - 55
+      - 45
+    children:
+      - type: text
+        text: |-
+          **What it opens**
+
+          STEP, IGES, BREP, STL, OBJ, PLY, VRML, glTF, 3MF and DXF, and these files inside a ZIP archive without unpacking it first. SolidWorks files use a closed format, so they need to be exported to STEP first.
+
+          **How it is built**
+
+          Two editions come from the same code: **CADscout Lite**, a small window for a quick look (released), and **CADscout Full**, which is under development. It is written in C++ with Qt 6 for the interface and Open CASCADE for reading and repairing CAD geometry, and packaged for the Microsoft Store as an MSIX.
+      - type: image
+        src: /images/projects/cadscout_3.png
+        alt: The file menu and a loaded STEP model
+        caption: ''
+        spacing:
+          - top
+          - bottom

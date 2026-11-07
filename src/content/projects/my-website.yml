@@ -47,8 +47,10 @@ sections:
       **What I built**
 
       - **Astro and TypeScript:** every page is generated as fast, plain HTML that search engines can read.
-      - **Content as files, edited in Sveltia CMS:** forms with image upload and drag-and-drop content blocks (text, images with position and spacing, galleries, 3D models, videos). Every save is a commit on GitHub.
-      - **Cloudflare Pages:** rebuilds and publishes the site after every change.
+      - **Content as files, edited in my own editors:** page editors for the home, projects and CV pages, and a box-based project editor with image upload and drag-and-drop content blocks (text, images with position and spacing, galleries, 3D models, videos). Every save is a commit on GitHub.
+      - **Cloudflare Workers:** serve the built site as static files, run the private API, and rebuild and publish the site after every change on my own domain, lmatias.com.
+      - **Private admin area:** the editors live under /admin, locked with Cloudflare Access, while every public page stays open.
+      - **CV builder:** keeps the history of my CVs. I write the content once and get six PDF templates from it (with the photo on top or on the left, or without a photo, each with or without my phone number), with a live preview of the real PDF, text size and spacing controls, and locking for the versions I have sent. The CV in use feeds the public CV page and its download button.
       - **Interactive 3D viewer:** models rotate on the page and open in a full-screen viewer to zoom and pan, so scrolling the page is never blocked.
       - **Contact and 3D print request forms:** sent with EmailJS straight to my inbox, with a hidden spam trap.
       - **Design:** a dark "Graphite" theme with a light mode, the Inter typeface, and Tabler icons optically aligned with the text.
@@ -56,8 +58,7 @@ sections:
     text: |-
       **In progress**
 
-      - A **private area** that only I can open, protected by Cloudflare Access.
-      - A **CV builder** that keeps several versions of my CV and creates two PDFs from each: a public one for the website and a private one with my phone number.
       - A **motivation letter builder** with saved versions per company.
+      - An editor for my **3D prints** and a page for my documents.
 
-      These use Svelte for the interface, Cloudflare Functions for the server side, and a Cloudflare D1 database.
+      The editors use Svelte for the interface and a Cloudflare Worker for the server side. PDFs are built in the browser with pdfmake and previewed with pdf.js.
